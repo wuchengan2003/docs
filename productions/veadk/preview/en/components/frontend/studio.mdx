@@ -47,7 +47,7 @@ Remote agents are discovered and invoked through an AgentKit agent center. Use t
 Before using this capability, make sure that:
 
 - Studio has Volcengine credentials that can access AgentKit. For a VeFaaS deployment, the bound IAM role must have the corresponding permissions.
-- You have the ID of an AgentKit agent center that contains an invokable remote agent, and the current credentials can access that center.
+- The `default` project in the target region contains at least one AgentKit agent center visible to the current account, and that center contains an invokable remote agent.
 - If Studio role-based access is enabled, the current user has the `developer` or `admin` role.
 
 <Steps>
@@ -57,8 +57,8 @@ Before using this capability, make sure that:
   <Step title="Add a remote-agent node">
     In the agent structure, add a sub-agent to the root or another local agent, then select Remote Agent as its type. The remote-agent type is unavailable on the root node.
   </Step>
-  <Step title="Configure the agent center">
-    Enter the AgentKit agent-center ID. If the center is not in Beijing, set its region under More options.
+  <Step title="Select an agent center">
+    Studio initially lists centers visible to the current account in the `default` project in Beijing. For another region, set the region under More options before selecting a center from the dropdown. Use the refresh button to reload the list.
   </Step>
   <Step title="Configure discovery scope">
     Set the recall count and OpenAPI endpoint when needed. The remote agent's name, description, and capabilities come from the Agent Card returned by the center, so you do not enter a separate name or A2A URL.
@@ -72,20 +72,21 @@ For each turn, the parent agent discovers remote agents in the selected center t
 
 | Studio setting | Generated-project setting | Type | Required | Default | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| AgentKit agent center ID | `REGISTRY_SPACE_ID` | `str` | Yes | — | ID of the center used to discover remote agents. |
+| AgentKit agent center | `REGISTRY_SPACE_ID` | `str` | Yes | — | Center used to discover remote agents; selected from a dropdown in Studio. |
 | Agent recall count | `REGISTRY_TOP_K` | `int` | No | `3` | Maximum number of matching agents recalled for each turn; the effective range is 1–20. |
-| AgentKit agent center region | `REGISTRY_REGION` | `str` | No | `cn-beijing` | Region that contains the agent center. |
+| AgentKit agent center region | `REGISTRY_REGION` | `str` | No | `cn-beijing` | Region that contains the agent center. Changing it reloads the dropdown for the new region. |
 | AgentKit agent center OpenAPI endpoint | `REGISTRY_ENDPOINT` | `URL` | No | `https://open.volcengineapi.com/` | OpenAPI endpoint used by the generated project to reach the center. Change it only when another public endpoint is required. |
 
-For example, create an LLM root agent named `support_router`, add a remote-agent child, enter the Customer Service agent-center ID, and keep the recall count at `3` and the region set to Beijing. During testing, enter “Investigate this order's delivery exception and recommend a resolution.” If the center contains a matching capability, the root agent invokes the corresponding remote agent to complete the task.
+For example, create an LLM root agent named `support_router`, add a remote-agent child, select the Customer Service agent center, and keep the recall count at `3` and the region set to Beijing. During testing, enter “Investigate this order's delivery exception and recommend a resolution.” If the center contains a matching capability, the root agent invokes the corresponding remote agent to complete the task.
 
 ### Troubleshoot remote agents
 
 | Symptom | Check |
 | :--- | :--- |
 | Studio reports missing Volcengine credentials | For a local Studio, check `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY`. For VeFaaS, check the bound IAM role. Credentials remain on the server and are never delivered to the browser. |
-| Project generation or testing cannot start | Confirm that the remote agent is below the root agent and that the agent-center ID is present. |
-| The agent center cannot be accessed | Confirm that the center ID and region are correct and that the current credentials can access the center. |
+| The dropdown is empty | Confirm that an agent center exists in the `default` project in the selected region and that the current credentials can view it. |
+| The agent-center list does not load | Check the Studio login session, network access to the AgentKit OpenAPI, and credential permissions, then use the refresh button to retry. |
+| Project generation or testing cannot start | Confirm that the remote agent is below the root agent and that an agent center is selected. |
 | Testing does not discover an available agent | Confirm that the center contains an invokable agent matching the test request; adjust the recall count when necessary. |
 | Discovery succeeds but remote invocation fails | Check the region, OpenAPI endpoint, agent status in the center, and the runtime's AgentKit permissions and network access. |
 
