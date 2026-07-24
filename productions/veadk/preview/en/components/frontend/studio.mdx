@@ -71,7 +71,7 @@ In cloud mode, the agent selector in the chat sidebar lists AgentKit Runtimes th
 
 The info panel has two tabs:
 
-- **Agent info**: reads live metadata from the Runtime's deployed Agent Server, including name, model, description, sub-agents, tools, skills, and mounted components (knowledge base, memory, prompt manager, example store, run processor, tracer, toolset, plugin, and so on) with their back-end type. The metadata also reports `searchSources`, the retrieval sources actually mounted on the agent, so smart search enables only available sources. This information contains only display-oriented summaries and never returns system prompts, credentials, environment-variable values, or arbitrary serialized objects.
+- **Agent info**: reads the Runtime-provided name, model, description, sub-agents, tools, skills, available search sources, and mounted components with their backend types. It does not include system prompts, credentials, or environment-variable values.
 - **Runtime info**: shows control-plane Runtime detail, including model, description, status, region, resources, version, and environment variables.
 
 <Note>
@@ -85,6 +85,17 @@ When a Runtime connection cannot be established, Studio distinguishes the failur
 - **Authentication failure**: the Runtime service rejected the connection request. Check the Runtime's authentication configuration.
 
 This lets you decide whether to refresh, sign in again, or inspect the Runtime's readiness and authentication settings without reading logs.
+
+## Use smart search
+
+Smart search provides four retrieval sources:
+
+- **Session**: full-text-searches the current agent's message history.
+- **Web**: calls the current agent's mounted `web_search` tool.
+- **Knowledge**: performs semantic retrieval through the agent's mounted knowledge base.
+- **Memory**: performs semantic retrieval through the agent's mounted long-term memory backend.
+
+Studio enables only the sources reported by the agent's metadata and disables unavailable sources. Knowledge and memory results identify their index or source name and backend type.
 
 ## `veadk studio` options
 
