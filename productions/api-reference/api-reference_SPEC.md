@@ -1,6 +1,6 @@
 # API Reference 文档规范
 
-本规范适用于 `productions/api-reference/preview/{zh,en}` 下的 API Reference 文档，用于指导大模型自动生成或更新 Preview 文档。根目录 `SPEC.md` 是上位规范；若本文件与根规范冲突，以根规范为准。本文件只补充 API Reference 子文档库的组织、书写和排版要求。
+本规范适用于 `productions/api-reference/preview/{zh,en}` 下的 API Reference 文档。根目录 `SPEC.md` 是上位规范；若本文件与根规范冲突，以根规范为准。本文件只补充 API Reference 子文档库的组织、书写和排版要求。
 
 ## 内容范围
 

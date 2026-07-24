@@ -13,7 +13,7 @@ VeADK ships a production-grade React frontend — an enterprise agent-applicatio
 - **Skills and sub-agents**: type `/` to select a mounted skill or `@` to delegate the turn to an eligible sub-agent.
 - **Skill center**: select skills from Skill Hub, a local upload, or an AgentKit SkillSpace while creating an agent.
 - **Session history**: auto-saved, time-sorted, reopen or delete.
-- **Smart search**: the *Session* source full-text-searches the current agent's history; the *Web* source calls the agent's mounted web-search tool live, using credentials from the server's environment variables.
+- **Smart search**: *Session* searches the current agent's message history, *Web* calls its mounted web-search tool, and *Knowledge* and *Memory* perform semantic retrieval through the configured backends. The interface enables only sources available to the agent and labels results with the index or source name and backend type.
 - **Add an AgentKit agent**: paste a URL and API key to connect a remote agent over the ADK protocol; it then appears in the picker.
 - **Studio deployment**: inspect generated code, configure the region, channel, network, and environment variables, deploy to AgentKit, and monitor the task from the same workbench.
 - **Tracing**: view the call flame graph for the current session.
@@ -66,7 +66,7 @@ cd frontend && npm run dev                    # http://localhost:5173, proxies A
 | Option | Default | Description |
 | :-- | :-- | :-- |
 | `--agents-dir` | `.` | Directory of agent apps; each subdirectory exposes a `root_agent`. |
-| `--frontend-dir` | packaged build, falling back to `./frontend/dist` | Override the built React UI directory. Priority: the explicitly passed directory, then the packaged `veadk/webui`, then `./frontend/dist` relative to the current directory. |
+| `--frontend-dir` | packaged build, falling back to `./frontend/dist` | Override the built React UI directory. Priority: the explicitly passed directory, then the packaged UI, then `./frontend/dist` relative to the current directory. |
 | `--host` | `127.0.0.1` | Address to bind. |
 | `--port` | `8000` | Port to bind. |
 | `--dev` | off | Load local agents in the picker instead of cloud AgentKit runtimes. |
@@ -103,10 +103,10 @@ Attachment bodies are stored separately from ADK Sessions, while Session Events 
 
 ```bash
 export VEADK_MEDIA_STORAGE=tos
-export DATABASE_TOS_BUCKET=<bucket>
+export DATABASE_TOS_BUCKET="your-bucket"
 export DATABASE_TOS_REGION=cn-beijing
-export VOLCENGINE_ACCESS_KEY=<access-key>
-export VOLCENGINE_SECRET_KEY=<secret-key>
+export VOLCENGINE_ACCESS_KEY="your-access-key"
+export VOLCENGINE_SECRET_KEY="your-secret-key"
 veadk frontend --agents-dir examples
 ```
 
@@ -136,7 +136,8 @@ Sessions and memory are scoped by the ADK `user_id`, which comes from the signed
 
 ```bash
 veadk frontend --agents-dir examples \
-  --oauth2-user-pool <name> --oauth2-user-pool-client <name>
+  --oauth2-user-pool "your-user-pool-name" \
+  --oauth2-user-pool-client "your-user-pool-client-name"
 # or by UID (env OAUTH2_USER_POOL_ID / OAUTH2_USER_POOL_CLIENT_ID)
 # --oauth2-user-pool-uid <id> --oauth2-user-pool-client-uid <id>
 ```
@@ -159,8 +160,8 @@ The GitHub preset only needs the client credentials:
 
 ```bash
 export OAUTH2_PROVIDER=github
-export OAUTH2_CLIENT_ID=<github-oauth-client-id>
-export OAUTH2_CLIENT_SECRET=<github-oauth-client-secret>
+export OAUTH2_CLIENT_ID="your-github-oauth-client-id"
+export OAUTH2_CLIENT_SECRET="your-github-oauth-client-secret"
 export OAUTH2_REDIRECT_URI=http://127.0.0.1:8000/oauth2/callback
 veadk frontend --agents-dir examples
 ```

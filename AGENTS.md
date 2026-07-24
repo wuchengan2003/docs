@@ -9,7 +9,7 @@
 - Use the Mintlify MCP server, `https://mcp.mintlify.com`, to edit content and settings via MCP
 - Use the Mintlify docs MCP server, `https://www.mintlify.com/docs/mcp`, to query information about using Mintlify via MCP
 
-> 完整的写作规范见仓库根目录的 [`SPEC.md`](./SPEC.md)。本节是供 AI 工具自动加载的精简版；两者冲突时以 `SPEC.md` 为准。
+> 完整的写作规范见仓库根目录的 [`SPEC.md`](./SPEC.md)。本节是供仓库协作环境加载的精简版；两者冲突时以 `SPEC.md` 为准。
 
 ## Product-specific specs
 
@@ -40,6 +40,11 @@ The root `SPEC.md` has highest priority. Product-specific specs only add directo
 - 双语站点：中文默认，英文并列；两侧目录结构与页面层级保持一致，改动同步更新。
 - `preview` 用于下一版本的可编辑文档；`archives` 中的已发布版本只做对应版本的事实修正，不随 Preview 自动更新。
 - `changelog.mdx` 必须累计保留首个已发布版本至目标版本的全部公开变更，按版本从新到旧排列；新增版本不得覆盖或删除已有版本分节。
+- 更新前同步最新 `main`，并检查同一产品变更对应的开放、关闭和已合并文档 PR；已合并内容同样需要核对完整性。
+- 每次更新先列出命令/参数、配置、正文、示例、Changelog、中英文和导航的影响清单。Changelog 链接页必须实际说明对应能力。
+- 未发布能力只进入 Preview 的 `未发布` / `Unreleased` 分节；创建归档前按目标 tag 核验，禁止把 tag 之后的能力复制进归档。
+- Preview 的通用示例不要固定到过期版本；固定版本号只用于明确的安装、兼容性或复现场景。
+- 对外分支名、提交信息、PR 正文和文档不得描述撰写工具、模型、执行环境或自动生成过程，只写用户价值、事实依据和验证结果。
 
 ## Content boundaries
 

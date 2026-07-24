@@ -1,12 +1,11 @@
 ---
 title: "使用沙箱"
-tag: "NEW"
 ---
 
 沙箱是一个隔离的 `code` 或 `skill` 环境。`sandbox` 命令组既管理沙箱的完整生命周期——创建、列出、查看、更新、删除——也提供对沙箱的操作：在会话中运行命令、打开交互式终端、传输文件、预览 Web、注入订阅凭据，以及管理会话。
 
 <Note>
-操作类子命令（run / attach / cp / web / login / sessions / logs / rm）共有一组会话与沙箱相关标志：`-s, --session <id>`（会话 ID，存在则复用，否则新建）、`--tool-id <id>`（沙箱 ID）、`--type <type>`（沙箱类型 `code` \| `skill`，默认 `code`）、`--auto-create`（始终新建一个沙箱，即使项目内已有）、`-r, --region <region>`（Volcengine 区域）、`-p, --project <name>`（AgentKit 项目，默认 `default`）。下方表格逐命令完整列出。
+`run`、`shell`、`cp`、`web` 和 `login` 共有一组会话与沙箱相关标志：`-s, --session <id>`（会话 ID，存在则复用，否则新建）、`--tool-id <id>`（沙箱 ID）、`--type <type>`（沙箱类型 `code` \| `skill`，默认 `code`）、`--auto-create`（始终新建一个沙箱，即使项目内已有）、`-r, --region <region>`（Volcengine 区域）、`-p, --project <name>`（AgentKit 项目，默认 `default`）。`sessions`、`logs` 和 `rm` 只接受其中适用于沙箱解析的部分标志，具体以各命令的参数表为准。`attach` 是 `shell` 的别名。
 
 未传 `--tool-id` 且未加 `--auto-create` 时，CLI 会在项目内查找该类型的沙箱：**恰好一个时自动选用；存在多个时命令会失败并要求显式传入 `--tool-id`**；一个都没有时需加 `--auto-create`。加上 `--auto-create` 则始终新建一个全新沙箱——即使项目内已有——并等待其就绪后再使用。项目内已有多个 `code` 沙箱属常见情况，此时可用 `agentkit sandbox list` 查到目标 ID 后通过 `--tool-id` 指定。
 </Note>
@@ -34,8 +33,22 @@ tag: "NEW"
 | `--env <KEY=VALUE>` | 环境变量（可重复）。 | — |
 | `--json <jsonString>` | 以 JSON 对象形式提供的额外字段，合并进请求体。 | — |
 
+<Warning>
+`sandbox create` 会在云端创建计算资源，资源存续期间可能产生费用。创建前确认项目、地域、规格与镜像来源；不再使用时，通过 `sandbox delete` 删除沙箱。
+</Warning>
+
 ```bash
 agentkit sandbox create --name dev-sandbox --type code --cpu 1000 --memory 2048
+```
+
+以下示例使用自定义镜像创建一个 Web 沙箱。请将镜像地址替换为项目能够访问的镜像：
+
+```bash
+agentkit sandbox create \
+  --name web-sandbox \
+  --image-url your-registry.example.com/team/python-web:latest \
+  --command "python -m http.server 8080" \
+  --port 8080
 ```
 
 ## sandbox list
@@ -90,6 +103,10 @@ agentkit sandbox update t-12345678 --description "开发沙箱" --port 9090
 
 删除一个沙箱——即环境本身。若只需删除单个会话，请改用 [`sandbox rm`](#sandbox-rm)。
 
+<Warning>
+删除沙箱不可恢复，沙箱中的会话以及未另行保存的文件可能同时丢失。执行前确认沙箱 ID，并把需要保留的文件下载到本地或持久化存储。
+</Warning>
+
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
 | `<id>` | 沙箱 ID，如 `t-xxxxxxxx`（必填）。 | — |
@@ -126,11 +143,11 @@ agentkit sandbox delete t-12345678 --yes
 agentkit sandbox run "ls -la" --session my-session
 ```
 
-一次性的 `run` 会等待命令执行结束，因此交互式程序——编辑器、REPL，或不带参数直接运行的 `codex`——会一直阻塞直至超时。交互场景请改用 `agentkit sandbox attach`；对确需长时间运行的非交互任务，可调大 `--timeout` 或将其设为 `0`。
+一次性的 `run` 会等待命令执行结束，因此交互式程序——编辑器、REPL，或不带参数直接运行的 `codex`——会一直阻塞直至超时。交互场景请改用 `agentkit sandbox shell`；对确需长时间运行的非交互任务，可调大 `--timeout` 或将其设为 `0`。
 
-## sandbox attach
+## sandbox shell
 
-在沙箱会话中打开交互式终端（按 Ctrl-] 脱离）。
+在沙箱会话中打开交互式终端（按 Ctrl-] 脱离）。`sandbox attach` 是此命令的别名。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
@@ -150,7 +167,7 @@ agentkit sandbox run "ls -la" --session my-session
 | `-p, --project <name>` | AgentKit 项目 | `default` |
 
 ```bash
-agentkit sandbox attach --tmux --session my-session
+agentkit sandbox shell --tmux --session my-session
 ```
 
 ## sandbox cp
@@ -170,7 +187,14 @@ agentkit sandbox attach --tmux --session my-session
 | `-p, --project <name>` | AgentKit 项目 | `default` |
 
 ```bash
+# 上传本地文件
 agentkit sandbox cp ./local.txt :/workspace/local.txt --session my-session
+
+# 下载远端文件
+agentkit sandbox cp :/workspace/report.json ./report.json --session my-session
+
+# 目标文件已存在时允许覆盖
+agentkit sandbox cp :/workspace/report.json ./report.json --session my-session --overwrite
 ```
 
 ## sandbox web
@@ -192,6 +216,10 @@ agentkit sandbox web --session my-session
 ```
 
 ## sandbox login
+
+<Warning>
+此命令会将本地订阅凭据复制到远端沙箱会话。仅在受信任的沙箱和专用会话中使用，避免向他人共享该会话；使用完成后，通过 `agentkit sandbox rm <session> -y` 删除会话。
+</Warning>
 
 将本地的 codex/claude 订阅凭据注入到沙箱会话中。
 

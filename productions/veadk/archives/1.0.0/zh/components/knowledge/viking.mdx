@@ -2,13 +2,13 @@
 title: "使用 VikingDB 知识库存储"
 ---
 
-`viking` 后端由 `VikingDBKnowledgeBackend` 实现，对接火山引擎 VikingDB 托管知识库服务。文件先上传至 TOS（对象存储），再登记进 VikingDB 集合，切分、向量化与检索均在服务端完成，因此**无需本地 embedding**。它是生产环境的推荐后端。
+`viking` 后端对接火山引擎 VikingDB 托管知识库服务。文件先上传至 TOS（对象存储），再登记进 VikingDB 集合，切分、向量化与检索均在服务端完成，因此**无需本地 embedding**。它是生产环境的推荐后端。
 
 ## 何时使用
 
 - 需要托管的、开箱即用的知识库服务，免于自行维护向量库；
-- 需要服务端切分、向量化、重排（rerank）等能力；
-- 需要基于文档元数据（metadata）的过滤检索。
+- 需要服务端切分、向量化、重排等能力；
+- 需要基于文档元数据的过滤检索。
 
 ## 前置条件
 
@@ -60,7 +60,7 @@ kb = KnowledgeBase(
 
 ### 构造参数
 
-`VikingDBKnowledgeBackend` 接受以下字段：
+`backend_config` 支持以下配置项：
 
 | 参数 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
@@ -119,5 +119,5 @@ export DATABASE_TOS_REGION="cn-beijing"
 </Note>
 
 <Warning>
-`index`（集合名）必须以英文字母开头，仅含字母、数字与下划线，长度 1-128，否则会抛出 `ValueError`。`version` 仅支持 `"2"` 或 `"4"`。
+`index`（集合名）必须以英文字母开头，仅含字母、数字与下划线，长度 1-128，否则会报错。`version` 仅支持 `"2"` 或 `"4"`。
 </Warning>

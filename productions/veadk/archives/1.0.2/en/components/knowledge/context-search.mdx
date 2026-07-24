@@ -1,8 +1,8 @@
 ---
-title: "Context Search (context_search)"
+title: "Use Context Search storage"
 ---
 
-The `context_search` backend is implemented by `ContextSearchBackend` and integrates with the managed Volcengine Context Search service. Files are uploaded to TOS (object storage) via pre-signed URLs, then registered into a Context Search RAG scene; splitting, embedding, and retrieval all run server-side, so **no local embedding is required**.
+The `context_search` backend integrates with the managed Volcengine Context Search service. Files are uploaded to TOS (object storage) via pre-signed URLs, then registered into a Context Search RAG scene; splitting, embedding, and retrieval all run server-side, so **no local embedding is required**.
 
 ## When to use
 
@@ -54,7 +54,7 @@ kb = KnowledgeBase(
 
 ### Constructor parameters
 
-`ContextSearchBackend` accepts the following fields:
+`backend_config` supports the following settings:
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -92,5 +92,5 @@ Embedding and retrieval both run server-side in Context Search, so this backend 
 </Note>
 
 <Warning>
-`index` (the scene ID) must be a numeric string, otherwise a `ValueError` is raised; initialization also calls `GetScene` to verify the scene exists. Before retrieval, `context_search_engine_endpoint` and `context_search_engine_apikey` must be set, otherwise `search` fails.
+`index` (the scene ID) must be a numeric string, otherwise initialization fails; initialization also calls `GetScene` to verify the scene exists. Before retrieval, `context_search_engine_endpoint` and `context_search_engine_apikey` must be set, otherwise `search` fails.
 </Warning>
