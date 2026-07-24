@@ -2,7 +2,7 @@
 title: "长期记忆"
 ---
 
-长期记忆（Long-term Memory）跨会话、跨时间保存重要信息，包括用户偏好、任务历史、知识要点或长期状态。短期记忆只在单次会话内有效，而长期记忆让智能体在**不同会话**之间也能记住事实。
+长期记忆跨会话、跨时间保存重要信息，包括用户偏好、任务历史、知识要点或长期状态。短期记忆只在单次会话内有效，而长期记忆让智能体在**不同会话**之间也能记住事实。
 
 为什么需要它：
 
@@ -13,7 +13,7 @@ title: "长期记忆"
 
 ## 统一入口：`LongTermMemory`
 
-无论使用哪种后端，均通过统一的 `veadk.memory.long_term_memory.LongTermMemory` 接入。它实现了 Google ADK 的 `BaseMemoryService`，因此可直接作为智能体的记忆服务，并根据 `backend` 选择并初始化底层实现。
+无论使用哪种后端，均通过统一的 `veadk.memory.long_term_memory.LongTermMemory` 接入。它可直接作为智能体的记忆服务，并根据 `backend` 选择存储后端。
 
 ```python
 from veadk.memory.long_term_memory import LongTermMemory
@@ -25,8 +25,8 @@ ltm = LongTermMemory(backend="viking", app_name="ltm_demo")
 
 | 参数 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `backend` | `"local" \| "opensearch" \| "redis" \| "viking" \| "mem0" \| "openviking"` 或后端实例 | `"opensearch"` | 选择后端实现，也可直接传入一个 `BaseLongTermMemoryBackend` 实例。`viking_mem` 已废弃，自动转为 `viking`。 |
-| `backend_config` | `dict` | `{}` | 传给后端构造函数的配置；若不含 `index`，会用 `index` 或 `app_name` 补齐。 |
+| `backend` | `"local" \| "opensearch" \| "redis" \| "viking" \| "mem0" \| "openviking"` | `"opensearch"` | 选择后端。`viking_mem` 已废弃，自动转为 `viking`。 |
+| `backend_config` | `dict` | `{}` | 后端专用配置；若不含 `index`，会用 `index` 或 `app_name` 补齐。 |
 | `top_k` | `int` | `5` | 检索时返回最相似的片段数量。 |
 | `index` | `str` | `""` | 存储记忆所用的索引/集合名。为空时回退到 `app_name`，再为空则用 `default_app`。 |
 | `app_name` | `str` | `""` | 拥有该记忆的应用名，常用作数据隔离与 `index` 的回退值。 |
@@ -35,29 +35,6 @@ ltm = LongTermMemory(backend="viking", app_name="ltm_demo")
 <Note>
 向量类后端（`local`、`opensearch`、`redis`）会对记忆做向量化，需要安装扩展依赖并配置 embedding 模型。`viking`、`mem0` 与 `openviking` 使用外部服务，无需本地 embedding。
 </Note>
-
-## 后端契约：`BaseLongTermMemoryBackend`
-
-所有后端都继承自 `BaseLongTermMemoryBackend`，需实现三个方法：
-
-```python
-class BaseLongTermMemoryBackend(ABC, BaseModel):
-    index: str
-
-    @abstractmethod
-    def precheck_index_naming(self): ...
-    """校验 index 命名是否合法。"""
-
-    @abstractmethod
-    def save_memory(self, user_id: str, event_strings: list[str], **kwargs) -> bool: ...
-    """把记忆写入后端。"""
-
-    @abstractmethod
-    def search_memory(self, user_id: str, query: str, top_k: int, **kwargs) -> list[str]: ...
-    """从后端按语义检索记忆。"""
-```
-
-`LongTermMemory` 负责把会话事件过滤、序列化后交给后端的 `save_memory`，并把 `search_memory` 的结果包装为 ADK 的 `MemoryEntry`。因此**上层使用方式与后端无关**，区别仅在存储介质与检索实现。要自定义后端，继承该基类实现这三个方法，并把实例直接传给 `LongTermMemory(backend=<实例>)`。
 
 ## 选择后端
 

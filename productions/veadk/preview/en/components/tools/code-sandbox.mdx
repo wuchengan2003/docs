@@ -1,6 +1,5 @@
 ---
 title: "Code sandboxes"
-tag: "Function tool"
 ---
 
 ## Overview
@@ -106,6 +105,10 @@ In addition to running code such as Python, `run_code` can run shell commands in
 
 Shell execution reuses the sandbox ID and credential configuration of `run_code`. The `code` is submitted as a command, so multiple commands can be chained within a single execution.
 
+<Warning>
+  Shell can execute arbitrary commands, install dependencies, read and write files, and reach services available from the remote sandbox network. Run only trusted commands and restrict the data, network, and permissions available to the sandbox. Do not put long-lived credentials in commands or `env`; use the sandbox's supported credential-hosting mechanism when credentials are required.
+</Warning>
+
 ### Parameters
 
 The full signature of `run_code`:
@@ -120,7 +123,8 @@ def run_code(
     env: dict[str, str] | None = None,
     hard_timeout: int = 300,
     max_output_length: int = 30000,
-) -> str
+) -> str:
+    ...
 ```
 
 | Parameter | Type | Default | Description |
@@ -139,24 +143,44 @@ def run_code(
 ### Example
 
 ```python title="run_code_bash.py"
+import asyncio
+
+from google.adk.tools import ToolContext
+from veadk import Agent, Runner
+from veadk.memory.short_term_memory import ShortTermMemory
 from veadk.tools.builtin_tools.run_code import run_code
 
-result = run_code(
-    code="pip install akshare && python -c 'import akshare; print(akshare.__version__)'",
-    language="bash",
-    tool_context=tool_context,
-    timeout=60,
-    exec_dir="/tmp",
-    env={"PIP_INDEX_URL": "https://pypi.org/simple"},
-    hard_timeout=120,
-    max_output_length=5000,
-)
-print(result)
-```
 
-<Note>
-Shell commands are submitted to the remote sandbox as code and run within the sandbox runtime. Do not embed real credentials in the command; reference sensitive values through the `env` parameter as environment variables.
-</Note>
+def check_python(tool_context: ToolContext) -> str:
+    """Show the Python version in the remote sandbox."""
+    return run_code(
+        code="pwd && python --version",
+        language="bash",
+        tool_context=tool_context,
+        timeout=60,
+        exec_dir="/tmp",
+        env={"APP_ENV": "test"},
+        hard_timeout=120,
+        max_output_length=5000,
+    )
+
+
+agent = Agent(
+    name="shell_agent",
+    instruction="Call the tool to show the sandbox working directory and Python version.",
+    tools=[check_python],
+)
+runner = Runner(agent=agent, short_term_memory=ShortTermMemory())
+
+
+async def main():
+    response = await runner.run("Check the sandbox environment")
+    print(response)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
 
 ## Injecting environment variables into sandbox executions
 
@@ -183,51 +207,59 @@ Injected variables are merged with the framework-managed variables that VeADK se
 
 ### Examples
 
-Inject environment variables into `execute_skills`:
+The following example wraps both calls as function tools. `Runner` injects `tool_context` when it invokes a function tool, while the application sets the environment variables for each execution in the wrapper:
 
-```python title="agent.py"
-from veadk import Agent
+```python title="sandbox_env.py"
+import asyncio
+
+from google.adk.tools import ToolContext
+from veadk import Agent, Runner
+from veadk.memory.short_term_memory import ShortTermMemory
 from veadk.tools.builtin_tools.execute_skills import execute_skills
-
-agent = Agent(
-    skills=[skill_space_id],
-    skills_mode="skills_sandbox",
-    tools=[execute_skills],
-)
-```
-
-Pass the variables for the current execution through `env_vars`:
-
-```python title="run_skills_with_env.py"
-from veadk.tools.builtin_tools.execute_skills import execute_skills
-
-result = execute_skills(
-    workflow_prompt="Read the knowledge base and generate a summary",
-    tool_context=tool_context,
-    env_vars={
-        "SKILL_CONFIG_PATH": "/tmp/skill_config.yaml",
-        "MAX_RESULTS": "20",
-    },
-)
-print(result)
-```
-
-When calling `run_sandbox_agent` directly, inject through `extra_env_vars`:
-
-```python title="run_sandbox_agent_with_env.py"
 from veadk.tools.builtin_tools.run_sandbox_agent import run_sandbox_agent
 
-result = run_sandbox_agent(
-    workflow_prompt="Run the data analysis workflow",
-    tool_id="t-your-skills-tool-id",
-    tool_context=tool_context,
-    extra_env_vars={
-        "DATA_SOURCE_URL": "https://example.com/data.csv",
-    },
+
+def run_skill_workflow(workflow_prompt: str, tool_context: ToolContext) -> str:
+    """Run a workflow in the skills sandbox."""
+    return execute_skills(
+        workflow_prompt=workflow_prompt,
+        tool_context=tool_context,
+        env_vars={
+            "SKILL_CONFIG_PATH": "/tmp/skill_config.yaml",
+            "MAX_RESULTS": "20",
+        },
+    )
+
+
+def run_custom_workflow(workflow_prompt: str, tool_context: ToolContext) -> str:
+    """Run a workflow in a specified AgentKit sandbox."""
+    return run_sandbox_agent(
+        workflow_prompt=workflow_prompt,
+        tool_id="t-your-sandbox-tool-id",
+        tool_context=tool_context,
+        extra_env_vars={"DATA_SOURCE_URL": "https://example.com/data.csv"},
+    )
+
+
+agent = Agent(
+    name="sandbox_agent",
+    instruction="Call the appropriate sandbox workflow for the user's request.",
+    skills=["space:your-skill-space-id"],
+    skills_mode="skills_sandbox",
+    tools=[run_skill_workflow, run_custom_workflow],
 )
-print(result)
+runner = Runner(agent=agent, short_term_memory=ShortTermMemory())
+
+
+async def main():
+    response = await runner.run("Use the skills workflow to summarize the knowledge base")
+    print(response)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-<Note>
-Variables injected through `env_vars` or `extra_env_vars` are submitted together with the sandbox execution code. Do not embed long-lived credentials directly; reference credentials through environment variables or a secrets management service when sensitive values are needed.
-</Note>
+<Warning>
+  Values in `env_vars` and `extra_env_vars` are passed to the remote sandbox process. Do not put long-lived credentials in source code; use the sandbox's supported credential-hosting mechanism when credentials are required.
+</Warning>

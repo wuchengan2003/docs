@@ -1,6 +1,5 @@
 ---
 title: "使用 Codex 沙箱开发应用"
-tag: "HOT"
 ---
 
 AgentKit 沙箱是一个云端的 `code` 工具环境，可在其中用 Codex 等编码智能体开发应用：无需在本地准备运行环境，会话可持久保留，代码可双向传输，构建中的应用还能通过 Web 预览查看。沙箱各命令的完整参数见[使用沙箱](/productions/agentkit-cli/preview/zh/commands/sandbox)。
@@ -8,6 +7,10 @@ AgentKit 沙箱是一个云端的 `code` 工具环境，可在其中用 Codex �
 <Note>
 开始前请确认已配置火山引擎访问密钥，即环境变量 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY`。
 </Note>
+
+<Warning>
+创建沙箱会在云端分配计算资源，资源存续期间可能产生费用。沙箱中的命令可以访问其可见的文件、网络和凭据，只在受信任的项目中使用，并按最小权限配置。删除会话或沙箱不可恢复，执行清理前先下载需要保留的文件。
+</Warning>
 
 ## 端到端流程
 
@@ -26,13 +29,13 @@ AgentKit 沙箱是一个云端的 `code` 工具环境，可在其中用 Codex �
     打开沙箱会话的交互式终端，在其中运行 `codex` 进行开发：
 
     ```bash
-    agentkit sandbox attach --session dev --tmux
+    agentkit sandbox shell --session dev --tmux
     ```
 
-    `--session dev` 指定会话名称，后续命令复用同一名称即可回到同一环境；`--tmux` 会附加一个持久化终端会话，断开后重连不会丢失进度（按 Ctrl-] 脱离）。若要把本地已有的代码带入沙箱，可在附加前上传：
+    `--session dev` 指定会话名称，后续命令复用同一名称即可回到同一环境；`--tmux` 会打开或接入一个持久化终端会话，断开后重连不会丢失进度（按 Ctrl-] 脱离）。若要把本地已有的代码带入沙箱，可在打开终端前上传：
 
     ```bash
-    agentkit sandbox attach --session dev --src-dir ./my-app --dst-dir my-app
+    agentkit sandbox shell --session dev --src-dir ./my-app --dst-dir my-app
     ```
 
     沙箱内编码智能体所用的模型可通过 `--model-name`、`--model-api-key`、`--model-provider` 指定。
@@ -61,21 +64,27 @@ AgentKit 沙箱是一个云端的 `code` 工具环境，可在其中用 Codex �
   <Step title="清理会话">
     开发结束后停止并删除会话；也可用 `--all` 清空该沙箱工具上的全部会话：
 
+    <Warning>
+    `sandbox rm` 会删除会话及其中未持久化的文件，但不会删除沙箱本身。确认文件已备份后再执行；不再使用沙箱时，另用 `sandbox delete <sandbox-id> -y` 删除云资源。
+    </Warning>
+
     ```bash
     agentkit sandbox rm dev -y
     ```
   </Step>
 </Steps>
 
-<Tip>
-为沙箱内的 Codex 提供登录凭据有多种方式，注入本地订阅是其中之一：若本地已通过 `codex login` 登录，可将订阅凭据注入会话——
+<Warning>
+`sandbox login` 会将本地订阅凭据复制到远端沙箱会话。仅在受信任的沙箱和专用会话中使用，避免向他人共享该会话；使用完成后删除会话。
+</Warning>
+
+为沙箱内的 Codex 提供登录凭据有多种方式，注入本地订阅是其中之一。若本地已通过 `codex login` 登录，可将订阅凭据注入会话：
 
 ```bash
 agentkit sandbox login --provider codex --session dev
 ```
 
 该命令默认读取本地 `~/.codex/auth.json`，也可用 `--auth-file` 或 `--codex-home` 指定来源。将 `--provider` 换成 `claude`，即可改为注入本地的 Claude 订阅，在沙箱中使用 Claude Code。
-</Tip>
 
 ## 脚本化执行
 

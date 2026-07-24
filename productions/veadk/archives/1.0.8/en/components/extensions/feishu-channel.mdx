@@ -7,12 +7,16 @@ title: "Feishu"
 `FeishuChannelExtension` bridges inbound messages from a Feishu (Lark) bot into the VeADK `Runner`.
 
 <Note>
-This page treats Feishu as an **inbound message channel**: messages from Feishu users trigger the agent. To let the agent call Feishu capabilities, see [Feishu tools](/productions/veadk/preview/en/components/tools/lark).
+This page treats Feishu as an **inbound message channel**: messages from Feishu users trigger the agent. To let the agent call Feishu capabilities, see [Feishu tools](/productions/veadk/archives/1.0.8/en/components/tools/lark).
 </Note>
 
 It listens for the bot's message events and maps Feishu's session identity onto VeADK: the message sender becomes the `Runner`'s user identity, and the thread the message belongs to becomes the session identity; when there is no thread, it falls back to the current group or direct chat as the session. In 1.0.5 it extracts text from plain messages, interactive cards, and merged-forward messages and supports the synchronous Channel SDK lifecycle.
 
-When an incoming message belongs to a Feishu thread or is a reply, the extension automatically fetches the thread history or the quoted parent message and prepends that context to the user message before forwarding it to the agent, so the agent can reason over the full conversation context. This is enabled by default; see [Thread history and quoted messages](#thread-history-and-quoted-messages).
+<Warning>
+Thread history and quoted-message retrieval are enabled by default. The extension reads related Feishu messages and sends their content to the model. If the application uses sessions, long-term memory, or logging, the content may also be retained under those policies. Before enabling the bot, confirm that message scopes, model processing, and retention meet your requirements. Disable `include_thread_history` and `include_parent_message` when this context is not required.
+</Warning>
+
+When an incoming message belongs to a Feishu thread or is a reply, the extension automatically fetches the thread history or the quoted parent message and prepends that context to the user message before forwarding it to the agent. See [Thread history and quoted messages](#thread-history-and-quoted-messages).
 
 ## Environment & prerequisites
 
@@ -84,6 +88,27 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Parameters
+
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `runner` | `Runner` | None | Required. VeADK runner that handles inbound Feishu messages. |
+| `app_id` | `str \| None` | `TOOL_FEISHU_CHANNEL_APP_ID` | Feishu application ID, with `TOOL_LARK_ENDPOINT` as a compatibility fallback. |
+| `app_secret` | `str \| None` | `TOOL_FEISHU_CHANNEL_APP_SECRET` | Feishu application secret, with `TOOL_LARK_API_KEY` as a compatibility fallback. Supply it through an environment variable or secret manager. |
+| `channel` | `Any \| None` | `None` | Existing Feishu Channel client. When supplied, the extension does not create a client. |
+| `session_id_factory` | `Callable[[Any], str] \| None` | Thread, reply, chat, or message identifier | Custom mapping from a Feishu message to the VeADK `session_id`. |
+| `user_id_factory` | `Callable[[Any], str] \| None` | Sender `union_id`, `open_id`, or `user_id` | Custom mapping from a Feishu sender to the VeADK `user_id`. |
+| `message_handler` | `Callable \| None` | `None` | Custom message handler. When unset, the extension calls `runner`. It may return a string, an awaitable string, or `None`. |
+| `response_formatter` | `Callable[[str], dict[str, str]] \| None` | `{"text": text}` | Converts agent text into the Feishu send payload. |
+| `reply_in_thread` | `bool` | `True` | Whether to reply to the original message so output remains in its thread. |
+| `ignore_empty_messages` | `bool` | `True` | Whether to ignore messages from which no text can be extracted. |
+| `channel_kwargs` | `dict[str, Any] \| None` | `None` | Options passed when creating the Channel client. `transport` reads `TOOL_FEISHU_CHANNEL_TRANSPORT` and otherwise defaults to `ws`. |
+| `streaming` | `bool` | `False` | Whether to stream replies. `TOOL_FEISHU_CHANNEL_STREAMING=true` also enables it. |
+| `reactions` | `bool` | `False` | Whether to add a received reaction. `TOOL_FEISHU_CHANNEL_REACTIONS=true` also enables it. |
+| `include_parent_message` | `bool` | `True` | Whether to fetch and attach the quoted parent message for replies. |
+| `include_thread_history` | `bool` | `True` | Whether to fetch and attach thread history for thread messages. |
+| `thread_history_limit` | `int` | `20` | Maximum thread-history messages to fetch. Values below `1` are treated as `1`. |
+
 ## Thread history and quoted messages
 
 When an incoming message comes from a Feishu thread or is a reply, the extension fetches the relevant context and prepends it to the user message before forwarding it to the agent:
@@ -97,23 +122,16 @@ Thread history takes precedence over quoted messages: when a thread identifier i
 Fetching thread history and quoted messages requires calling Feishu OpenAPI message endpoints, so `app_id` and `app_secret` must be configured (constructor parameters, or the `TOOL_FEISHU_CHANNEL_APP_ID` / `TOOL_FEISHU_CHANNEL_APP_SECRET` environment variables, falling back to `TOOL_LARK_ENDPOINT` / `TOOL_LARK_API_KEY`). When credentials are not configured the capability is skipped silently without raising an error.
 </Note>
 
-### Parameters
-
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `include_parent_message` | `bool` | `True` | Whether to fetch and attach the quoted parent message for reply messages |
-| `include_thread_history` | `bool` | `True` | Whether to fetch and attach the thread history for thread messages |
-| `thread_history_limit` | `int` | `20` | Maximum number of thread history messages to fetch, minimum `1` |
-
 ### Usage example
+
+Save and configure the `feishu_bot.py` example above, then create the following file in the same directory:
 
 ```python title="examples/channel/feishu_bot_thread.py"
 from veadk.extensions import FeishuChannelExtension
+from feishu_bot import runner
 
 channel = FeishuChannelExtension(
     runner=runner,
-    app_id="cli_xxx",
-    app_secret="xxx",
     include_thread_history=True,
     thread_history_limit=30,
     include_parent_message=True,
@@ -124,6 +142,7 @@ Disable the capability so the extension forwards only the current message text:
 
 ```python title="examples/channel/feishu_bot_plain.py"
 from veadk.extensions import FeishuChannelExtension
+from feishu_bot import runner
 
 channel = FeishuChannelExtension(
     runner=runner,

@@ -6,8 +6,8 @@ VeADK 的安全能力围绕 [Agent Identity](https://console.volcengine.com/iden
 
 ## 两个方向
 
-- **[入站认证](/productions/veadk/preview/zh/components/security/inbound)**：验证进入智能体的请求方身份。支持 API Key 与 OAuth2（单点登录与 JWT），可由 API 网关或应用内中间件处理。
-- **[出站认证](/productions/veadk/preview/zh/components/security/outbound)**：智能体访问第三方服务时的凭据托管。Agent Identity 加密保管 API Key 与 OAuth 令牌，支持 OAuth2 M2M 与用户委托，凭据不写入代码，并自动轮换与刷新。
+- **[入站认证](/productions/veadk/archives/1.0.8/zh/components/security/inbound)**：验证进入智能体的请求方身份。支持 API Key 与 OAuth2（单点登录与 JWT），可由 API 网关或应用内中间件处理。
+- **[出站认证](/productions/veadk/archives/1.0.8/zh/components/security/outbound)**：智能体访问第三方服务时的凭据托管。Agent Identity 加密保管 API Key 与 OAuth 令牌，支持 OAuth2 M2M 与用户委托，凭据不写入代码，并自动轮换与刷新。
 
 ## 核心能力
 
@@ -18,10 +18,10 @@ VeADK 的安全能力围绕 [Agent Identity](https://console.volcengine.com/iden
 
 ## 内容安全
 
-除身份与凭据外，[内容安全护栏](/productions/veadk/preview/zh/components/security/content-safety)借助火山大模型应用防火墙，对智能体各阶段的输入与输出做合规审查，拦截不安全内容。
+除身份与凭据外，[内容安全护栏](/productions/veadk/archives/1.0.8/zh/components/security/content-safety)借助火山大模型应用防火墙，对智能体各阶段的输入与输出做合规审查，拦截不安全内容。
 
 ## 可信运行
 
-当需要端到端可信时，[可信 MCP](/productions/veadk/preview/zh/components/security/trusted-mcp) 在标准 MCP 协议之上增加组件身份证明与加密通信，结合机密计算构建全链路可信的智能体。
+当需要端到端可信时，[可信 MCP](/productions/veadk/archives/1.0.8/zh/components/security/trusted-mcp) 在标准 MCP 协议之上增加组件身份证明与加密通信，结合机密计算构建全链路可信的智能体。
 
 开通与详细配置见 [Agent Identity 官方文档](https://www.volcengine.com/docs/86848/2080920?lang=zh)。

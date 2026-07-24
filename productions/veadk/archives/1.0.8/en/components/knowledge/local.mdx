@@ -1,8 +1,8 @@
 ---
-title: "Local (local)"
+title: "Use local in-memory storage"
 ---
 
-The `local` backend is implemented by `InMemoryKnowledgeBackend` and stores knowledge in an in-memory vector index from LlamaIndex. Knowledge text is embedded by an embedding model, written to an in-process vector index, and retrieved by similarity. It requires no external service, is the **default backend** for `KnowledgeBase`, and is ideal for local debugging and quick validation.
+The `local` backend stores knowledge in an in-memory vector index from LlamaIndex. Knowledge text is embedded by an embedding model, written to an in-process vector index, and retrieved by similarity. It requires no external service, is the **default backend** for `KnowledgeBase`, and is ideal for local debugging and quick validation.
 
 <Warning>
 Data lives only in process memory and is lost when the program exits. Use a persistent backend in production.
@@ -58,7 +58,7 @@ kb = KnowledgeBase(
 
 ### Constructor parameters
 
-`InMemoryKnowledgeBackend` accepts the following fields:
+`backend_config` supports the following settings:
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |

@@ -2,12 +2,12 @@
 title: "使用 Context Search 存储"
 ---
 
-`context_search` 后端由 `ContextSearchBackend` 实现，对接火山引擎 Context Search 托管检索服务。文件通过预签名地址上传至 TOS（对象存储），再登记进 Context Search 的 RAG 场景（Scene），切分、向量化与检索均在服务端完成，因此**无需本地 embedding**。
+`context_search` 后端对接火山引擎 Context Search 托管检索服务。文件通过预签名地址上传至 TOS（对象存储），再登记进 Context Search 的 RAG 场景，切分、向量化与检索均在服务端完成，因此**无需本地 embedding**。
 
 ## 何时使用
 
 - 需要托管的语义检索服务，免于自行维护向量库；
-- 已在火山引擎 Context Search 创建 RAG 场景（Scene）与检索引擎（Engine）。
+- 已在火山引擎 Context Search 创建 RAG 场景与检索引擎。
 
 ## 前置条件
 
@@ -54,7 +54,7 @@ kb = KnowledgeBase(
 
 ### 构造参数
 
-`ContextSearchBackend` 接受以下字段：
+`backend_config` 支持以下配置项：
 
 | 参数 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
@@ -92,5 +92,5 @@ export DATABASE_CONTEXT_SEARCH_ENGINE_APIKEY="your-engine-apikey"
 </Note>
 
 <Warning>
-`index`（场景 ID）必须为纯数字字符串，否则会抛出 `ValueError`；初始化时还会调用 `GetScene` 校验该场景是否存在。检索前必须配置 `context_search_engine_endpoint` 与 `context_search_engine_apikey`，否则 `search` 会报错。
+`index`（场景 ID）必须为纯数字字符串，否则会报错；初始化时还会调用 `GetScene` 校验该场景是否存在。检索前必须配置 `context_search_engine_endpoint` 与 `context_search_engine_apikey`，否则 `search` 会报错。
 </Warning>

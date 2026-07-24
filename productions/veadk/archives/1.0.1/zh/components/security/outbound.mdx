@@ -63,6 +63,29 @@ auth_config = oauth2_auth(
 )
 ```
 
+### A2A 远程智能体鉴权
+
+Harness 通过 AgentKit A2A Registry 发现远程智能体时，如果 Agent Card 声明了 OAuth2 `clientCredentials` 流程，运行时会自动获取访问令牌，并在调用远程智能体时通过 `Authorization` 请求头携带该令牌。使用前需满足以下条件：
+
+- 已在 AgentKit 智能体中心注册远程智能体，Agent Card 包含有效的 OAuth2 Token URL；
+- Token URL 对应的 Identity 用户池中已创建机器对机器客户端；
+- Harness Runtime 有权访问 AgentKit A2A Registry、Identity OpenAPI 和远程智能体地址。
+
+使用标准 AgentKit 服务地址时无需额外配置。仅当自定义 Registry 地址无法同时访问 Identity OpenAPI 时，才设置以下任一环境变量：
+
+| 环境变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `REGISTRY_ID_ENDPOINT` | Registry 对应的 Identity OpenAPI 地址 | Identity OpenAPI 地址，推荐使用。 |
+| `AGENTKIT_ID_ENDPOINT` | Registry 对应的 Identity OpenAPI 地址 | 与 `REGISTRY_ID_ENDPOINT` 作用相同的兼容配置。 |
+
+```bash
+export REGISTRY_ID_ENDPOINT="https://id.example.com"
+```
+
+<Warning>
+  不要把机器对机器客户端密钥或访问令牌写入 Agent Card、环境变量示例、提示词或日志。运行时会从 Identity 获取凭据并完成令牌交换。
+</Warning>
+
 ## OAuth2 用户委托
 
 用于应用代表用户访问第三方服务的场景。在控制台 **新建 › 新建 OAuth Client**，OAuth2 流程选 **用户委托（USER_FEDERATION）**，并填写回调 URL。用 `oauth2_auth` 生成，`auth_flow="USER_FEDERATION"`：

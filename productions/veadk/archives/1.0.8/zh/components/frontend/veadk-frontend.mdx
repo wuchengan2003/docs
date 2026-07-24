@@ -8,12 +8,12 @@ VeADK 自带一个生产级 React 前端——一个面向企业的智能体应�
 
 - **创建智能体**：当前可通过自定义配置创建智能体，产出可运行的 VeADK 项目（`agent.py`、`requirements.txt` 等），并可在线预览、编辑与下载。智能模式、模板和工作流入口显示为「敬请期待」，暂不可用。
 - **多模态消息**：上传图片、TXT、Markdown、PDF 和视频；用户附件与模型返回的媒体均可预览并随历史会话重新加载。
-- **对话与调试**：与智能体多轮对话，展示思考过程、工具调用、Token 与用时；内置工具（网页搜索、图像生成、视频生成、长期记忆检索、知识库检索）在执行时显示专属图标与运行状态；对话中还会渲染智能体返回的 [A2UI](/productions/veadk/preview/zh/components/frontend/a2ui) 富界面卡片。
+- **对话与调试**：与智能体多轮对话，展示思考过程、工具调用、Token 与用时；内置工具（网页搜索、图像生成、视频生成、长期记忆检索、知识库检索）在执行时显示专属图标与运行状态；对话中还会渲染智能体返回的 [A2UI](/productions/veadk/archives/1.0.8/zh/components/frontend/a2ui) 富界面卡片。
 - **智能体选择器**：左上角切换智能体；悬停可查看该智能体的模型与挂载的工具。
 - **技能与子智能体**：输入 `/` 选择当前智能体挂载的技能，输入 `@` 把本轮任务交给可选的子智能体。
 - **技能中心**：从 Skill Hub、本地上传或 AgentKit SkillSpace 选择技能，供创建智能体时使用。
 - **历史会话**：自动保存、按时间排序，可重新打开或删除。
-- **智能搜索**：「会话」源在当前智能体的历史消息中做全文检索；「网页」源调用该智能体挂载的联网搜索工具实时检索，使用服务端环境变量里的凭据。
+- **智能搜索**：「会话」源检索当前智能体的历史消息；「网页」源调用已挂载的联网搜索工具；「知识库」与「长期记忆」源通过智能体已配置的后端执行语义检索。界面根据智能体实际挂载的能力启用来源，并在结果中标注索引或来源名称及后端类型。
 - **添加 AgentKit 智能体**：填入访问地址与 API Key，按 ADK 协议接入远程智能体，接入后出现在选择器中。
 - **Studio 部署**：在同一工作台中检查生成代码，配置地域、消息渠道、网络与环境变量，然后部署到 AgentKit 并查看任务状态。
 - **Tracing 观测**：查看本次会话的调用火焰图。
@@ -66,7 +66,7 @@ cd frontend && npm run dev                    # http://localhost:5173，代理 A
 | 选项 | 默认值 | 说明 |
 | :-- | :-- | :-- |
 | `--agents-dir` | `.` | 智能体应用目录，每个子目录暴露一个 `root_agent`。 |
-| `--frontend-dir` | 包内置构建产物，回退至 `./frontend/dist` | 覆盖已构建 React 界面所在目录。优先使用显式传入的目录，其次为包内置的 `veadk/webui`，最后回退至相对当前目录的 `./frontend/dist`。 |
+| `--frontend-dir` | 包内置构建产物，回退至 `./frontend/dist` | 覆盖已构建 React 界面所在目录。优先使用显式传入的目录，其次为包内置界面，最后回退至相对当前目录的 `./frontend/dist`。 |
 | `--host` | `127.0.0.1` | 监听地址。 |
 | `--port` | `8000` | 监听端口。 |
 | `--dev` | 关闭 | 在智能体选择器中加载本地智能体，而不是云端 AgentKit Runtime。 |
@@ -103,10 +103,10 @@ cd frontend && npm run dev                    # http://localhost:5173，代理 A
 
 ```bash
 export VEADK_MEDIA_STORAGE=tos
-export DATABASE_TOS_BUCKET=<bucket>
+export DATABASE_TOS_BUCKET="your-bucket"
 export DATABASE_TOS_REGION=cn-beijing
-export VOLCENGINE_ACCESS_KEY=<access-key>
-export VOLCENGINE_SECRET_KEY=<secret-key>
+export VOLCENGINE_ACCESS_KEY="your-access-key"
+export VOLCENGINE_SECRET_KEY="your-secret-key"
 veadk frontend --agents-dir examples
 ```
 
@@ -136,7 +136,8 @@ veadk studio --host 127.0.0.1 --port 8000
 
 ```bash
 veadk frontend --agents-dir examples \
-  --oauth2-user-pool <名称> --oauth2-user-pool-client <名称>
+  --oauth2-user-pool "your-user-pool-name" \
+  --oauth2-user-pool-client "your-user-pool-client-name"
 # 或用 UID，读环境变量 OAUTH2_USER_POOL_ID / OAUTH2_USER_POOL_CLIENT_ID
 # --oauth2-user-pool-uid <id> --oauth2-user-pool-client-uid <id>
 ```
@@ -159,8 +160,8 @@ GitHub 预设仅需客户端凭据：
 
 ```bash
 export OAUTH2_PROVIDER=github
-export OAUTH2_CLIENT_ID=<github-oauth-client-id>
-export OAUTH2_CLIENT_SECRET=<github-oauth-client-secret>
+export OAUTH2_CLIENT_ID="your-github-oauth-client-id"
+export OAUTH2_CLIENT_SECRET="your-github-oauth-client-secret"
 export OAUTH2_REDIRECT_URI=http://127.0.0.1:8000/oauth2/callback
 veadk frontend --agents-dir examples
 ```
@@ -188,7 +189,7 @@ VeADK Frontend 可能部署到公网，因此会限制用户可控制的地址�
 - AgentKit 部署文件必须位于本次项目目录内，绝对路径和跳出目录的相对路径会被拒绝。
 - 静态文件只允许从已构建的界面目录读取，不能通过路径跳转读取主机上的其他文件。
 
-这些限制不会代替身份认证。公网部署仍应启用 SSO 或受信任的上游网关，并按最小权限原则配置云资源凭证。只需要创建和管理能力时，可以使用[Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio)。
+这些限制不会代替身份认证。公网部署仍应启用 SSO 或受信任的上游网关，并按最小权限原则配置云资源凭证。只需要创建和管理能力时，可以使用[Studio 智能体工作台](/productions/veadk/archives/1.0.8/zh/components/frontend/studio)。
 
 ## 渲染流程
 
@@ -196,7 +197,7 @@ VeADK Frontend 可能部署到公网，因此会限制用户可控制的地址�
 
 ## 添加企业自定义组件
 
-一个自定义组件由两个部分组成，它们共享同一个 catalog id。后端部分见 [A2UI](/productions/veadk/preview/zh/components/frontend/a2ui#自定义组件)；前端部分如下。
+一个自定义组件由两个部分组成，它们共享同一个 catalog id。后端部分见 [A2UI](/productions/veadk/archives/1.0.8/zh/components/frontend/a2ui#自定义组件)；前端部分如下。
 
 **前端部分** —— 新建一个目录即可自动注册，无需修改任何中心文件：
 

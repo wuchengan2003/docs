@@ -2,9 +2,9 @@
 title: "Studio 智能体工作台"
 ---
 
-VeADK Studio 1.0.5 使用与 VeADK Frontend 相同的服务和完整界面。它启用对话、搜索、历史会话、技能中心，以及智能体创建、测试、部署和管理功能，启动后默认进入对话页面。
+VeADK Studio 1.0.7 使用与 VeADK Frontend 相同的服务和完整界面，提供对话、搜索、历史会话、技能中心，以及智能体创建、测试、部署和管理功能，启动后默认进入对话页面。
 
-Studio 1.0.5 当前支持通过自定义配置创建项目；智能模式、模板和工作流入口显示为「敬请期待」，暂不可用。你可以预览和编辑生成的文件，安全地启动临时测试进程，将项目下载为 ZIP，或者部署到 AgentKit。该版本还支持选择云端 Runtime、多来源技能、多模态会话，以及集中查看和重试部署任务。
+Studio 1.0.7 支持通过自定义配置创建项目；智能模式、模板和工作流入口显示为「敬请期待」，暂不可用。你可以预览和编辑生成的文件，启动临时测试进程，将项目下载为 ZIP，或者部署到 AgentKit。该版本还支持选择云端 Runtime、多来源技能、多模态会话，以及集中查看和重试部署任务。
 
 ## 在本地启动
 
@@ -21,14 +21,30 @@ veadk studio --agents-dir ./agents --open
 
 火山引擎凭证用于工作台中的模型、云资源查询和 AgentKit 部署。生产环境应通过环境变量或密钥管理服务提供凭证，不要把凭证写入项目文件。
 
+## 自定义品牌
+
+使用 `--site-title` 设置最多 6 个字符的系统名称，使用 `--site-logo` 指定本地图片或 HTTP(S) 图片 URL。Logo 会用于侧边栏、登录页和浏览器 favicon，系统名称也会作为浏览器页面标题；省略 `--site-title` 时使用默认名称 `VeADK Studio`。
+
+```bash
+veadk studio \
+  --site-title "火山助手" \
+  --site-logo "./logo.png"
+```
+
+Logo 最大 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF 和 ICO。也可以通过 `VEADK_SITE_TITLE` 与 `VEADK_SITE_LOGO` 环境变量配置。部署到 VeFaaS 时可使用相同参数；网络图片会在部署时下载并打包。
+
 ## 创建智能体
 
-1. 在「添加 Agent」中选择自定义；智能模式、模板和工作流入口暂不可用。
+1. 在「添加智能体」中选择自定义；智能模式、模板和工作流入口暂不可用。
 2. 配置模型、系统提示词、工具、记忆和知识库，并从 Skill Hub、本地上传或 AgentKit SkillSpace 添加技能。多智能体项目还可以配置顺序、并行、循环或 A2A 节点。
 3. 检查生成的项目文件，并在受限的临时进程中测试运行；需要离线使用时下载 ZIP。
 4. 选择部署到 AgentKit，观察构建镜像、部署和发布进度。
 
 测试运行进程默认保留 1800 秒，可通过 `--generated-agent-test-run-ttl` 调整。测试代码可能调用外部服务或访问运行环境中的数据，只应测试可信项目，并为 Studio 使用权限受限的凭证。
+
+## 使用智能搜索
+
+智能搜索提供会话、网络、知识库和长期记忆四种检索源。会话源检索当前智能体的历史消息；网络源调用智能体挂载的 `web_search` 工具；知识库与长期记忆源分别使用智能体已挂载的后端执行语义检索。Studio 只启用智能体实际具备的来源，并在结果中显示对应索引或来源名称及后端类型。
 
 ## 部署网络模式
 
@@ -46,7 +62,7 @@ VPC 私有 Runtime 部署完成后不返回公网数据面地址，Studio 通过
 
 ## 管理智能体
 
-「管理 Agent」列出当前登录用户通过该工作台部署的 AgentKit Runtime。列表默认展示北京区域的 Runtime，也可以切换到上海。列表按部署时记录的用户标识过滤，可以查看：
+「管理智能体」列出当前登录用户通过该工作台部署的 AgentKit Runtime。列表默认展示北京区域的 Runtime，也可以切换到上海。列表按部署时记录的用户标识过滤，可以查看：
 
 - Runtime 名称、ID、状态、区域和创建时间；
 - 模型、描述、项目、版本、资源规格和更新时间；
@@ -54,7 +70,7 @@ VPC 私有 Runtime 部署完成后不返回公网数据面地址，Studio 通过
 - Runtime 环境变量和主智能体信息。
 - 智能体拓扑、远端调用链路与全局部署任务状态。
 
-数据面 API Key 不会保存在浏览器中，因此管理页只显示控制面可读取的主智能体信息，不会通过数据面凭证加载完整子智能体树。
+Studio 不会在浏览器中保存 Runtime API Key，因此管理页只显示 Runtime 返回的主智能体摘要，不加载完整子智能体树。
 
 <Warning>
   删除操作会永久删除对应的 AgentKit Runtime。确认该 Runtime 不再承载业务流量，并完成必要的数据和配置备份后再操作。
@@ -71,12 +87,37 @@ VPC 私有 Runtime 部署完成后不返回公网数据面地址，Studio 通过
 
 信息面板包含两个标签：
 
-- **Agent 信息**：从该 Runtime 部署的 Agent Server 实时读取元数据，包括名称、模型、描述、子智能体、工具、技能以及已挂载组件（知识库、记忆、提示词管理、样例库、运行处理器、链路追踪、工具集、插件等）。该信息只包含用于展示的摘要，不会返回系统提示词、凭据、环境变量值或任意对象序列化内容。
-- **Runtime 信息**：展示控制面可读取的 Runtime 详情，包括模型、描述、状态、区域、资源规格、版本和环境变量。
+- **智能体信息**：读取 Runtime 提供的名称、模型、描述、子智能体、工具、技能、可用检索源，以及已挂载组件及其后端类型。该信息不包含系统提示词、凭据或环境变量值。
+- **Runtime 详情**：展示 Studio 可读取的模型、描述、状态、区域、资源规格、版本和环境变量。
 
 <Note>
-  「Runtime 信息」标签可能展示 Runtime 的环境变量值。仅向经过授权的用户开放 Studio，并优先使用平台支持的密钥管理能力。
+  「Runtime 详情」标签可能展示 Runtime 的环境变量值。仅向经过授权的用户开放 Studio，并优先使用平台支持的密钥管理能力。
 </Note>
+
+## 使用临时会话和 Skill 创建
+
+新会话支持普通智能体对话、临时会话和 Skill 创建三种模式。临时会话在独立的 AgentKit CodeEnv Session 中进行多轮对话；退出后删除云端 Session，内容不写入普通历史会话。Skill 创建会并行生成两个候选方案，完成后可对比、预览、下载 ZIP 或添加到 AgentKit。
+
+Skill 创建仅对 `developer` 和 `admin` 开放。每个候选使用独立 Session，打包前会检查 `SKILL.md`、文件数量、大小和路径安全。候选 Session 的有效期为 30 分钟；重新创建或离开任务时会立即清理。
+
+### 本地配置
+
+本地使用这两种模式前，分别准备两个处于 `Ready` 状态的 AgentKit CodeEnv Tool：
+
+```bash
+export SANDBOX_CHAT_CODEX="your-chat-code-env-tool-id"
+export SANDBOX_SKILL_CREATOR="your-skill-code-env-tool-id"
+
+veadk studio --agents-dir ./agents --open
+```
+
+| 环境变量 | 默认值 | 说明 |
+| :--- | :--- | :--- |
+| `SANDBOX_CHAT_CODEX` | — | 临时会话使用的 Tool ID；本地使用该模式时必填。 |
+| `SANDBOX_SKILL_CREATOR` | — | Skill 创建使用的 Tool ID；本地使用该模式时必填。 |
+| `VEADK_SKILL_CREATOR_TOS_BUCKET` | AgentKit 账户默认 Bucket | 发布 Skill 产物使用的 TOS Bucket。 |
+| `VEADK_SKILL_CREATOR_TOS_PREFIX` | `agentkit/skills` | 发布产物的 TOS 对象 Key 前缀。 |
+| `VEADK_SKILL_CREATOR_PROJECT_NAME` | — | 创建 Skill 时使用的项目名称。 |
 
 ## `veadk studio` 参数
 
@@ -84,6 +125,8 @@ VPC 私有 Runtime 部署完成后不返回公网数据面地址，Studio 通过
 | :--- | :--- | :--- | :--- |
 | `--agents-dir` | `str` | `.` | 智能体应用的父目录；每个包含 `agent.py` 并暴露 `root_agent` 的子目录作为一个应用。 |
 | `--frontend-dir` | `str \| None` | 包内置界面，回退到 `./frontend/dist` | 覆盖已构建的 Studio 界面目录。 |
+| `--site-title` | `str \| None` | `VEADK_SITE_TITLE`，否则为 `VeADK Studio` | 自定义系统名称，最多 6 个字符。 |
+| `--site-logo` | `str \| None` | `VEADK_SITE_LOGO` | 自定义 Logo，支持本地图片路径或 HTTP(S) URL。 |
 | `--host` | `str` | `127.0.0.1` | 监听地址。 |
 | `--port` | `int` | `8000` | 监听端口。 |
 | `--dev` | `bool` 标志 | `false` | 在选择器中加载本地智能体，而不是云端 AgentKit Runtime。 |
@@ -121,7 +164,7 @@ veadk studio deploy \
   --vefaas-app-name "veadk-studio" \
   --region "cn-beijing" \
   --project "default" \
-  --veadk-version "1.0.6"
+  --veadk-version "1.0.7"
 ```
 
 部署成功后，终端会输出公网 URL 和 VeFaaS 应用 ID。打开公网 URL 时，Studio 会先跳转到 VeIdentity 完成登录。
@@ -129,6 +172,8 @@ veadk studio deploy \
 `--region` 指定 Studio 的部署地域，默认为 `cn-beijing`，也支持 `cn-shanghai`；VeFaaS、API Gateway 等资源均创建在该地域。部署时还会自动在所部署地域以及北京、上海两个地域之间查找 VeIdentity 用户池与客户端：优先查询部署地域，未命中时跨地域查询另一个地域；跨地域命中时终端会输出 warning 并继续部署。`--project` 指定 VeFaaS 函数所属项目，默认为 `default`。
 
 部署者的长期 AK/SK 不会写入 VeFaaS 应用环境变量。已部署的 Studio 使用绑定 IAM Role 的临时凭证访问火山引擎服务。
+
+未指定 `--sandbox-chat-codex-tool-id` 与 `--sandbox-skill-creator-tool-id` 时，部署命令会自动创建两个独立的 AgentKit CodeEnv Tool，分别用于临时会话和 Skill 创建。若已有符合要求的 Tool，可通过参数直接复用。
 
 ### 部署参数
 
@@ -143,13 +188,43 @@ veadk studio deploy \
 | `--iam-role` | `str \| None` | `None` | 绑定到函数的既有 IAM Role TRN；省略时创建或复用默认 Role。 |
 | `--admin` | `str \| None` | `None` | 逗号分隔的管理员名单（用户名或 OAuth 邮箱）。省略 `--admin` 与 `--developer` 时，所有登录用户都按 `admin` 处理。也可通过 `VEADK_STUDIO_ADMINS` 设置。 |
 | `--developer` | `str \| None` | `None` | 逗号分隔的开发者名单（用户名或 OAuth 邮箱）。也可通过 `VEADK_STUDIO_DEVELOPERS` 设置。 |
+| `--site-title` | `str \| None` | `None` | 自定义 Studio 名称，最多 6 个字符。 |
+| `--site-logo` | `str \| None` | `None` | 自定义 Studio Logo，支持本地图片路径或 HTTP(S) URL。 |
 | `--gateway-name` | `str` | `""` | Serverless API Gateway 名称；省略时复用已有网关，没有可用网关时创建。 |
 | `--gateway-service-name` | `str` | `""` | 指定网关服务名称；留空时自动配置。 |
 | `--gateway-upstream-name` | `str` | `""` | 指定网关上游名称；留空时自动配置。 |
 | `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | 部署用 Access Key。推荐通过环境变量提供。 |
 | `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | 部署用 Secret Key。推荐通过环境变量提供。 |
-| `--veadk-version` | `str` | 最新发布版本 | 写入 VeFaaS 依赖的 `veadk-python` 版本。重现本页行为时显式设为 `1.0.6`。 |
+| `--veadk-version` | `str` | 最新发布版本 | 写入 VeFaaS 依赖的 `veadk-python` 版本。重现 1.0.7 行为时显式设为 `1.0.7`。 |
 | `--from-source` | `bool` 标志 | `false` | 从当前源码目录构建 wheel 后部署，包含未提交改动；用于验证未发布版本，不应与 `--veadk-version` 的发布版本工作流混用。 |
+| `--sandbox-chat-codex-tool-id` | `str \| None` | 自动创建 | 临时会话使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_CHAT_CODEX` 设置。 |
+| `--sandbox-skill-creator-tool-id`、`--skill-creator-tool-id` | `str \| None` | 自动创建 | Skill 创建使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_SKILL_CREATOR` 设置。 |
+
+## 更新已部署的 Studio
+
+`veadk studio update` 从本地 VeADK 源码重新构建 Studio，更新已有 VeFaaS Function 的代码并重新发布原 Application。运行前安装 Node.js 与 npm，并在 VeADK 源码目录执行：
+
+```bash
+export VOLCENGINE_ACCESS_KEY="your-access-key"
+export VOLCENGINE_SECRET_KEY="your-secret-key"
+
+veadk studio update --vefaas-app-name "veadk-studio"
+```
+
+省略 `--region` 和 `--project` 时，命令会在北京、上海及全部可见项目中查找同名 Application。若存在多个候选项，需要补充地域或项目缩小范围。更新保留 Application 与 Function ID、访问 URL、SSO、IAM、网关和已有环境变量；品牌和两个 Tool ID 仅在显式传入相应参数时覆盖。
+
+| 选项 | 类型 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `--vefaas-app-name` | `str` | 必填 | 要更新的 VeFaaS Application 名称。 |
+| `--region` | `cn-beijing \| cn-shanghai` | 查询两个地域 | 将查找范围限制到一个地域。 |
+| `--project` | `str \| None` | 查询全部可见项目 | 将查找范围限制到一个项目。 |
+| `--path` | `str` | `.` | 要构建的 VeADK 源码目录。 |
+| `--site-title` | `str \| None` | 保留云上值 | 显式传入时替换 Studio 名称。 |
+| `--site-logo` | `str \| None` | 保留云上值 | 显式传入时替换 Studio Logo。 |
+| `--sandbox-chat-codex-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换临时会话使用的 Tool ID。 |
+| `--sandbox-skill-creator-tool-id`、`--skill-creator-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换 Skill 创建使用的 Tool ID。 |
+| `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | 更新操作使用的 Access Key。 |
+| `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | 更新操作使用的 Secret Key。 |
 
 ## Studio 角色与 Runtime 权限
 
@@ -180,8 +255,8 @@ veadk studio deploy \
 | 查看和连接 Runtime | 全部 Runtime | 仅自己创建的 Runtime | 仅自己创建的 Runtime |
 | 管理或删除 Runtime | 全部 Studio 管理的 Runtime | 仅自己创建的 Runtime | 不允许 |
 
-Runtime 归属由服务端在创建时记录，不依据浏览器提交的作者字段判断。缺少归属标签的历史 Runtime 仅 `admin` 可见。
+Studio 根据登录账号限制 Runtime 的可见范围；没有创建者记录的历史 Runtime 仅 `admin` 可见。
 
 <Warning>
-  本地用户名保存在浏览器中，可被用户修改或冒充，仅适用于本地开发与功能验证。生产环境必须使用 OAuth 或 gateway 认证，由服务端从已验证身份中确定角色和 Runtime 归属。
+  本地用户名保存在浏览器中，可被用户修改或冒充，仅适用于本地开发与功能验证。生产环境必须使用 OAuth 或 gateway 认证，以经过验证的登录信息确定身份与权限。
 </Warning>

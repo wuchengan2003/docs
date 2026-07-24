@@ -2,7 +2,7 @@
 title: "使用 OpenSearch 存储"
 ---
 
-`opensearch` 后端由 `OpensearchLTMBackend` 实现，使用 OpenSearch 作为向量存储。记忆文本先经 embedding 模型向量化，再写入 OpenSearch，并按用户隔离索引（实际索引名为 `{index}_{user_id}`），检索时按相似度召回。它是 `LongTermMemory` 的**默认后端**。
+`opensearch` 后端使用 OpenSearch 作为向量存储。记忆文本先经 embedding 模型向量化，再写入 OpenSearch，并按用户隔离索引（实际索引名为 `{index}_{user_id}`），检索时按相似度召回。它是 `LongTermMemory` 的**默认后端**。
 
 ## 何时使用
 
@@ -58,7 +58,7 @@ ltm = LongTermMemory(
 
 ### 构造参数
 
-`OpensearchLTMBackend` 接受以下字段：
+`backend_config` 支持以下配置项：
 
 | 参数 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
@@ -109,5 +109,5 @@ export MODEL_EMBEDDING_API_KEY="your-ark-api-key"
 ```
 
 <Warning>
-`index` 必须符合 OpenSearch 命名规则：全小写，仅含 `a-z0-9_-.`，且不以 `_` 或 `-` 开头，否则会抛出 `ValueError`。生产环境请配置 `cert_path` 以启用证书校验，避免安全风险。
+`index` 必须符合 OpenSearch 命名规则：全小写，仅含 `a-z0-9_-.`，且不以 `_` 或 `-` 开头，否则会报错。生产环境请配置 `cert_path` 以启用证书校验，避免安全风险。
 </Warning>
