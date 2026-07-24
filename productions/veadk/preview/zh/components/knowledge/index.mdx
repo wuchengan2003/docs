@@ -2,11 +2,11 @@
 title: "概述"
 ---
 
-知识库（KnowledgeBase）是智能体的外部知识来源，专门存放静态资料（产品文档、FAQ、文章等）。把它挂到智能体上，VeADK 会自动为智能体注入一个检索工具，使其在回答前先到资料中检索相关片段，从而给出更精准、更有依据的回答（RAG）。
+知识库是智能体的外部知识来源，专门存放静态资料（产品文档、FAQ、文章等）。把它挂到智能体上，VeADK 会自动为智能体注入一个检索工具，使其在回答前先到资料中检索相关片段，从而给出更精准、更有依据的回答（RAG）。
 
 ## 统一入口：`KnowledgeBase`
 
-无论使用哪种后端，均通过统一的 `veadk.knowledgebase.KnowledgeBase` 接入。它根据 `backend` 选择并初始化底层实现，并对外提供一致的知识注入与检索接口。知识注入支持三种来源：
+无论使用哪种后端，均通过统一的 `veadk.knowledgebase.KnowledgeBase` 接入。它根据 `backend` 选择存储后端，并提供一致的知识注入与检索接口。知识注入支持三种来源：
 
 - 从文件导入：`kb.add_from_files([...])`；
 - 从目录导入：`kb.add_from_directory("./docs")`；
@@ -31,11 +31,11 @@ kb.add_from_text(
 
 | 参数 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `backend` | `"local" \| "opensearch" \| "redis" \| "milvus" \| "tos_vector" \| "viking" \| "context_search" \| "openviking"` 或后端实例 | `"local"` | 选择后端实现，也可直接传入一个 `BaseKnowledgebaseBackend` 实例。 |
-| `backend_config` | `dict` | `{}` | 传给后端构造函数的配置。非空时会直接以该配置实例化后端，此时 `index` 需在配置中给出。 |
+| `backend` | `"local" \| "opensearch" \| "redis" \| "milvus" \| "tos_vector" \| "viking" \| "context_search" \| "openviking"` | `"local"` | 选择后端。 |
+| `backend_config` | `dict` | `{}` | 后端专用配置。非空时必须在配置中提供 `index`。 |
 | `top_k` | `int` | `10` | 检索时返回最相似的片段数量。`search` 方法可临时覆盖。 |
 | `app_name` | `str` | `""` | 应用名。当 `index` 为空时作为其回退值。 |
-| `index` | `str` | `""` | 知识库索引/集合名。为空时回退到 `app_name`；两者皆空则抛出 `ValueError`。 |
+| `index` | `str` | `""` | 知识库索引/集合名。为空时回退到 `app_name`；两者皆空则初始化失败。 |
 | `name` | `str` | `user_knowledgebase` | 知识库名称，用于向智能体描述该知识库。 |
 | `description` | `str` | `This knowledgebase stores some user-related information.` | 知识库描述，用于向智能体说明其用途。 |
 | `enable_profile` | `bool` | `False` | 是否启用知识库画像能力。 |
@@ -92,7 +92,3 @@ entries = kb.search(query="年假", top_k=3)
 for entry in entries:
     print(entry.content)
 ```
-
-## 自定义后端
-
-所有后端都继承自 `BaseKnowledgebaseBackend`，需实现 `precheck_index_naming`、`add_from_directory`、`add_from_files`、`add_from_text` 与 `search`。要自定义后端，继承该基类实现上述方法，并把实例直接传给 `KnowledgeBase(backend=<实例>)`。

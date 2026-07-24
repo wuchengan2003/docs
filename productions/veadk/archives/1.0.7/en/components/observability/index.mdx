@@ -6,7 +6,7 @@ Observability records the full execution path of an agent so you can understand 
 
 VeADK tracing follows the [OpenTelemetry](https://opentelemetry.io/docs/specs/semconv/registry/attributes/gen-ai/) generative-AI semantic conventions, with field names aligned to standard span attributes. Trace data can therefore be imported directly into any OpenTelemetry-compatible system for analysis and visualization.
 
-Runtime logs use Python's standard `logging` package. See [Application logging](/productions/veadk/preview/en/components/observability/logging) for levels, formatting, and trace correlation.
+Runtime logs use Python's standard `logging` package. See [Application logging](/productions/veadk/archives/1.0.7/en/components/observability/logging) for levels, formatting, and trace correlation.
 
 ## Core concepts
 
@@ -24,10 +24,10 @@ An exporter sends span data to a specific backend platform. Each exporter target
 
 | Exporter | Class | Target platform | Docs |
 | :--- | :--- | :--- | :--- |
-| APMPlus | `APMPlusExporter` | Volcengine APMPlus, traces and metrics | [APMPlus](/productions/veadk/preview/en/components/observability/apmplus) |
-| Cozeloop | `CozeloopExporter` | Cozeloop, trace observation and evaluation | [Cozeloop](/productions/veadk/preview/en/components/observability/cozeloop) |
-| TLS | `TLSExporter` | Volcengine TLS log service | [TLS](/productions/veadk/preview/en/components/observability/tls) |
-| In-memory | `InMemoryExporter` | In-process memory, local debugging and dumping | [In-memory exporter](/productions/veadk/preview/en/components/observability/inmemory) |
+| APMPlus | `APMPlusExporter` | Volcengine APMPlus, traces and metrics | [APMPlus](/productions/veadk/archives/1.0.7/en/components/observability/apmplus) |
+| Cozeloop | `CozeloopExporter` | Cozeloop, trace observation and evaluation | [Cozeloop](/productions/veadk/archives/1.0.7/en/components/observability/cozeloop) |
+| TLS | `TLSExporter` | Volcengine TLS log service | [TLS](/productions/veadk/archives/1.0.7/en/components/observability/tls) |
+| In-memory | `InMemoryExporter` | In-process memory, local debugging and dumping | [In-memory exporter](/productions/veadk/archives/1.0.7/en/components/observability/inmemory) |
 
 ## Attaching a tracer to an agent
 
@@ -114,4 +114,4 @@ path = tracer.dump(user_id="user-1", session_id="session_id_demo")
 print(f"trace written to {path}")
 ```
 
-The exported JSON contains, for each span, its name, `span_id`, `trace_id`, start/end times, attributes, and parent span. See [In-memory exporter](/productions/veadk/preview/en/components/observability/inmemory) for details.
+The exported JSON contains, for each span, its name, `span_id`, `trace_id`, start/end times, attributes, and parent span. See [In-memory exporter](/productions/veadk/archives/1.0.7/en/components/observability/inmemory) for details.

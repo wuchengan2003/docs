@@ -7,7 +7,7 @@ title: "Custom tools"
 When the built-in tools don't fit your needs, wrap any Python function as a **custom tool** to extend your agent. This page covers three forms: plain-argument functions, context-aware functions, and long-running tasks.
 
 - A plain-argument function is the simplest custom tool: define a function, add type hints and a docstring, and register it on the agent. The agent decides when to call it and how to pass arguments based on the signature and docstring.
-- A context-aware function adds a `tool_context: ToolContext` parameter to access the agent's runtime context — session ID, user identity, the current agent, and more. The framework injects this argument automatically; the model neither sees nor needs to pass it.
+- A context-aware function adds a `tool_context: ToolContext` parameter to access the agent's runtime context — shared session state and other runtime information. The framework injects this argument automatically; the model neither sees nor needs to pass it.
 - Long-running tasks suit time-consuming or asynchronous work (large computations, data analysis, batch jobs). Wrap the function with `LongRunningFunctionTool`: the tool returns a `pending` status and a task ID first, your app advances the task in the background, then feeds the final result back to the agent.
 
 ## Usage
@@ -98,13 +98,10 @@ def message_checker(user_message: str, tool_context: ToolContext) -> str:
     Returns:
         str: The checked message.
     """
-    print(f"user_message: {user_message}")
-    print(f"current agent: {tool_context._invocation_context.agent.name}")
-    print(f"app_name: {tool_context._invocation_context.app_name}")
-    print(f"user_id: {tool_context._invocation_context.user_id}")
-    print(f"session_id: {tool_context._invocation_context.session.id}")
+    call_count = tool_context.state.get("message_checker_calls", 0) + 1
+    tool_context.state["message_checker_calls"] = call_count
 
-    return f"Checked message: {user_message.upper()}"
+    return f"Checked message: {user_message.upper()} (call {call_count})"
 
 
 agent = Agent(
@@ -119,7 +116,7 @@ response = asyncio.run(runner.run("Hello world!"))
 print(response)
 ```
 
-The tool function can thus read the session ID, user identity, currently executing agent, and more, enabling smarter decisions.
+The tool function can read and update shared session state through `tool_context.state`, so later tool calls and callbacks can reuse that information.
 
 ### Long-running tasks
 

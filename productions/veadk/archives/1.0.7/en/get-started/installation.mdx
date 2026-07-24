@@ -9,10 +9,10 @@ title: "Installation"
 
 ## Install from PyPI
 
-Install VeADK 1.0.5 from [PyPI](https://pypi.org/project/veadk-python/):
+Install VeADK 1.0.7 from [PyPI](https://pypi.org/project/veadk-python/):
 
 ```bash
-pip install "veadk-python==1.0.5"
+pip install "veadk-python==1.0.7"
 ```
 
 ## Optional dependency groups
@@ -35,12 +35,17 @@ pip install "veadk-python[extensions]"
 
 The `speech` and `cli` extras remain available for compatibility with existing install commands but add no dependencies in 1.0.5.
 
+## Dependency compatibility
+
+- The PostgreSQL integration requires `psycopg2-binary>=2.9.10`. Do not pin it to an earlier release in an application lockfile.
+- The AgentKit integration expects the SDK to provide its default CORS configuration. Use the AgentKit SDK version resolved with `veadk-python==1.0.7`; after overriding or downgrading it, revalidate AgentKit application startup and cross-origin access.
+
 ## Build from source
 
 To develop against the source, build with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-git clone --branch 1.0.5 --depth 1 https://github.com/volcengine/veadk-python.git
+git clone --branch 1.0.7 --depth 1 https://github.com/volcengine/veadk-python.git
 cd veadk-python
 
 # Create a Python 3.12 virtual environment
@@ -53,5 +58,5 @@ uv sync --all-extras
 uv pip install -e .
 ```
 
-Once installed, continue to the [Quickstart](/productions/veadk/preview/en/get-started/quickstart) to
+Once installed, continue to the [Quickstart](/productions/veadk/archives/1.0.7/en/get-started/quickstart) to
 run your first agent.

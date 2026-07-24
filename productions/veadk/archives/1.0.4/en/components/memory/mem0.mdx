@@ -1,8 +1,8 @@
 ---
-title: "Mem0 (mem0)"
+title: "Use Mem0 storage"
 ---
 
-The `mem0` backend is implemented by `Mem0LTMBackend` and uses [Mem0](https://mem0.ai/) as long-term storage. It is a managed service where Mem0 handles memory extraction, storage, and retrieval, requiring no self-hosted vector store or local embedding — **recommended for production**.
+The `mem0` backend uses [Mem0](https://mem0.ai/) as long-term storage. It is a managed service where Mem0 handles memory extraction, storage, and retrieval, requiring no self-hosted vector store or local embedding — **recommended for production**.
 
 ## When to use
 
@@ -54,7 +54,7 @@ ltm = LongTermMemory(
 
 ### Constructor parameters
 
-`Mem0LTMBackend` accepts the following fields:
+`backend_config` supports the following settings:
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -74,7 +74,7 @@ ltm = LongTermMemory(
 
 ### API key resolution order
 
-If `api_key` is provided directly, it is used as is; otherwise VeADK tries to fetch the API key via `api_key_id` or `project_id`; if neither is set, a `ValueError` is raised.
+If `api_key` is provided directly, it is used as is; otherwise VeADK tries to fetch the API key via `api_key_id` or `project_id`; initialization fails if neither is set.
 
 ## Environment variables
 

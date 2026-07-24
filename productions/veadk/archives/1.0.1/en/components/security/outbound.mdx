@@ -63,6 +63,29 @@ auth_config = oauth2_auth(
 )
 ```
 
+### A2A remote-agent authentication
+
+When Harness discovers a remote agent through AgentKit A2A Registry and its Agent Card declares the OAuth2 `clientCredentials` flow, the runtime obtains an access token and sends it in the `Authorization` header when calling the remote agent. Before using this flow, make sure that:
+
+- the remote agent is registered in AgentKit and its Agent Card contains a valid OAuth2 token URL;
+- the Identity user pool referenced by the token URL has a machine-to-machine client;
+- the Harness runtime can access AgentKit A2A Registry, Identity OpenAPI, and the remote agent endpoint.
+
+Standard AgentKit endpoints require no additional endpoint configuration. Set one of the following variables only when a custom registry endpoint cannot also serve Identity OpenAPI requests:
+
+| Environment variable | Default | Description |
+| --- | --- | --- |
+| `REGISTRY_ID_ENDPOINT` | Identity OpenAPI endpoint corresponding to the registry | Identity OpenAPI endpoint; preferred. |
+| `AGENTKIT_ID_ENDPOINT` | Identity OpenAPI endpoint corresponding to the registry | Compatibility alias for `REGISTRY_ID_ENDPOINT`. |
+
+```bash
+export REGISTRY_ID_ENDPOINT="https://id.example.com"
+```
+
+<Warning>
+  Do not place machine-to-machine client secrets or access tokens in Agent Cards, environment-variable examples, prompts, or logs. The runtime retrieves the credential from Identity and performs the token exchange.
+</Warning>
+
 ## OAuth2 user federation
 
 For cases where the app accesses a third-party service on a user's behalf. In the console, **New › New OAuth Client**, choose the **User Federation (USER_FEDERATION)** flow and set the callback URL. Build the `auth_config` with `oauth2_auth` and `auth_flow="USER_FEDERATION"`:
