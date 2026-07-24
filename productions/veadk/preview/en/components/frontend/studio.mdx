@@ -71,7 +71,7 @@ In cloud mode, the agent selector in the chat sidebar lists AgentKit Runtimes th
 
 The info panel has two tabs:
 
-- **Agent info**: reads live metadata from the Runtime's deployed Agent Server, including name, model, description, sub-agents, tools, skills, and mounted components (knowledge base, memory, prompt manager, example store, run processor, tracer, toolset, plugin, and so on). This information contains only display-oriented summaries and never returns system prompts, credentials, environment-variable values, or arbitrary serialized objects.
+- **Agent info**: reads the Runtime-provided name, model, description, sub-agents, tools, skills, available search sources, and mounted components with their backend types. It does not include system prompts, credentials, or environment-variable values.
 - **Runtime info**: shows control-plane Runtime detail, including model, description, status, region, resources, version, and environment variables.
 
 <Note>
@@ -86,54 +86,46 @@ When a Runtime connection cannot be established, Studio distinguishes the failur
 
 This lets you decide whether to refresh, sign in again, or inspect the Runtime's readiness and authentication settings without reading logs.
 
-## New conversation modes
+## Use smart search
 
-The chat view supports three new-conversation modes:
+Smart search provides four retrieval sources:
 
-- **Agent chat**: multi-turn conversation with the currently selected agent, identical to the existing chat behavior.
-- **Temporary session**: launches a Codex agent inside an AgentKit Sandbox for an independent multi-turn conversation.
-- **Skill creation**: generates two candidate Skill proposals in parallel using fixed models; once complete, you can compare them, download a ZIP, or add them to AgentKit.
+- **Session**: full-text-searches the current agent's message history.
+- **Web**: calls the current agent's mounted `web_search` tool.
+- **Knowledge**: performs semantic retrieval through the agent's mounted knowledge base.
+- **Memory**: performs semantic retrieval through the agent's mounted long-term memory backend.
 
-### Temporary session
+Studio enables only the sources reported by the agent's metadata and disables unavailable sources. Knowledge and memory results identify their index or source name and backend type.
 
-A temporary session reuses a Studio-dedicated CodeEnv Tool, creates a fresh Sandbox Session for the current user, and conducts multi-turn conversation through Codex. During the conversation it streams the public thinking summary, commands, file changes, MCP calls, and the final reply. Exiting the session deletes the cloud Session and its content is not written to ordinary session history; refreshing the page lets you start a new one, and any leftover Session is reclaimed by AgentKit after its TTL expires.
+## Use temporary sessions and Skill creation
 
-<Note>
-  Temporary-session state is kept on the server, not in the browser. For multi-instance deployments, run a single service process or enable session affinity so that create, conversation, and exit requests from the same browser reach the same instance.
-</Note>
+The new-conversation view provides three modes:
 
-### Skill creation mode
+- **Agent chat**: starts a normal multi-turn conversation with the selected agent.
+- **Temporary session**: starts a multi-turn conversation in an independent AgentKit CodeEnv Session. Exiting deletes the cloud Session and does not add it to ordinary session history.
+- **Skill creation**: generates two Skill candidates in parallel. You can compare and preview the results, download a ZIP, or add one to AgentKit.
 
-Skill creation mode uses `doubao-seed-2-0-pro-260215` and `deepseek-v4-flash-260425` to generate two candidate proposals in parallel through the Ark Responses API. Each candidate runs in its own AgentKit CodeEnv Session; the generated result is validated for directory names, `SKILL.md` frontmatter, file count, size, and path safety before being packaged as a ZIP.
+Skill creation is available only to `developer` and `admin` users. Each candidate uses a separate Session, and Studio checks its `SKILL.md`, file count, size, and paths before packaging. Candidate Sessions expire after 30 minutes and are deleted immediately when the user starts over or leaves the task. If candidate or credential provisioning fails, Studio displays a credential-safe error that helps identify Tool-state, region, or model-credential problems.
 
-<Warning>
-  The Skill creation interface is available only to Studio developers and admins.
-</Warning>
+Follow-up messages in an ordinary conversation continue to use the existing message history for that session; only a new session starts with empty context. When a Runtime cannot be connected, Studio distinguishes insufficient permission, an unreachable Agent Server, and authentication failure, and displays the corresponding troubleshooting direction.
 
-The real Ark API key is held by AgentKit credential hosting; Studio and the Sandbox only use revocable gateway tickets. Per-task Session environment variables never override the hosted ticket, and the server only accepts Volcengine HTTPS credential-relay addresses. The browser never receives model credentials.
+### Local configuration
 
-After you submit a requirement, two candidate conversation streams appear immediately and continuously render the public thinking summary, tool calls, and assistant replies returned by the generator; private chain-of-thought and credentials never reach the page. When the candidates finish, you can preview them, download a ZIP, or add them to AgentKit. Adding to AgentKit uploads the ZIP to TOS and then calls the Skills API to create or update the Skill; it is published to a SkillSpace only when you provide a SkillSpace ID.
-
-Candidate Sessions have a TTL of 30 minutes and are cleaned up immediately when you start over or leave the task. Task state is stored in the Sandbox rather than in process memory, so FaaS requests hitting different instances can still poll and download.
-
-#### Local configuration
-
-Before starting locally, configure two AgentKit CodeEnv Tools in the `Ready` state for the temporary session and Skill creation mode respectively, and use the AgentKit credential-hosting command to write the Ark credentials into both Tools:
+Before using temporary sessions or Skill creation locally, prepare two AgentKit CodeEnv Tools in the `Ready` state and configure their IDs:
 
 ```bash
-export SANDBOX_CHAT_CODEX=<chat-code-env-tool-id>
-export SANDBOX_SKILL_CREATOR=<skill-create-code-env-tool-id>
+export SANDBOX_CHAT_CODEX="your-chat-code-env-tool-id"
+export SANDBOX_SKILL_CREATOR="your-skill-code-env-tool-id"
+
 veadk studio --agents-dir ./agents --open
 ```
 
-The following environment variables are optional overrides:
-
 | Environment variable | Default | Description |
 | :--- | :--- | :--- |
-| `SANDBOX_CHAT_CODEX` | — | AgentKit CodeEnv Tool ID for temporary sessions. Required for local runs. |
-| `SANDBOX_SKILL_CREATOR` | — | AgentKit CodeEnv Tool ID for Skill creation mode. Required for local runs. |
-| `VEADK_SKILL_CREATOR_TOS_BUCKET` | AgentKit account default bucket | TOS bucket used when publishing Skill artifacts. |
-| `VEADK_SKILL_CREATOR_TOS_PREFIX` | `agentkit/skills` | TOS object key prefix for published artifacts. |
+| `SANDBOX_CHAT_CODEX` | — | AgentKit CodeEnv Tool ID for temporary sessions; required when using this mode locally. |
+| `SANDBOX_SKILL_CREATOR` | — | AgentKit CodeEnv Tool ID for Skill creation; required when using this mode locally. |
+| `VEADK_SKILL_CREATOR_TOS_BUCKET` | AgentKit account default bucket | TOS bucket used for published Skill artifacts. |
+| `VEADK_SKILL_CREATOR_TOS_PREFIX` | `agentkit/skills` | TOS object-key prefix for published artifacts. |
 | `VEADK_SKILL_CREATOR_PROJECT_NAME` | — | Project name used when creating a Skill. |
 
 ## `veadk studio` options
@@ -210,8 +202,8 @@ The deployer's long-lived access and secret keys are not written to the VeFaaS a
 | `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | Secret key used during deployment. When omitted, the `VOLCENGINE_SECRET_KEY` environment variable and then the `[default]` profile in `~/.volc/credentials` are read. |
 | `--veadk-version` | `str` | Latest release | `veadk-python` version installed in VeFaaS. Set it to `1.0.6` to reproduce this version. |
 | `--from-source` | Boolean flag | `false` | Build and deploy a wheel from the current checkout, including uncommitted changes. Use it for unreleased validation, not together with a pinned release workflow. |
-| `--sandbox-chat-codex-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for temporary sessions. When omitted, the deploy command creates one from the deploy credentials; also set via the `SANDBOX_CHAT_CODEX` environment variable. |
-| `--sandbox-skill-creator-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for Skill creation mode, alias `--skill-creator-tool-id`. When omitted, the deploy command creates one from the deploy credentials; also set via the `SANDBOX_SKILL_CREATOR` environment variable. |
+| `--sandbox-chat-codex-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for temporary sessions; also read from `SANDBOX_CHAT_CODEX`. |
+| `--sandbox-skill-creator-tool-id`, `--skill-creator-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for Skill creation; also read from `SANDBOX_SKILL_CREATOR`. |
 
 ## Studio roles and Runtime access
 
