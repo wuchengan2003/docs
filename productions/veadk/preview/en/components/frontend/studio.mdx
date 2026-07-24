@@ -71,12 +71,62 @@ In cloud mode, the agent selector in the chat sidebar lists AgentKit Runtimes th
 
 The info panel has two tabs:
 
-- **Agent info**: reads live metadata from the Runtime's deployed Agent Server, including name, model, description, sub-agents, tools, skills, and mounted components (knowledge base, memory, prompt manager, example store, run processor, tracer, toolset, plugin, and so on). This information contains only display-oriented summaries and never returns system prompts, credentials, environment-variable values, or arbitrary serialized objects.
+- **Agent info**: reads the Runtime-provided name, model, description, sub-agents, tools, skills, available search sources, and mounted components with their backend types. It does not include system prompts, credentials, or environment-variable values.
 - **Runtime info**: shows control-plane Runtime detail, including model, description, status, region, resources, version, and environment variables.
 
 <Note>
   The Runtime info tab can display runtime environment-variable values. Restrict Studio to authorized users and prefer the platform's secret-management features.
 </Note>
+
+When a Runtime connection cannot be established, Studio distinguishes the failure cause and shows a corresponding message so you can locate the problem directly:
+
+- **Access denied**: the current account is not allowed to use the Runtime. Refresh the list or sign in again and retry.
+- **Agent Server unreachable**: the Runtime's Agent Server does not expose a connection interface, usually because the Runtime is not ready or its version is incompatible. Confirm the Runtime status and version.
+- **Authentication failure**: the Runtime service rejected the connection request. Check the Runtime's authentication configuration.
+
+This lets you decide whether to refresh, sign in again, or inspect the Runtime's readiness and authentication settings without reading logs.
+
+## Use smart search
+
+Smart search provides four retrieval sources:
+
+- **Session**: full-text-searches the current agent's message history.
+- **Web**: calls the current agent's mounted `web_search` tool.
+- **Knowledge**: performs semantic retrieval through the agent's mounted knowledge base.
+- **Memory**: performs semantic retrieval through the agent's mounted long-term memory backend.
+
+Studio enables only the sources reported by the agent's metadata and disables unavailable sources. Knowledge and memory results identify their index or source name and backend type.
+
+## Use temporary sessions and Skill creation
+
+The new-conversation view provides three modes:
+
+- **Agent chat**: starts a normal multi-turn conversation with the selected agent.
+- **Temporary session**: starts a multi-turn conversation in an independent AgentKit CodeEnv Session. Exiting deletes the cloud Session and does not add it to ordinary session history.
+- **Skill creation**: generates two Skill candidates in parallel. You can compare and preview the results, download a ZIP, or add one to AgentKit.
+
+Skill creation is available only to `developer` and `admin` users. Each candidate uses a separate Session, and Studio checks its `SKILL.md`, file count, size, and paths before packaging. Candidate Sessions expire after 30 minutes and are deleted immediately when the user starts over or leaves the task. If candidate or credential provisioning fails, Studio displays a credential-safe error that helps identify Tool-state, region, or model-credential problems.
+
+Follow-up messages in an ordinary conversation continue to use the existing message history for that session; only a new session starts with empty context. When a Runtime cannot be connected, Studio distinguishes insufficient permission, an unreachable Agent Server, and authentication failure, and displays the corresponding troubleshooting direction.
+
+### Local configuration
+
+Before using temporary sessions or Skill creation locally, prepare two AgentKit CodeEnv Tools in the `Ready` state and configure their IDs:
+
+```bash
+export SANDBOX_CHAT_CODEX="your-chat-code-env-tool-id"
+export SANDBOX_SKILL_CREATOR="your-skill-code-env-tool-id"
+
+veadk studio --agents-dir ./agents --open
+```
+
+| Environment variable | Default | Description |
+| :--- | :--- | :--- |
+| `SANDBOX_CHAT_CODEX` | — | AgentKit CodeEnv Tool ID for temporary sessions; required when using this mode locally. |
+| `SANDBOX_SKILL_CREATOR` | — | AgentKit CodeEnv Tool ID for Skill creation; required when using this mode locally. |
+| `VEADK_SKILL_CREATOR_TOS_BUCKET` | AgentKit account default bucket | TOS bucket used for published Skill artifacts. |
+| `VEADK_SKILL_CREATOR_TOS_PREFIX` | `agentkit/skills` | TOS object-key prefix for published artifacts. |
+| `VEADK_SKILL_CREATOR_PROJECT_NAME` | — | Project name used when creating a Skill. |
 
 ## `veadk studio` options
 
@@ -124,6 +174,8 @@ veadk studio deploy \
   --veadk-version "1.0.6"
 ```
 
+Deployment credentials are resolved in the following order: explicit `--volcengine-access-key` / `--volcengine-secret-key` options take precedence; otherwise the `VOLCENGINE_ACCESS_KEY` / `VOLCENGINE_SECRET_KEY` environment variables of the current process are read; when neither is present, the `[default]` profile in `~/.volc/credentials` is used. Any source that yields a complete access key and secret key is sufficient to proceed.
+
 On success, the terminal prints the public URL and VeFaaS application ID. Opening the URL redirects the user through VeIdentity login.
 
 `--region` selects the Studio deployment region, defaults to `cn-beijing`, and also supports `cn-shanghai`; VeFaaS, API Gateway, and other resources are created in that region. Deployment also locates the VeIdentity user pool and client across the deployment region and the Beijing and Shanghai regions: it queries the deployment region first, then searches the other region on a miss, emitting a warning and continuing when matched cross-region. `--project` selects the VeFaaS function project and defaults to `default`.
@@ -146,10 +198,12 @@ The deployer's long-lived access and secret keys are not written to the VeFaaS a
 | `--gateway-name` | `str` | `""` | Serverless API Gateway name. If omitted, an existing gateway is reused or a gateway is created when none exists. |
 | `--gateway-service-name` | `str` | `""` | Gateway service name; leave empty for automatic configuration. |
 | `--gateway-upstream-name` | `str` | `""` | Gateway upstream name; leave empty for automatic configuration. |
-| `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | Access key used during deployment. Prefer the environment variable. |
-| `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | Secret key used during deployment. Prefer the environment variable. |
+| `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | Access key used during deployment. When omitted, the `VOLCENGINE_ACCESS_KEY` environment variable and then the `[default]` profile in `~/.volc/credentials` are read. |
+| `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | Secret key used during deployment. When omitted, the `VOLCENGINE_SECRET_KEY` environment variable and then the `[default]` profile in `~/.volc/credentials` are read. |
 | `--veadk-version` | `str` | Latest release | `veadk-python` version installed in VeFaaS. Set it to `1.0.6` to reproduce this version. |
 | `--from-source` | Boolean flag | `false` | Build and deploy a wheel from the current checkout, including uncommitted changes. Use it for unreleased validation, not together with a pinned release workflow. |
+| `--sandbox-chat-codex-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for temporary sessions; also read from `SANDBOX_CHAT_CODEX`. |
+| `--sandbox-skill-creator-tool-id`, `--skill-creator-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for Skill creation; also read from `SANDBOX_SKILL_CREATOR`. |
 
 ## Studio roles and Runtime access
 
