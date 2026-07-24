@@ -73,6 +73,8 @@ veadk studio --agents-dir ./agents --open
 
 `veadk studio deploy` 将 Studio 部署为 VeFaaS 应用，并接入 VeIdentity 登录。部署命令会创建或复用 Serverless API Gateway；未指定 IAM Role 时，还会创建或复用 `VeADKFrontendServiceRole` 及 `VeADKFrontendPolicy`。部署完成后，命令会把公网回调地址注册到用户池客户端并更新应用配置。
 
+使用默认 Role 时，部署命令会为其补充访问模型、日志、追踪、知识库、记忆与身份资源所需的系统策略。通过 `--iam-role` 显式指定的 Role 不会被修改，需提前配置完整权限。
+
 <Warning>
   此操作会创建或修改 VeFaaS、API Gateway、IAM 和 VeIdentity 资源，可能产生费用并影响线上访问。默认 Role 具备用于创建和管理 AgentKit Runtime 及相关云资源的广泛权限。生产环境部署前应由管理员审查权限范围；需要收敛权限时，通过 `--iam-role` 使用预先配置的 Role。
 </Warning>

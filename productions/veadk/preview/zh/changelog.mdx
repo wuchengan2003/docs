@@ -59,12 +59,12 @@ VeADK 1.0.5 发布于 2026 年 7 月 19 日。下表列出该版本的公开用�
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
 | Studio 与 Frontend | Studio 启用与 Frontend 相同的完整界面并默认进入对话页面；新增云端 Runtime 选择、Skill Hub/本地上传/AgentKit SkillSpace、多模态会话、结构化技能与子智能体调用；重构自定义创建流程，智能模式、模板和工作流入口当前显示为「敬请期待」；并完善部署区域、环境变量、任务状态、失败重试和 OAuth Token 转发。 | [VeADK Frontend](/productions/veadk/archives/1.0.5/zh/components/frontend/veadk-frontend) · [Studio 智能体工作台](/productions/veadk/archives/1.0.5/zh/components/frontend/studio) |
-| 模型 | 默认推理模型更新为 `doubao-seed-2-1-pro-260628`；Responses API 支持回退模型与方舟上下文管理，并改进内联图片追踪。 | [模型](/productions/veadk/archives/1.0.5/zh/components/agent/model) |
+| 模型 | 默认推理模型更新为 `doubao-seed-2-1-pro-260628`；Responses API 支持回退模型与方舟上下文管理。 | [模型](/productions/veadk/archives/1.0.5/zh/components/agent/model) |
 | 运行时 | `Agent.runtime` 新增 `piagent`，支持通过 PiAgent 执行智能体并桥接函数工具、MCP 工具与技能；安装包不再内置 PiAgent 二进制文件。 | [运行时](/productions/veadk/archives/1.0.5/zh/components/agent/runtime) |
 | Studio 测试 | 生成的智能体项目可在服务端受限临时进程中测试；测试进程默认保留 1800 秒，可通过命令参数调整。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.5/zh/components/frontend/studio) |
 | Studio 部署 | 使用默认 IAM Role 部署 Studio 时，自动补充访问模型、日志、追踪、知识库、记忆与身份资源所需的系统策略；显式指定的自定义 Role 不会被修改。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.5/zh/components/frontend/studio) |
 | AgentKit 集成 | Studio 生成的智能体应用统一通过公开函数 `create_agentkit_app` 构建，集中提供 AgentKit 接口、健康检查、拓扑、Web UI 和短期记忆配置。 | [部署到 AgentKit](/productions/veadk/archives/1.0.5/zh/deploy/agentkit) |
-| 飞书渠道 | 改进文本、卡片和合并转发消息的内容提取，兼容飞书 Channel SDK 的同步生命周期，并支持在 Studio 生成的 AgentKit 应用中配置飞书入站消息渠道。 | [飞书渠道](/productions/veadk/archives/1.0.5/zh/components/extensions/feishu-channel) · [部署到 AgentKit](/productions/veadk/archives/1.0.5/zh/deploy/agentkit) |
+| 飞书渠道 | 改进文本、卡片和合并转发消息的内容提取，并兼容飞书 Channel SDK 的同步生命周期。 | [飞书渠道](/productions/veadk/archives/1.0.5/zh/components/extensions/feishu-channel) |
 
 ## 1.0.4
 
@@ -103,8 +103,8 @@ VeADK 1.0.2 包含以下公开用户能力变化。
 | 短期记忆 | PostgreSQL 新增 `schema` 配置，可在一个数据库内为不同部署隔离会话表；VeADK 会创建不存在的 schema 并固定连接的 `search_path`。 | [使用 PostgreSQL 存储](/productions/veadk/archives/1.0.2/zh/components/session/postgresql) |
 | MCP | MCP Server 会话过期、服务重启或连接中断后，自动清理失效会话、重连并重试工具加载或调用一次。 | [自定义 MCP Server](/productions/veadk/archives/1.0.2/zh/components/tools/custom-mcp) |
 | 前端 | VeADK Frontend 新增工具 OAuth 授权卡片：打开身份提供方授权页，接收回调后提交凭证并继续原工具调用；同时优化账号入口、登录页、会话列表、空回复提示与默认智能体选择。 | [VeADK Frontend](/productions/veadk/archives/1.0.2/zh/components/frontend/veadk-frontend) |
-| 网络请求 | 火山引擎签名请求默认使用 10 秒连接、60 秒读取超时；VeSearch 与网页爬取请求使用 30 秒超时，避免无响应服务持续阻塞。 | [火山引擎搜索](/productions/veadk/archives/1.0.2/zh/components/tools/vesearch) |
-| 安全 | 网页爬取恢复 TLS 证书校验；内容安全护栏不再把 API Key 值写入调试日志；凭证服务示例不再输出 Bearer Token。 | [内容安全护栏](/productions/veadk/archives/1.0.2/zh/components/security/content-safety) |
+| 网络请求 | VeSearch 与网页抓取请求使用 30 秒超时，避免无响应服务持续阻塞。 | [火山引擎搜索](/productions/veadk/archives/1.0.2/zh/components/tools/vesearch) · [网页抓取](/productions/veadk/archives/1.0.2/zh/components/tools/web-fetch) |
+| 安全 | 网页抓取会校验 TLS 证书；内容安全护栏的调试日志不会记录 API Key 值。 | [网页抓取](/productions/veadk/archives/1.0.2/zh/components/tools/web-fetch) · [内容安全护栏](/productions/veadk/archives/1.0.2/zh/components/security/content-safety) |
 
 ## 1.0.1
 
