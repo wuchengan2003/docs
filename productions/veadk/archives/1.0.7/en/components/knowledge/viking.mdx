@@ -1,8 +1,8 @@
 ---
-title: "VikingDB (viking)"
+title: "Use VikingDB storage"
 ---
 
-The `viking` backend is implemented by `VikingDBKnowledgeBackend` and integrates with the managed Volcengine VikingDB knowledge base service. Files are first uploaded to TOS (object storage), then registered into a VikingDB collection; splitting, embedding, and retrieval all run server-side, so **no local embedding is required**. It is the recommended backend for production.
+The `viking` backend integrates with the managed Volcengine VikingDB knowledge base service. Files are first uploaded to TOS (object storage), then registered into a VikingDB collection; splitting, embedding, and retrieval all run server-side, so **no local embedding is required**. It is the recommended backend for production.
 
 ## When to use
 
@@ -60,7 +60,7 @@ kb = KnowledgeBase(
 
 ### Constructor parameters
 
-`VikingDBKnowledgeBackend` accepts the following fields:
+`backend_config` supports the following settings:
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -119,5 +119,5 @@ Embedding, splitting, and retrieval all run server-side in VikingDB, so this bac
 </Note>
 
 <Warning>
-`index` (the collection name) must start with a letter, contain only letters, digits, and underscores, and be 1-128 characters long; otherwise a `ValueError` is raised. `version` supports only `"2"` or `"4"`.
+`index` (the collection name) must start with a letter, contain only letters, digits, and underscores, and be 1-128 characters long; otherwise initialization fails. `version` supports only `"2"` or `"4"`.
 </Warning>

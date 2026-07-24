@@ -69,6 +69,20 @@ The MCP server process and its tools receive the permissions allowed by the curr
 | `CODEX_SHIM_NUM_RETRIES` | `2` | Retry count for rate limits, server errors, overload, and timeouts; values below `0` are treated as `0`. |
 | `CODEX_SHIM_TIMEOUT` | `0` | Per-request backend timeout in seconds; `0` does not add a timeout. |
 
+### Enable web search
+
+Web search is disabled by default when the Codex runtime calls models through Volcengine Ark. Set `CODEX_SHIM_MAX_TOOL_ITERS` to an integer greater than `0` to let the runtime call VeADK's `web_search` and `web_fetch` tools and return their results to the model for a bounded number of rounds:
+
+```bash
+export CODEX_SHIM_MAX_TOOL_ITERS=6
+```
+
+| Environment variable | Default | Description |
+| --- | --- | --- |
+| `CODEX_SHIM_MAX_TOOL_ITERS` | `0` | Maximum web-tool rounds per request; `0` disables them. Start with `6`, then adjust for task complexity and latency. |
+
+Web search requires outbound network access and any credentials required by the selected tools. See [Web search](/productions/veadk/archives/1.0.1/en/components/tools/web-search) for configuration. Web content comes from external sources; validate it in production and do not execute search results as trusted instructions.
+
 ## Request processing
 
 Without touching business logic, you can inject shared cross-cutting processing

@@ -1,6 +1,5 @@
 ---
 title: "Develop apps in a Codex sandbox"
-tag: "HOT"
 ---
 
 An AgentKit sandbox is a cloud `code` tool environment where you can develop applications with a coding agent such as Codex: no local runtime to set up, sessions persist, code transfers both ways, and the app you are building can be viewed through a web preview. For the full options of each sandbox command, see [Use sandboxes](/productions/agentkit-cli/archives/0.46.6/en/commands/sandbox).
@@ -8,6 +7,10 @@ An AgentKit sandbox is a cloud `code` tool environment where you can develop app
 <Note>
 Before you start, make sure your Volcengine access keys are configured — the `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY` environment variables.
 </Note>
+
+<Warning>
+Creating a sandbox provisions cloud compute resources that may incur charges while they exist. Commands in the sandbox can reach files, networks, and credentials available to that environment. Use trusted projects and least-privilege access. Session and sandbox deletion cannot be undone, so download required files before cleanup.
+</Warning>
 
 ## End-to-end flow
 
@@ -26,13 +29,13 @@ Before you start, make sure your Volcengine access keys are configured — the `
     Open the sandbox session's interactive terminal and run `codex` there to develop:
 
     ```bash
-    agentkit sandbox attach --session dev --tmux
+    agentkit sandbox shell --session dev --tmux
     ```
 
-    `--session dev` names the session; reuse the same name in later commands to return to the same environment. `--tmux` attaches a persistent terminal session so reconnecting after a drop keeps your progress (press Ctrl-] to detach). To bring existing local code into the sandbox, upload it before attaching:
+    `--session dev` names the session; reuse the same name in later commands to return to the same environment. `--tmux` opens or joins a persistent terminal session so reconnecting after a drop keeps your progress (press Ctrl-] to detach). To bring existing local code into the sandbox, upload it before opening the terminal:
 
     ```bash
-    agentkit sandbox attach --session dev --src-dir ./my-app --dst-dir my-app
+    agentkit sandbox shell --session dev --src-dir ./my-app --dst-dir my-app
     ```
 
     The model used by the sandbox's coding agent can be set with `--model-name`, `--model-api-key`, and `--model-provider`.
@@ -61,13 +64,20 @@ Before you start, make sure your Volcengine access keys are configured — the `
   <Step title="Clean up the session">
     When you are done, stop and delete the session; use `--all` to clear every session on the sandbox tool:
 
+    <Warning>
+    `sandbox rm` removes the session and files that were not persisted elsewhere, but it does not delete the sandbox itself. Back up required files first. When the sandbox is no longer needed, delete the cloud resource separately with `sandbox delete <sandbox-id> -y`.
+    </Warning>
+
     ```bash
     agentkit sandbox rm dev -y
     ```
   </Step>
 </Steps>
 
-<Tip>
+<Warning>
+`sandbox login` copies a local subscription credential into a remote sandbox session. Use it only with a trusted sandbox and a dedicated session, do not share that session with others, and delete the session when finished.
+</Warning>
+
 There are several ways to authenticate Codex inside the sandbox; injecting your local subscription is one of them. If you have logged in locally with `codex login`, you can inject those credentials into the session:
 
 ```bash
@@ -75,7 +85,6 @@ agentkit sandbox login --provider codex --session dev
 ```
 
 The command reads `~/.codex/auth.json` by default; use `--auth-file` or `--codex-home` to point at another source. Switch `--provider` to `claude` to inject your local Claude subscription instead and use Claude Code in the sandbox.
-</Tip>
 
 ## Scripted execution
 

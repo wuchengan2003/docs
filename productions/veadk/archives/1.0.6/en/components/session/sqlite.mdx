@@ -1,10 +1,8 @@
 ---
-title: "SQLite (sqlite)"
+title: "Use SQLite storage"
 ---
 
-The `sqlite` backend persists sessions to a local SQLite file, backed by Google ADK's `DatabaseSessionService`. It needs no external database service, but unlike `local`, sessions are written to disk and therefore survive across processes and restarts.
-
-The backing implementation class is `SQLiteSTMBackend`; `ShortTermMemory` passes `local_database_path` to it as `local_path`.
+The `sqlite` backend persists sessions to a local SQLite file. It needs no external database service, but unlike `local`, sessions are written to disk and therefore survive across processes and restarts.
 
 ## When to use
 
@@ -48,18 +46,8 @@ stm = ShortTermMemory(db_url="sqlite:///./test.db")
 | `db_kwargs` | `dict` | `{}` | No | Not forwarded by the `sqlite` backend; effective only with `db_url` or the `mysql`/`postgresql` backends. |
 | `after_load_memory_callback` | `Callable \| None` | `None` | Yes | Callback invoked after a session is loaded; receives the loaded `Session`. |
 
-### Backend implementation class parameters (SQLiteSTMBackend)
-
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `local_path` | `str` | none (required) | Local path to the SQLite file. Passed automatically by `ShortTermMemory` from `local_database_path`; you rarely construct this class directly. |
-
-<Note>
-VeADK picks the connection-string scheme based on the Google ADK version: ADK ≥ 1.19.0 uses the async driver `sqlite+aiosqlite:///<absolute-path>`, otherwise the sync `sqlite:///<absolute-path>`.
-</Note>
-
 ## Environment variables
 
 The `sqlite` backend reads no environment variables; all configuration comes from constructor parameters.
 
-Need distributed persistence? Use [MySQL](/productions/veadk/preview/en/components/session/mysql) or [PostgreSQL](/productions/veadk/preview/en/components/session/postgresql).
+Need distributed persistence? Use [MySQL](/productions/veadk/archives/1.0.6/en/components/session/mysql) or [PostgreSQL](/productions/veadk/archives/1.0.6/en/components/session/postgresql).

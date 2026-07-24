@@ -6,7 +6,7 @@ title: "概述"
 
 VeADK 的追踪能力遵循 [OpenTelemetry](https://opentelemetry.io/docs/specs/semconv/registry/attributes/gen-ai/) 生成式 AI 语义规范，字段命名与标准 span 属性对齐，因此追踪数据可直接导入任意兼容 OpenTelemetry 的系统进行分析和可视化。
 
-运行日志使用 Python 标准库 `logging`，级别、格式与追踪关联方式见[应用日志](/productions/veadk/preview/zh/components/observability/logging)。
+运行日志使用 Python 标准库 `logging`，级别、格式与追踪关联方式见[应用日志](/productions/veadk/archives/1.0.6/zh/components/observability/logging)。
 
 ## 核心概念
 
@@ -24,10 +24,10 @@ span 是一次可被追踪的执行单元，记录名称、起止时间、属性
 
 | 导出器 | 类 | 目标平台 | 文档 |
 | :--- | :--- | :--- | :--- |
-| APMPlus | `APMPlusExporter` | 火山引擎 APMPlus，追踪与指标 | [APMPlus](/productions/veadk/preview/zh/components/observability/apmplus) |
-| Cozeloop | `CozeloopExporter` | Cozeloop，链路观测与评测 | [Cozeloop](/productions/veadk/preview/zh/components/observability/cozeloop) |
-| TLS | `TLSExporter` | 火山引擎日志服务 TLS | [TLS 日志服务](/productions/veadk/preview/zh/components/observability/tls) |
-| 内存 | `InMemoryExporter` | 进程内存，本地调试与落盘 | [内存导出器](/productions/veadk/preview/zh/components/observability/inmemory) |
+| APMPlus | `APMPlusExporter` | 火山引擎 APMPlus，追踪与指标 | [APMPlus](/productions/veadk/archives/1.0.6/zh/components/observability/apmplus) |
+| Cozeloop | `CozeloopExporter` | Cozeloop，链路观测与评测 | [Cozeloop](/productions/veadk/archives/1.0.6/zh/components/observability/cozeloop) |
+| TLS | `TLSExporter` | 火山引擎日志服务 TLS | [TLS 日志服务](/productions/veadk/archives/1.0.6/zh/components/observability/tls) |
+| 内存 | `InMemoryExporter` | 进程内存，本地调试与落盘 | [内存导出器](/productions/veadk/archives/1.0.6/zh/components/observability/inmemory) |
 
 ## 给智能体挂载追踪器
 
@@ -114,4 +114,4 @@ path = tracer.dump(user_id="user-1", session_id="session_id_demo")
 print(f"trace 已写入 {path}")
 ```
 
-导出的 JSON 包含每个 span 的名称、`span_id`、`trace_id`、起止时间、属性以及父 span 关系。更多细节参见[内存导出器](/productions/veadk/preview/zh/components/observability/inmemory)。
+导出的 JSON 包含每个 span 的名称、`span_id`、`trace_id`、起止时间、属性以及父 span 关系。更多细节参见[内存导出器](/productions/veadk/archives/1.0.6/zh/components/observability/inmemory)。

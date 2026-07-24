@@ -63,7 +63,7 @@ cd frontend && npm run dev                    # http://localhost:5173, proxies A
 | Option | Default | Description |
 | :-- | :-- | :-- |
 | `--agents-dir` | `.` | Directory of agent apps; each subdirectory exposes a `root_agent`. |
-| `--frontend-dir` | packaged build, falling back to `./frontend/dist` | Override the built React UI directory. Priority: the explicitly passed directory, then the packaged `veadk/webui`, then `./frontend/dist` relative to the current directory. |
+| `--frontend-dir` | packaged build, falling back to `./frontend/dist` | Override the built React UI directory. Priority: the explicitly passed directory, then the packaged UI, then `./frontend/dist` relative to the current directory. |
 | `--host` | `127.0.0.1` | Address to bind. |
 | `--port` | `8000` | Port to bind. |
 | `--dev` | off | Dev mode: serve the API only and allow CORS from the Vite dev server (`http://localhost:5173`). |
@@ -87,7 +87,7 @@ Sessions and memory are scoped by the ADK `user_id`, which comes from the signed
 
 ```bash
 veadk frontend --agents-dir examples \
-  --oauth2-user-pool <name> --oauth2-user-pool-client <name>
+--oauth2-user-pool "your-user-pool-name" --oauth2-user-pool-client "your-user-pool-client-name"
 # or by UID (env OAUTH2_USER_POOL_ID / OAUTH2_USER_POOL_CLIENT_ID)
 # --oauth2-user-pool-uid <id> --oauth2-user-pool-client-uid <id>
 ```
@@ -110,8 +110,8 @@ The GitHub preset only needs the client credentials:
 
 ```bash
 export OAUTH2_PROVIDER=github
-export OAUTH2_CLIENT_ID=<github-oauth-client-id>
-export OAUTH2_CLIENT_SECRET=<github-oauth-client-secret>
+export OAUTH2_CLIENT_ID="your-github-oauth-client-id"
+export OAUTH2_CLIENT_SECRET="your-github-oauth-client-secret"
 export OAUTH2_REDIRECT_URI=http://127.0.0.1:8000/oauth2/callback
 veadk frontend --agents-dir examples
 ```

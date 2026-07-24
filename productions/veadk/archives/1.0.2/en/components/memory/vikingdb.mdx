@@ -1,10 +1,10 @@
 ---
-title: "VikingDB (viking)"
+title: "Use VikingDB storage"
 ---
 
-The `viking` backend is implemented by `VikingDBLTMBackend` and uses Volcengine [VikingDB memory](https://www.volcengine.com/product/vikingdb) as long-term storage. It is a managed service requiring no self-hosted vector store or local embedding — **recommended for production**. This backend also supports user profiles (`get_user_profile`), the only backend that does.
+The `viking` backend uses Volcengine [VikingDB memory](https://www.volcengine.com/product/vikingdb) as long-term storage. It is a managed service requiring no self-hosted vector store or local embedding — **recommended for production**. This backend also supports user profiles (`get_user_profile`), the only backend that does.
 
-The earlier `viking_mem` backend is deprecated and is automatically mapped to `viking`; both refer to the same implementation.
+The earlier `viking_mem` backend is deprecated and is automatically mapped to `viking`; both have the same behavior.
 
 ## When to use
 
@@ -60,7 +60,7 @@ print(profile)
 
 ### Constructor parameters
 
-`VikingDBLTMBackend` accepts the following fields:
+`backend_config` supports the following settings:
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -103,7 +103,7 @@ export DATABASE_VIKINGMEM_MEMORY_TYPE="sys_event_v1,sys_profile_v1"
 ```
 
 <Note>
-`index` (the collection name) must follow VikingDB rules: start with an English letter, contain only letters, digits, and underscores, length 1–128; otherwise a `ValueError` is raised.
+`index` (the collection name) must follow VikingDB rules: start with an English letter, contain only letters, digits, and underscores, length 1–128; otherwise initialization fails.
 </Note>
 
 <Tip>

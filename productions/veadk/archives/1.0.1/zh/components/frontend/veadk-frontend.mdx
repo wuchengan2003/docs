@@ -57,7 +57,7 @@ cd frontend && npm run dev                    # http://localhost:5173，代理 A
 | 选项 | 默认值 | 说明 |
 | :-- | :-- | :-- |
 | `--agents-dir` | `.` | 智能体应用目录，每个子目录暴露一个 `root_agent`。 |
-| `--frontend-dir` | 包内置构建产物，回退至 `./frontend/dist` | 覆盖已构建 React 界面所在目录。优先使用显式传入的目录，其次为包内置的 `veadk/webui`，最后回退至相对当前目录的 `./frontend/dist`。 |
+| `--frontend-dir` | 包内置构建产物，回退至 `./frontend/dist` | 覆盖已构建 React 界面所在目录。优先使用显式传入的目录，其次为包内置界面，最后回退至相对当前目录的 `./frontend/dist`。 |
 | `--host` | `127.0.0.1` | 监听地址。 |
 | `--port` | `8000` | 监听端口。 |
 | `--dev` | 关闭 | 开发模式：仅提供 API，并放行来自 Vite 开发服务器（`http://localhost:5173`）的 CORS。 |
@@ -94,7 +94,7 @@ veadk frontend --agents-dir examples --auth-mode gateway
 
 ```bash
 veadk frontend --agents-dir examples \
-  --oauth2-user-pool <名称> --oauth2-user-pool-client <名称>
+--oauth2-user-pool "your-user-pool-name" --oauth2-user-pool-client "your-user-pool-client-name"
 # 或用 UID，读环境变量 OAUTH2_USER_POOL_ID / OAUTH2_USER_POOL_CLIENT_ID
 # --oauth2-user-pool-uid <id> --oauth2-user-pool-client-uid <id>
 ```
@@ -117,8 +117,8 @@ GitHub 预设仅需客户端凭据：
 
 ```bash
 export OAUTH2_PROVIDER=github
-export OAUTH2_CLIENT_ID=<github-oauth-client-id>
-export OAUTH2_CLIENT_SECRET=<github-oauth-client-secret>
+export OAUTH2_CLIENT_ID="your-github-oauth-client-id"
+export OAUTH2_CLIENT_SECRET="your-github-oauth-client-secret"
 export OAUTH2_REDIRECT_URI=http://127.0.0.1:8000/oauth2/callback
 veadk frontend --agents-dir examples
 ```

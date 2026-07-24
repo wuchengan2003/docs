@@ -1,8 +1,8 @@
 ---
-title: "Redis (redis)"
+title: "Use Redis storage"
 ---
 
-The `redis` backend is implemented by `RedisKnowledgeBackend` and uses Redis as the vector store. Knowledge text is embedded by an embedding model, written to Redis via LlamaIndex, and retrieved by similarity. The index collection name equals `index`.
+The `redis` backend uses Redis as the vector store. Knowledge text is embedded by an embedding model, written to Redis via LlamaIndex, and retrieved by similarity. The index collection name equals `index`.
 
 ## When to use
 
@@ -58,7 +58,7 @@ kb = KnowledgeBase(
 
 ### Constructor parameters
 
-`RedisKnowledgeBackend` accepts the following fields:
+`backend_config` supports the following settings:
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
