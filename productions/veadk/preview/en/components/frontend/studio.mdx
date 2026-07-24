@@ -97,6 +97,37 @@ Smart search provides four retrieval sources:
 
 Studio enables only the sources reported by the agent's metadata and disables unavailable sources. Knowledge and memory results identify their index or source name and backend type.
 
+## Use temporary sessions and Skill creation
+
+The new-conversation view provides three modes:
+
+- **Agent chat**: starts a normal multi-turn conversation with the selected agent.
+- **Temporary session**: starts a multi-turn conversation in an independent AgentKit CodeEnv Session. Exiting deletes the cloud Session and does not add it to ordinary session history.
+- **Skill creation**: generates two Skill candidates in parallel. You can compare and preview the results, download a ZIP, or add one to AgentKit.
+
+Skill creation is available only to `developer` and `admin` users. Each candidate uses a separate Session, and Studio checks its `SKILL.md`, file count, size, and paths before packaging. Candidate Sessions expire after 30 minutes and are deleted immediately when the user starts over or leaves the task. If candidate or credential provisioning fails, Studio displays a credential-safe error that helps identify Tool-state, region, or model-credential problems.
+
+Follow-up messages in an ordinary conversation continue to use the existing message history for that session; only a new session starts with empty context. When a Runtime cannot be connected, Studio distinguishes insufficient permission, an unreachable Agent Server, and authentication failure, and displays the corresponding troubleshooting direction.
+
+### Local configuration
+
+Before using temporary sessions or Skill creation locally, prepare two AgentKit CodeEnv Tools in the `Ready` state and configure their IDs:
+
+```bash
+export SANDBOX_CHAT_CODEX="your-chat-code-env-tool-id"
+export SANDBOX_SKILL_CREATOR="your-skill-code-env-tool-id"
+
+veadk studio --agents-dir ./agents --open
+```
+
+| Environment variable | Default | Description |
+| :--- | :--- | :--- |
+| `SANDBOX_CHAT_CODEX` | — | AgentKit CodeEnv Tool ID for temporary sessions; required when using this mode locally. |
+| `SANDBOX_SKILL_CREATOR` | — | AgentKit CodeEnv Tool ID for Skill creation; required when using this mode locally. |
+| `VEADK_SKILL_CREATOR_TOS_BUCKET` | AgentKit account default bucket | TOS bucket used for published Skill artifacts. |
+| `VEADK_SKILL_CREATOR_TOS_PREFIX` | `agentkit/skills` | TOS object-key prefix for published artifacts. |
+| `VEADK_SKILL_CREATOR_PROJECT_NAME` | — | Project name used when creating a Skill. |
+
 ## `veadk studio` options
 
 | Option | Type | Default | Description |
@@ -171,6 +202,8 @@ The deployer's long-lived access and secret keys are not written to the VeFaaS a
 | `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | Secret key used during deployment. When omitted, the `VOLCENGINE_SECRET_KEY` environment variable and then the `[default]` profile in `~/.volc/credentials` are read. |
 | `--veadk-version` | `str` | Latest release | `veadk-python` version installed in VeFaaS. Set it to `1.0.6` to reproduce this version. |
 | `--from-source` | Boolean flag | `false` | Build and deploy a wheel from the current checkout, including uncommitted changes. Use it for unreleased validation, not together with a pinned release workflow. |
+| `--sandbox-chat-codex-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for temporary sessions; also read from `SANDBOX_CHAT_CODEX`. |
+| `--sandbox-skill-creator-tool-id`, `--skill-creator-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for Skill creation; also read from `SANDBOX_SKILL_CREATOR`. |
 
 ## Studio roles and Runtime access
 
