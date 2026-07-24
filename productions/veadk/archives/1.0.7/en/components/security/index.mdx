@@ -6,8 +6,8 @@ VeADK's security is built on [Agent Identity](https://console.volcengine.com/ide
 
 ## Two directions
 
-- **[Inbound authentication](/productions/veadk/preview/en/components/security/inbound)**: verify the identity of requests coming into the agent. Supports API keys and OAuth2 (single sign-on and JWT), handled by the API gateway or in-app middleware.
-- **[Outbound authentication](/productions/veadk/preview/en/components/security/outbound)**: credential brokering when the agent calls third-party services. Agent Identity encrypts and stores API keys and OAuth tokens, supports OAuth2 M2M and user federation, keeps credentials out of your code, and rotates and refreshes them automatically.
+- **[Inbound authentication](/productions/veadk/archives/1.0.7/en/components/security/inbound)**: verify the identity of requests coming into the agent. Supports API keys and OAuth2 (single sign-on and JWT), handled by the API gateway or in-app middleware.
+- **[Outbound authentication](/productions/veadk/archives/1.0.7/en/components/security/outbound)**: credential brokering when the agent calls third-party services. Agent Identity encrypts and stores API keys and OAuth tokens, supports OAuth2 M2M and user federation, keeps credentials out of your code, and rotates and refreshes them automatically.
 
 ## Core capabilities
 
@@ -18,10 +18,10 @@ VeADK's security is built on [Agent Identity](https://console.volcengine.com/ide
 
 ## Content safety
 
-Beyond identity and credentials, the [content-safety guardrail](/productions/veadk/preview/en/components/security/content-safety) uses the Volcengine LLM Application Firewall to review an agent's input and output at each stage and block unsafe content.
+Beyond identity and credentials, the [content-safety guardrail](/productions/veadk/archives/1.0.7/en/components/security/content-safety) uses the Volcengine LLM Application Firewall to review an agent's input and output at each stage and block unsafe content.
 
 ## Trusted execution
 
-When you need end-to-end trust, [Trusted MCP](/productions/veadk/preview/en/components/security/trusted-mcp) adds component attestation and encrypted communication on top of the standard MCP protocol, combining with confidential computing to build a fully trusted agent.
+When you need end-to-end trust, [Trusted MCP](/productions/veadk/archives/1.0.7/en/components/security/trusted-mcp) adds component attestation and encrypted communication on top of the standard MCP protocol, combining with confidential computing to build a fully trusted agent.
 
 For activation and detailed configuration, see the [Agent Identity documentation](https://www.volcengine.com/docs/86848/2080920?lang=zh).

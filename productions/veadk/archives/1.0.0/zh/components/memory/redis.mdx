@@ -2,7 +2,7 @@
 title: "使用 Redis 存储"
 ---
 
-`redis` 后端由 `RedisLTMBackend` 实现，使用 Redis 作为向量存储。记忆文本先经 embedding 模型向量化，再写入 Redis，并按用户隔离索引（实际索引名为 `veadk-ltm/{index}/{user_id}`），检索时按余弦相似度召回。
+`redis` 后端使用 Redis 作为向量存储。记忆文本先经 embedding 模型向量化，再写入 Redis，并按用户隔离索引（实际索引名为 `veadk-ltm/{index}/{user_id}`），检索时按余弦相似度召回。
 
 ## 何时使用
 
@@ -57,7 +57,7 @@ ltm = LongTermMemory(
 
 ### 构造参数
 
-`RedisLTMBackend` 接受以下字段：
+`backend_config` 支持以下配置项：
 
 | 参数 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |

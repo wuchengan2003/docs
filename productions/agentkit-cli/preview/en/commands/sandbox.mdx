@@ -1,12 +1,11 @@
 ---
 title: "Use sandboxes"
-tag: "NEW"
 ---
 
 A sandbox is an isolated `code` or `skill` environment. The `sandbox` command group covers its full lifecycle—create, list, show, update, delete—and its operations: run commands in a session, open an interactive terminal, transfer files, open a web preview, inject subscription credentials, and manage sessions.
 
 <Note>
-The operation subcommands (run / attach / cp / web / login / sessions / logs / rm) share a common set of session and sandbox flags: `-s, --session <id>` (session id, reused if it exists, else generated), `--tool-id <id>` (sandbox id), `--type <type>` (sandbox type `code` \| `skill`, default `code`), `--auto-create` (always create a new sandbox, even if some already exist), `-r, --region <region>` (Volcengine region), and `-p, --project <name>` (AgentKit project, default `default`). Each command's full flag set is listed below.
+`run`, `shell`, `cp`, `web`, and `login` share a set of session and sandbox flags: `-s, --session <id>` (session id, reused if it exists, else generated), `--tool-id <id>` (sandbox id), `--type <type>` (sandbox type `code` \| `skill`, default `code`), `--auto-create` (always create a new sandbox, even if some already exist), `-r, --region <region>` (Volcengine region), and `-p, --project <name>` (AgentKit project, default `default`). `sessions`, `logs`, and `rm` accept only the subset used to resolve a sandbox; see each command's table for its exact flags. `attach` is an alias for `shell`.
 
 When `--tool-id` is omitted and `--auto-create` is not set, the CLI looks for a sandbox of the requested type in the project: **exactly one is used automatically; when several exist the command fails and asks you to pass `--tool-id`**; when none exist you need `--auto-create`. Passing `--auto-create` always provisions a brand-new sandbox—even when the project already has some—and waits for it to become ready before use. Having several `code` sandboxes in a project is common, so run `agentkit sandbox list` to find the target id and pass it via `--tool-id`.
 </Note>
@@ -34,8 +33,22 @@ Create a sandbox (a `code` or `skill` environment).
 | `--env <KEY=VALUE>` | Environment variable (repeatable). | — |
 | `--json <jsonString>` | Extra fields as a JSON object, merged into the request body. | — |
 
+<Warning>
+`sandbox create` provisions cloud compute resources that may incur charges while they exist. Confirm the project, region, resource size, and image source before creating one. Delete the sandbox with `sandbox delete` when it is no longer needed.
+</Warning>
+
 ```bash
 agentkit sandbox create --name dev-sandbox --type code --cpu 1000 --memory 2048
+```
+
+The following example creates a web sandbox from a custom image. Replace the image URL with one that your project can access:
+
+```bash
+agentkit sandbox create \
+  --name web-sandbox \
+  --image-url your-registry.example.com/team/python-web:latest \
+  --command "python -m http.server 8080" \
+  --port 8080
 ```
 
 ## sandbox list
@@ -90,6 +103,10 @@ agentkit sandbox update t-12345678 --description "Dev sandbox" --port 9090
 
 Delete a sandbox—the environment itself. To delete a single session instead, use [`sandbox rm`](#sandbox-rm).
 
+<Warning>
+Deleting a sandbox cannot be undone. Its sessions and files that were not stored elsewhere may be lost with it. Confirm the sandbox ID and download or persist required files before proceeding.
+</Warning>
+
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `<id>` | Sandbox id, e.g. `t-xxxxxxxx` (required). | — |
@@ -126,11 +143,11 @@ Run a command in a sandbox session and print its output.
 agentkit sandbox run "ls -la" --session my-session
 ```
 
-A one-shot `run` waits for the command to finish, so an interactive program—an editor, a REPL, or `codex` launched with no arguments—would block until the timeout elapses. Open an interactive session with `agentkit sandbox attach` instead, or raise `--timeout` (or set it to `0`) for long-running non-interactive jobs.
+A one-shot `run` waits for the command to finish, so an interactive program—an editor, a REPL, or `codex` launched with no arguments—would block until the timeout elapses. Open an interactive session with `agentkit sandbox shell` instead, or raise `--timeout` (or set it to `0`) for long-running non-interactive jobs.
 
-## sandbox attach
+## sandbox shell
 
-Open an interactive terminal in a sandbox session (Ctrl-] to detach).
+Open an interactive terminal in a sandbox session (Ctrl-] to detach). `sandbox attach` is an alias for this command.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
@@ -150,7 +167,7 @@ Open an interactive terminal in a sandbox session (Ctrl-] to detach).
 | `-p, --project <name>` | AgentKit project | `default` |
 
 ```bash
-agentkit sandbox attach --tmux --session my-session
+agentkit sandbox shell --tmux --session my-session
 ```
 
 ## sandbox cp
@@ -170,7 +187,14 @@ Copy files to/from a sandbox session — prefix the remote side with `:`.
 | `-p, --project <name>` | AgentKit project | `default` |
 
 ```bash
+# Upload a local file
 agentkit sandbox cp ./local.txt :/workspace/local.txt --session my-session
+
+# Download a remote file
+agentkit sandbox cp :/workspace/report.json ./report.json --session my-session
+
+# Allow replacement when the destination already exists
+agentkit sandbox cp :/workspace/report.json ./report.json --session my-session --overwrite
 ```
 
 ## sandbox web
@@ -192,6 +216,10 @@ agentkit sandbox web --session my-session
 ```
 
 ## sandbox login
+
+<Warning>
+This command copies a local subscription credential into a remote sandbox session. Use it only with a trusted sandbox and a dedicated session, and do not share that session with others. When finished, delete the session with `agentkit sandbox rm <session> -y`.
+</Warning>
 
 Inject your local codex/claude subscription into a sandbox session.
 

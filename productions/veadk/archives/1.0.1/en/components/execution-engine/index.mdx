@@ -42,6 +42,47 @@ print(response)
   `run_async()`.
 </Note>
 
+## Use Harness execution enhancements
+
+VeADK 1.0.1 provides Harness plugins that attach to `Runner` to prepare context before each turn, compact large tool results, and check whether final answers are supported by tool results. The base plugins ship with VeADK. Install the `harness` extra when using the Headroom compaction provider:
+
+```bash
+pip install "veadk-python[harness]==1.0.1"
+```
+
+```python
+from veadk import Agent, Runner
+from veadk.extensions.harness.plugins import build_harness_plugins
+
+agent = Agent(name="research_agent")
+runner = Runner(
+    agent=agent,
+    app_name="research",
+    plugins=build_harness_plugins(
+        components=["invocation_context", "compactor", "response_verification"],
+        profile="research",
+    ),
+)
+```
+
+| Component | Purpose |
+| --- | --- |
+| `invocation_context` | Prepares task anchors, recent context, and tool-use constraints. |
+| `compactor` | Compacts oversized tool results while retaining task-relevant facts. |
+| `response_verification` | Records tool results and checks whether key final claims are supported. |
+
+## Discover remote agents from AgentKit
+
+When deploying a Harness service, enable AgentKit A2A Registry to discover matching remote agents from an agent center for each turn:
+
+```bash
+export REGISTRY_TYPE="agentkit_a2a"
+export REGISTRY_SPACE_ID="your-agent-center-id"
+export REGISTRY_TOP_K="3"
+```
+
+`REGISTRY_TOP_K` limits the candidates retrieved per turn and defaults to `3`. The runtime needs access to AgentKit A2A Registry. When a remote Agent Card declares authentication, it also needs the corresponding API key or Identity OpenAPI permissions. See [Outbound authentication](/productions/veadk/archives/1.0.1/en/components/security/outbound#a2a-remote-agent-authentication) for OAuth2 remote calls.
+
 ## Streaming events
 
 `Runner.run_async()` returns an async generator that yields the events produced

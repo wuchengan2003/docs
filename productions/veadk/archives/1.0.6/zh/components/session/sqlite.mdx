@@ -2,9 +2,7 @@
 title: "使用 SQLite 存储"
 ---
 
-`sqlite` 后端把会话持久化到一个本地 SQLite 文件，底层使用 Google ADK 的 `DatabaseSessionService`。它不依赖外部数据库服务，但与 `local` 不同，会话会落盘，因此可以跨进程、跨重启保留。
-
-对应的后端实现类为 `SQLiteSTMBackend`，`ShortTermMemory` 会把 `local_database_path` 作为它的 `local_path` 传入。
+`sqlite` 后端把会话持久化到一个本地 SQLite 文件。它不依赖外部数据库服务，但与 `local` 不同，会话会落盘，因此可以跨进程、跨重启保留。
 
 ## 何时使用
 
@@ -48,18 +46,8 @@ stm = ShortTermMemory(db_url="sqlite:///./test.db")
 | `db_kwargs` | `dict` | `{}` | 不生效 | `sqlite` 后端不透传此项；仅在使用 `db_url` 或 `mysql`/`postgresql` 时生效。 |
 | `after_load_memory_callback` | `Callable \| None` | `None` | 生效 | 读取会话后触发的回调，入参为加载到的 `Session`。 |
 
-### 后端实现类参数（SQLiteSTMBackend）
-
-| 参数 | 类型 | 默认值 | 说明 |
-| :--- | :--- | :--- | :--- |
-| `local_path` | `str` | 无（必填） | SQLite 文件的本地路径。由 `ShortTermMemory` 从 `local_database_path` 自动传入，一般无需直接构造该类。 |
-
-<Note>
-VeADK 会根据 Google ADK 版本自动选择连接串方案：ADK ≥ 1.19.0 使用异步驱动 `sqlite+aiosqlite:///<绝对路径>`，否则使用同步的 `sqlite:///<绝对路径>`。
-</Note>
-
 ## 环境变量
 
 `sqlite` 后端不读取任何环境变量，所有配置均通过构造参数提供。
 
-需要分布式持久化？请改用 [MySQL](/productions/veadk/preview/zh/components/session/mysql) 或 [PostgreSQL](/productions/veadk/preview/zh/components/session/postgresql)。
+需要分布式持久化？请改用 [MySQL](/productions/veadk/archives/1.0.6/zh/components/session/mysql) 或 [PostgreSQL](/productions/veadk/archives/1.0.6/zh/components/session/postgresql)。

@@ -7,7 +7,7 @@ title: "自定义工具"
 当内置工具无法满足业务需求时，可以把任意 Python 函数封装成**自定义工具**，扩展智能体的能力。本页介绍三种形式：普通入参函数、携带运行时上下文的函数，以及长时运行任务。
 
 - 普通入参函数是最基础的自定义工具：定义一个函数、写好类型注解与 Docstring，再注册到 `Agent` 即可。智能体会根据函数签名与 Docstring 决定何时调用、如何传参。
-- 携带运行时上下文的函数在工具函数中加入一个 `tool_context: ToolContext` 参数，就能访问智能体的运行时上下文——会话 ID、用户身份、当前 Agent 等。框架会自动注入该参数，模型不会、也不需要为它传值。
+- 携带运行时上下文的函数在工具函数中加入一个 `tool_context: ToolContext` 参数，就能访问智能体的运行时上下文——共享会话状态等运行时信息。框架会自动注入该参数，模型不会、也不需要为它传值。
 - 长时运行任务适用于耗时或异步的操作（大规模计算、数据分析、批处理等）。用 `LongRunningFunctionTool` 包装函数：工具先返回一个 `pending` 状态与任务 ID，应用在后台推进任务，再把最终结果回填给智能体。
 
 ## 使用方法
@@ -24,7 +24,7 @@ title: "自定义工具"
 描述函数功能、参数与返回值——模型据此理解工具用途。
 </Step>
 
-<Step title="注册到 Agent">
+<Step title="注册到智能体">
 把函数放进 `Agent` 的 `tools` 列表。
 </Step>
 
@@ -98,13 +98,10 @@ def message_checker(user_message: str, tool_context: ToolContext) -> str:
     Returns:
         str: The checked message.
     """
-    print(f"user_message: {user_message}")
-    print(f"current agent: {tool_context._invocation_context.agent.name}")
-    print(f"app_name: {tool_context._invocation_context.app_name}")
-    print(f"user_id: {tool_context._invocation_context.user_id}")
-    print(f"session_id: {tool_context._invocation_context.session.id}")
+    call_count = tool_context.state.get("message_checker_calls", 0) + 1
+    tool_context.state["message_checker_calls"] = call_count
 
-    return f"Checked message: {user_message.upper()}"
+    return f"Checked message: {user_message.upper()} (call {call_count})"
 
 
 agent = Agent(
@@ -119,7 +116,7 @@ response = asyncio.run(runner.run("Hello world!"))
 print(response)
 ```
 
-工具函数因此可以访问会话 ID、用户身份、当前执行的 Agent 等信息，从而做出更智能的决策。
+工具函数可以通过 `tool_context.state` 读取和更新共享会话状态，从而让后续工具调用和回调继续使用这些信息。
 
 ### 长时运行任务
 

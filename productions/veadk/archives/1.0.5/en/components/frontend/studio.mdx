@@ -73,6 +73,8 @@ The management page can display runtime environment-variable values. Restrict St
 
 `veadk studio deploy` deploys Studio as a VeFaaS application protected by VeIdentity login. It creates or reuses a Serverless API Gateway. Unless you pass an IAM role, it also creates or reuses `VeADKFrontendServiceRole` and `VeADKFrontendPolicy`. After deployment, the command registers the public callback with the user-pool client and updates the application configuration.
 
+When the default role is used, deployment adds the system policies required for model, logging, tracing, knowledge, memory, and identity resources. A role supplied explicitly with `--iam-role` is not modified and must already have the complete permission set.
+
 <Warning>
   This operation creates or changes VeFaaS, API Gateway, IAM, and VeIdentity resources. It can incur charges and affect production access. The default role has broad permissions to create and manage AgentKit runtimes and related cloud resources. Have an administrator review the scope before production deployment; pass `--iam-role` to use a preconfigured, narrower role.
 </Warning>

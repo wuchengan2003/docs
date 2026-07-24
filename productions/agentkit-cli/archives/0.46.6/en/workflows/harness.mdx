@@ -1,6 +1,5 @@
 ---
 title: "Using Harness"
-tag: "NEW"
 ---
 
 The harness path suits cases that need no custom code: the agent's model, tools, knowledge base, memory, and prompt all live in a single `harness.yaml`, which the CLI builds and deploys as a runtime. The whole loop revolves around that one file — initialize, configure, deploy, invoke, then return to configuration to iterate.
@@ -8,6 +7,10 @@ The harness path suits cases that need no custom code: the agent's model, tools,
 <Note>
   Configure credentials first. `harness deploy` is a control-plane operation and requires AK/SK; [SSO login](/productions/agentkit-cli/archives/0.46.6/en/commands/auth) currently only covers invoking (`invoke`) a deployed runtime. See the Authentication section of the [Quickstart](/productions/agentkit-cli/archives/0.46.6/en/quickstart).
 </Note>
+
+<Warning>
+`harness deploy` builds an image and creates or updates a cloud Runtime, which may incur charges. Updating an existing Runtime also changes its production behavior. Confirm the project, region, configuration, and credential references before deployment, and release changes during an appropriate operational window.
+</Warning>
 
 <Steps>
   <Step title="Initialize the harness">
@@ -59,6 +62,10 @@ The harness path suits cases that need no custom code: the agent's model, tools,
 </Steps>
 
 When you no longer need the runtime, delete it to free resources:
+
+<Warning>
+Runtime deletion cannot be undone and stops production calls. Confirm the name, project, and region, and retain required configuration, logs, and business data before proceeding.
+</Warning>
 
 ```bash
 agentkit runtime delete my-harness -y

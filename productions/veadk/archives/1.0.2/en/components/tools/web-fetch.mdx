@@ -1,6 +1,5 @@
 ---
 title: "Web fetch"
-tag: "Function tool"
 ---
 
 ## Overview
@@ -62,6 +61,7 @@ if __name__ == "__main__":
 Security & limits:
 
 - **SSRF protection**: after DNS resolution it blocks private / loopback / link-local / reserved addresses, and re-validates every redirect hop (including `<meta refresh>`), following at most 3 hops.
+- **TLS verification**: HTTPS requests verify certificates; an invalid or unverifiable certificate causes the request to fail with an error.
 - **Limits**: 2 MB download cap for HTML (10 MB for PDFs); 30 s request timeout; results cached in-process for 15 minutes.
 - No JavaScript rendering; no socket-level DNS pinning (resolve-then-revalidate only).
 </Note>

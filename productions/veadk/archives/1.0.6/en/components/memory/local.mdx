@@ -1,8 +1,8 @@
 ---
-title: "In-memory (local)"
+title: "Use in-memory storage"
 ---
 
-The `local` backend is implemented by `InMemoryLTMBackend` and keeps long-term memory in **the current process's memory**. Memory text is embedded by an embedding model and written to a llama-index in-memory vector index; retrieval recalls by semantic similarity.
+The `local` backend keeps long-term memory in **the current process's memory**. Memory text is embedded by an embedding model and written to a llama-index in-memory vector index; retrieval recalls by semantic similarity.
 
 Because the data lives only in process memory, it is cleared when the process exits and cannot be shared across processes. The backend is therefore intended for local development, debugging, and quickly validating the end-to-end long-term memory flow — not for production.
 
@@ -36,15 +36,15 @@ agent = Agent(
 )
 ```
 
-For a full cross-session example, see [Long-term memory · Cross-session example](/productions/veadk/preview/en/components/memory/index#cross-session-example).
+For a full cross-session example, see [Long-term memory · Cross-session example](/productions/veadk/archives/1.0.6/en/components/memory/index#cross-session-example).
 
 ## Parameters
 
-The `local` backend is constructed internally by `LongTermMemory`. Usually you only pass `index` or `app_name` at the `LongTermMemory` level; to customize embedding, pass `embedding_config` via `backend_config`, or construct the backend instance directly and pass it as `LongTermMemory(backend=<instance>)`.
+Usually you only pass `index` or `app_name` to `LongTermMemory`. To customize embedding, pass `embedding_config` through `backend_config`.
 
 ### Constructor parameters
 
-`InMemoryLTMBackend` accepts the following fields:
+`backend_config` supports the following settings:
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -77,5 +77,5 @@ If `MODEL_EMBEDDING_API_KEY` is not set separately, VeADK reuses `MODEL_AGENT_AP
 </Note>
 
 <Warning>
-The `local` backend keeps memory only in process memory; data is lost when the process exits and cannot be shared across processes. For persistence or multi-instance sharing, use [VikingDB](/productions/veadk/preview/en/components/memory/vikingdb), [Mem0](/productions/veadk/preview/en/components/memory/mem0), [OpenSearch](/productions/veadk/preview/en/components/memory/opensearch), or [Redis](/productions/veadk/preview/en/components/memory/redis).
+The `local` backend keeps memory only in process memory; data is lost when the process exits and cannot be shared across processes. For persistence or multi-instance sharing, use [VikingDB](/productions/veadk/archives/1.0.6/en/components/memory/vikingdb), [Mem0](/productions/veadk/archives/1.0.6/en/components/memory/mem0), [OpenSearch](/productions/veadk/archives/1.0.6/en/components/memory/opensearch), or [Redis](/productions/veadk/archives/1.0.6/en/components/memory/redis).
 </Warning>

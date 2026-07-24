@@ -23,7 +23,7 @@ veadk studio --agents-dir ./agents --open
 
 ## 创建智能体
 
-1. 在「添加 Agent」中选择自定义；智能模式、模板和工作流入口暂不可用。
+1. 在「添加智能体」中选择自定义；智能模式、模板和工作流入口暂不可用。
 2. 配置模型、系统提示词、工具、记忆和知识库，并从 Skill Hub、本地上传或 AgentKit SkillSpace 添加技能。多智能体项目还可以配置顺序、并行、循环或 A2A 节点。
 3. 检查生成的项目文件，并在受限的临时进程中测试运行；需要离线使用时下载 ZIP。
 4. 选择部署到 AgentKit，观察构建镜像、部署和发布进度。
@@ -32,7 +32,7 @@ veadk studio --agents-dir ./agents --open
 
 ## 管理智能体
 
-「管理 Agent」列出当前登录用户通过该工作台部署的 AgentKit Runtime。列表按部署时记录的用户标识过滤，可以查看：
+「管理智能体」列出当前登录用户通过该工作台部署的 AgentKit Runtime。列表按部署时记录的用户标识过滤，可以查看：
 
 - Runtime 名称、ID、状态、区域和创建时间；
 - 模型、描述、项目、版本、资源规格和更新时间；
@@ -72,6 +72,8 @@ veadk studio --agents-dir ./agents --open
 ## 部署到 VeFaaS
 
 `veadk studio deploy` 将 Studio 部署为 VeFaaS 应用，并接入 VeIdentity 登录。部署命令会创建或复用 Serverless API Gateway；未指定 IAM Role 时，还会创建或复用 `VeADKFrontendServiceRole` 及 `VeADKFrontendPolicy`。部署完成后，命令会把公网回调地址注册到用户池客户端并更新应用配置。
+
+使用默认 Role 时，部署命令会为其补充访问模型、日志、追踪、知识库、记忆与身份资源所需的系统策略。通过 `--iam-role` 显式指定的 Role 不会被修改，需提前配置完整权限。
 
 <Warning>
   此操作会创建或修改 VeFaaS、API Gateway、IAM 和 VeIdentity 资源，可能产生费用并影响线上访问。默认 Role 具备用于创建和管理 AgentKit Runtime 及相关云资源的广泛权限。生产环境部署前应由管理员审查权限范围；需要收敛权限时，通过 `--iam-role` 使用预先配置的 Role。

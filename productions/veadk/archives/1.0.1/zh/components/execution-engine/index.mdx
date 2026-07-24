@@ -33,9 +33,50 @@ print(response)
   `run()` 封装度较高。当 `Runner` 配置了短期会话时，它会按需自动创建会话。若需要更细粒度地控制执行过程，使用 `run_async()`。
 </Note>
 
+## 使用 Harness 增强执行
+
+VeADK 1.0.1 提供可挂载到 `Runner` 的 Harness 插件，用于在每轮调用前准备上下文、压缩较大的工具结果，并检查最终回答是否有工具结果支持。基础插件随 VeADK 提供；需要 Headroom 压缩实现时安装 `harness` 依赖组：
+
+```bash
+pip install "veadk-python[harness]==1.0.1"
+```
+
+```python
+from veadk import Agent, Runner
+from veadk.extensions.harness.plugins import build_harness_plugins
+
+agent = Agent(name="research_agent")
+runner = Runner(
+    agent=agent,
+    app_name="research",
+    plugins=build_harness_plugins(
+        components=["invocation_context", "compactor", "response_verification"],
+        profile="research",
+    ),
+)
+```
+
+| 组件 | 作用 |
+| --- | --- |
+| `invocation_context` | 为当前任务准备锚点、近期上下文和工具使用约束。 |
+| `compactor` | 压缩过大的工具结果，同时保留与任务有关的事实。 |
+| `response_verification` | 记录工具结果，并检查最终回答中的关键结论是否有依据。 |
+
+## 从 AgentKit 智能体中心发现远程智能体
+
+部署 Harness 服务时，可以启用 AgentKit A2A Registry，使运行时按每轮请求从指定智能体中心发现匹配的远程智能体：
+
+```bash
+export REGISTRY_TYPE="agentkit_a2a"
+export REGISTRY_SPACE_ID="your-agent-center-id"
+export REGISTRY_TOP_K="3"
+```
+
+`REGISTRY_TOP_K` 控制每轮最多召回的候选数量，默认值为 `3`。运行时需要访问 AgentKit A2A Registry；远程 Agent Card 声明鉴权方式时，还需要相应的 API Key 或 Identity OpenAPI 权限。OAuth2 远程调用的凭据处理见[出站认证](/productions/veadk/archives/1.0.1/zh/components/security/outbound#a2a-远程智能体鉴权)。
+
 ## 流式处理事件
 
-`Runner.run_async()` 返回一个异步生成器，逐个产出智能体执行过程中的事件（Event）。相比 `run()` 只拿到最终文本，遍历事件可以获得思考过程、工具调用与结果、以及流式增量，便于自行开发上层逻辑。
+`Runner.run_async()` 返回一个异步生成器，逐个产出智能体执行过程中的事件。相比 `run()` 只拿到最终文本，遍历事件可以获得思考过程、工具调用与结果、以及流式增量，便于自行开发上层逻辑。
 
 ```python
 import asyncio

@@ -13,7 +13,7 @@ Why you need it:
 
 ## Single entry point: `LongTermMemory`
 
-Whatever backend you use, you interact with `veadk.memory.long_term_memory.LongTermMemory`. It implements Google ADK's `BaseMemoryService` (so it plugs straight in as the agent's memory service) and selects/initializes the underlying implementation by `backend`.
+Whatever backend you use, you interact with `veadk.memory.long_term_memory.LongTermMemory`. It plugs directly into an agent as its memory service and selects the storage backend through `backend`.
 
 ```python
 from veadk.memory.long_term_memory import LongTermMemory
@@ -25,8 +25,8 @@ ltm = LongTermMemory(backend="viking", app_name="ltm_demo")
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `backend` | `"local" \| "opensearch" \| "redis" \| "viking" \| "mem0" \| "openviking"` or a backend instance | `"opensearch"` | Selects the backend, or pass a `BaseLongTermMemoryBackend` instance directly. `viking_mem` is deprecated and maps to `viking`. |
-| `backend_config` | `dict` | `{}` | Config passed to the backend constructor; if it lacks `index`, it's filled from `index` or `app_name`. |
+| `backend` | `"local" \| "opensearch" \| "redis" \| "viking" \| "mem0" \| "openviking"` | `"opensearch"` | Selects the backend. `viking_mem` is deprecated and maps to `viking`. |
+| `backend_config` | `dict` | `{}` | Backend-specific settings. If `index` is absent, VeADK fills it from `index` or `app_name`. |
 | `top_k` | `int` | `5` | Number of most-similar chunks to retrieve. |
 | `index` | `str` | `""` | Index/collection name for storing memories. Falls back to `app_name`, then `default_app`. |
 | `app_name` | `str` | `""` | The owning application name; used for data isolation and as the `index` fallback. |
@@ -36,41 +36,18 @@ ltm = LongTermMemory(backend="viking", app_name="ltm_demo")
 Vector backends (`local`, `opensearch`, and `redis`) embed memories locally and require the extensions extra and an embedding model. `viking`, `mem0`, and `openviking` use external services and do not need local embedding.
 </Note>
 
-## Backend contract: `BaseLongTermMemoryBackend`
-
-Every backend extends `BaseLongTermMemoryBackend` and implements three methods:
-
-```python
-class BaseLongTermMemoryBackend(ABC, BaseModel):
-    index: str
-
-    @abstractmethod
-    def precheck_index_naming(self): ...
-    """Validate the index name."""
-
-    @abstractmethod
-    def save_memory(self, user_id: str, event_strings: list[str], **kwargs) -> bool: ...
-    """Write memories to the backend."""
-
-    @abstractmethod
-    def search_memory(self, user_id: str, query: str, top_k: int, **kwargs) -> list[str]: ...
-    """Semantically retrieve memories from the backend."""
-```
-
-`LongTermMemory` filters and serializes session events before handing them to the backend's `save_memory`, and wraps `search_memory` results into ADK `MemoryEntry` objects. So **the usage above the backend is backend-agnostic**; only the storage medium and retrieval implementation differ. To add a custom backend, subclass this base, implement the three methods, and pass the instance via `LongTermMemory(backend=<instance>)`.
-
 ## Choosing a backend
 
 Use `local` for debugging; prefer `viking` or `mem0` in production.
 
 | Backend | Storage | Requires | Use case | Docs |
 | :--- | :--- | :--- | :--- | :--- |
-| `local` | In-memory vector index | `extensions` + embedding | Local debugging | [In-memory](/productions/veadk/preview/en/components/memory/local) |
-| `viking` | VikingDB memory (managed) | Volcengine account | Recommended for production | [VikingDB](/productions/veadk/preview/en/components/memory/vikingdb) |
-| `mem0` | Mem0 memory (managed) | Mem0 API key | Recommended for production | [Mem0](/productions/veadk/preview/en/components/memory/mem0) |
-| `opensearch` | OpenSearch vector store | OpenSearch + embedding | Self-hosted vector search | [OpenSearch](/productions/veadk/preview/en/components/memory/opensearch) |
-| `redis` | Redis vector store | Redis (RediSearch) + embedding | Self-hosted vector search | [Redis](/productions/veadk/preview/en/components/memory/redis) |
-| `openviking` | OpenViking user memory | OpenViking service | Entity, event, and preference memory | [OpenViking](/productions/veadk/preview/en/components/memory/openviking) |
+| `local` | In-memory vector index | `extensions` + embedding | Local debugging | [In-memory](/productions/veadk/archives/1.0.6/en/components/memory/local) |
+| `viking` | VikingDB memory (managed) | Volcengine account | Recommended for production | [VikingDB](/productions/veadk/archives/1.0.6/en/components/memory/vikingdb) |
+| `mem0` | Mem0 memory (managed) | Mem0 API key | Recommended for production | [Mem0](/productions/veadk/archives/1.0.6/en/components/memory/mem0) |
+| `opensearch` | OpenSearch vector store | OpenSearch + embedding | Self-hosted vector search | [OpenSearch](/productions/veadk/archives/1.0.6/en/components/memory/opensearch) |
+| `redis` | Redis vector store | Redis (RediSearch) + embedding | Self-hosted vector search | [Redis](/productions/veadk/archives/1.0.6/en/components/memory/redis) |
+| `openviking` | OpenViking user memory | OpenViking service | Entity, event, and preference memory | [OpenViking](/productions/veadk/archives/1.0.6/en/components/memory/openviking) |
 
 ## Binding to an Agent
 
