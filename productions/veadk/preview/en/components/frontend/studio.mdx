@@ -30,6 +30,24 @@ Volcengine credentials are used for models, cloud-resource queries, and AgentKit
 
 The temporary test process is retained for 1,800 seconds by default and can be changed with `--generated-agent-test-run-ttl`. Generated code can call external services or access data available to Studio, so test only trusted projects and give Studio restricted credentials.
 
+## Knowledge base configuration
+When you enable the knowledge base while creating an agent, you can choose a backend in the Knowledge base section. Studio offers the following backends:
+
+| Backend | Description |
+| :--- | :--- |
+| VikingDB Knowledge | Default backend. Connects to the Volcengine VikingDB managed knowledge base service; splitting, embedding, and retrieval run server-side, so no local embedding is required. |
+| OpenSearch | Uses an OpenSearch cluster; you maintain the cluster and embedding yourself. |
+| Context Search | Uses the Volcengine Context Search retrieval service. |
+
+The local vector store (`local`) is not offered in Studio. To use the local vector store, build the agent directly with the VeADK SDK; see [Use the local vector store](/productions/veadk/preview/en/components/knowledge/local).
+
+When you select VikingDB Knowledge, Studio lists the VikingDB knowledge base collections visible to the current Volcengine credentials, and you can pick an existing collection as this agent's knowledge base index. The selected collection name is written into the generated `KnowledgeBase(backend="viking", index="...")` code. The list is fetched by the server using locally configured Volcengine credentials; without `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY` it cannot load and Studio shows the corresponding error.
+
+<Note>
+  The VikingDB knowledge base collection list and all subsequent access go through server-side credentials; AK/SK pairs are never delivered to the browser. In production, provide credentials through environment variables or a secret manager.
+</Note>
+
+
 ## Deployment network modes
 
 The deploy page lets you choose a network mode for the AgentKit runtime, which determines how it is exposed to the public network:

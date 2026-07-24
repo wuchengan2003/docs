@@ -30,6 +30,24 @@ veadk studio --agents-dir ./agents --open
 
 测试运行进程默认保留 1800 秒，可通过 `--generated-agent-test-run-ttl` 调整。测试代码可能调用外部服务或访问运行环境中的数据，只应测试可信项目，并为 Studio 使用权限受限的凭证。
 
+## 知识库配置
+在创建智能体时启用知识库后，可在「知识库」区域选择后端。Studio 提供以下后端：
+
+| 后端 | 说明 |
+| :--- | :--- |
+| VikingDB Knowledge | 默认后端，对接火山引擎 VikingDB 托管知识库服务，服务端完成切分、向量化与检索，无需本地 embedding。 |
+| OpenSearch | 使用 OpenSearch 集群，需自行维护集群与 embedding。 |
+| Context Search | 使用火山引擎 Context Search 检索服务。 |
+
+本地向量库（`local`）不在 Studio 的选择范围中；如需使用本地向量库，请通过 VeADK SDK 直接编写，参见[使用本地向量库存储](/productions/veadk/preview/zh/components/knowledge/local)。
+
+选择 VikingDB Knowledge 时，Studio 会列出当前火山引擎凭证下可见的 VikingDB 知识库集合，可从中选择一个已有的集合作为该智能体的知识库索引；所选集合名称会写入生成的 `KnowledgeBase(backend="viking", index="...")` 代码。该列表由服务端使用本地配置的火山引擎凭证拉取，未配置 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY` 时无法加载，Studio 会提示相应错误。
+
+<Note>
+  VikingDB 知识库集合列表与后续访问均通过服务端凭证完成，不会把 AK/SK 下发到浏览器。生产环境应通过环境变量或密钥管理服务提供凭证。
+</Note>
+
+
 ## 部署网络模式
 
 在部署页可为 AgentKit Runtime 选择网络模式，决定 Runtime 的公网暴露方式：
