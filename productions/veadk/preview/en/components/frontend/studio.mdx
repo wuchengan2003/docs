@@ -92,6 +92,28 @@ For example, create an LLM root agent named `support_router`, add a remote-agent
 
 The temporary test process is retained for 1,800 seconds by default and can be changed with `--generated-agent-test-run-ttl`. Generated code can call external services or access data available to Studio, so test only trusted projects and give Studio restricted credentials.
 
+### Configure a knowledge base
+
+After enabling a knowledge base for an agent, select one of these backends in Studio:
+
+| Backend | When to use |
+| :--- | :--- |
+| [VikingDB Knowledge](/productions/veadk/preview/en/components/knowledge/viking) | The default. Uses the managed Volcengine knowledge base service for server-side splitting, embedding, and retrieval, without local embedding configuration. |
+| [OpenSearch](/productions/veadk/preview/en/components/knowledge/opensearch) | Uses a self-managed or managed OpenSearch cluster with your embedding configuration. |
+| [Context Search](/productions/veadk/preview/en/components/knowledge/context-search) | Uses the Volcengine Context Search service for retrieval. |
+
+Studio does not offer the `local` backend because its creation flow cannot add documents to the in-process vector store. For local development, use the VeADK SDK to [configure a local knowledge base](/productions/veadk/preview/en/components/knowledge/local).
+
+When you select VikingDB Knowledge, Studio lists collections visible to the current account in the `default` project in Beijing. Selecting an existing collection uses its name as the knowledge base index. If you do not select an existing collection, the index name defaults to `<agent_name>_kb`. Use the refresh button to reload the list.
+
+For a local Studio, provide access through `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY`. A VeFaaS deployment uses temporary credentials from its bound IAM role. Credentials remain on the server and are never delivered to the browser.
+
+| Symptom | Check |
+| :--- | :--- |
+| The knowledge base list is empty | Confirm that the `default` project in Beijing contains a VikingDB knowledge base collection and that the current credentials can view it. |
+| The knowledge base list does not load | Check the Studio login session, network access to VikingDB Knowledge, and credential permissions, then refresh the list. |
+| Project generation or testing fails | Confirm that the knowledge base configuration is complete and that the runtime can access the selected backend. |
+
 ## Use smart search
 
 Smart search provides four retrieval sources:
