@@ -2,9 +2,9 @@
 title: "Studio 智能体工作台"
 ---
 
-VeADK Studio 使用与 VeADK Frontend 相同的服务和完整界面，提供对话、搜索、历史会话、技能中心，以及智能体创建、测试、部署和管理功能，启动后默认进入对话页面。
+VeADK Studio 使用与 VeADK Frontend 相同的服务和完整界面，提供对话、搜索、历史会话、技能中心，以及智能体创建、测试、部署和管理功能，启动后默认进入对话页面。智能体工作台以画布形式呈现多智能体拓扑，并集中展示已部署 Runtime 的版本与部署状态，支持在同一 Runtime 上迭代更新。
 
-当前可通过自定义配置创建项目；智能模式、模板和工作流入口显示为「敬请期待」，暂不可用。你可以预览和编辑生成的文件，启动临时测试进程，将项目下载为 ZIP，或者部署到 AgentKit。Studio 还支持选择云端 Runtime、多来源技能、多模态会话，以及集中查看和重试部署任务。
+当前可通过自定义配置或代码包部署创建项目；智能模式、模板和工作流入口显示为「敬请期待」，暂不可用。你可以预览和编辑生成的文件，启动临时测试进程，将项目下载为 ZIP，或者部署到 AgentKit。Studio 还支持选择云端 Runtime、多来源技能、多模态会话，以及集中查看和重试部署任务。
 
 ## 在本地启动
 
@@ -36,9 +36,161 @@ Logo 最大 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF 和 ICO。也可以通�
 ## 创建智能体
 
 1. 在「添加智能体」中选择自定义；智能模式、模板和工作流入口暂不可用。
-2. 配置模型、系统提示词、工具、记忆和知识库，并从 Skill Hub、本地上传或 AgentKit SkillSpace 添加技能。多智能体项目还可以配置顺序、并行、循环或 A2A 节点。
+2. 配置模型、系统提示词、工具、记忆和知识库，并从 Skill Hub、本地上传或 AgentKit SkillSpace 添加技能。多智能体项目还可以配置顺序、并行、循环或 A2A 节点，并在画布中查看和编排智能体拓扑。
 3. 检查生成的项目文件，并在受限的临时进程中测试运行；需要离线使用时下载 ZIP。
-4. 选择部署到 AgentKit，观察构建镜像、部署和发布进度。
+4. 选择部署到 AgentKit，在工作台中观察构建镜像、部署和发布进度。部署完成后，智能体以已发布状态出现在工作台，后续可在同一 Runtime 上更新。
+
+<Note>
+  自定义创建中的资源选择器（如智能体中心、知识库集合）支持按关键词本地筛选：在下拉框中输入文字即可过滤当前已加载的选项。筛选只作用于已经加载的列表，不会改变地域、项目范围或刷新逻辑。
+</Note>
+
+### 从代码包添加和部署
+
+代码包部署是一种独立的创建方式：在「添加智能体」中选择「从代码包添加和部署」，上传一个已有的智能体项目压缩包，即可在 Studio 中查看或编辑其文件并直接部署到 AgentKit，无需逐项配置模型、工具和技能。适合把在外部编写好的 VeADK 项目快速上线，或对已有项目做少量调整后重新部署。
+
+<Steps>
+  <Step title="上传代码包">
+    在「添加智能体」菜单中选择「从代码包添加和部署」，点击上传区域或拖拽文件即可选择 `.zip` 压缩包。压缩包最大 50 MB，解压后文件数不能超过 800 个，根目录必须包含 `app.py` 作为 AgentKit 启动入口。
+  </Step>
+  <Step title="查看或编辑文件">
+    上传成功后，Studio 会列出已识别的文件数量，并按压缩包文件名生成项目名称（符合 Google ADK 命名规则：以英文字母或下划线开头，仅含英文字母、数字和下划线，不使用保留名 `user`，长度不超过 64 个字符）。点击「查看文件」可在代码浏览器中预览或编辑文件内容；需要替换内容时重新上传压缩包即可。
+  </Step>
+  <Step title="配置部署参数">
+    在部署配置区选择发布区域和网络模式，与自定义创建的部署页一致。代码包部署不显示智能体拓扑和飞书渠道开关。
+  </Step>
+  <Step title="部署到 AgentKit">
+    选择「部署」后，Studio 按四个阶段展示进度：上传代码包、镜像打包、创建 Runtime 和发布服务。每个阶段完成或失败时会在部署进度区显示对应状态。
+  </Step>
+</Steps>
+
+<Note>
+  Studio 会对压缩包做安全处理：自动忽略 `__MACOSX` 目录与 `.DS_Store` 文件；当全部文件位于同一个顶层目录时，会去掉这层包裹目录后再校验入口。包含绝对路径、空段、`.`、`..` 段或空字节的条目会被拒绝；重复文件路径也会报错。`app.py` 必须位于去除包裹目录后的根目录。
+</Note>
+
+<Warning>
+  代码包中的 `app.py` 会在部署后的 AgentKit Runtime 中执行，可能访问外部服务或运行环境中的数据。只部署可信来源的项目，并为 Studio 使用权限受限的凭证。
+</Warning>
+
+| 校验项 | 限制 | 说明 |
+| :--- | :--- | :--- |
+| 压缩包大小 | 50 MB | 单个上传压缩包的最大体积。 |
+| 文件数量 | 800 个 | 解压后保留文件数的上限。 |
+| 解压后总大小 | 50 MB | 解压后内容总大小上限。 |
+| 启动入口 | `app.py` | 去除包裹目录后的根目录必须包含该文件。 |
+| 路径安全 | — | 拒绝绝对路径、`.` / `..` 段、空字节；忽略 `__MACOSX` 与 `.DS_Store`。 |
+| 包裹目录 | 单层 | 全部文件同属一个顶层目录时自动去除该层。 |
+| 项目名称 | 64 个字符 | 由压缩包文件名生成，符合 ADK 命名规则。 |
+
+### 添加技能
+
+创建智能体时可从以下来源添加技能，添加后技能文件写入生成项目的 `skills/` 目录：
+
+- **Skill Hub**：在火山引擎公开技能仓库中按关键词检索技能并添加。
+- **本地上传**：拖入文件夹或选择 ZIP 包。每个技能目录需包含 `SKILL.md`；Studio 检查文件是否存在、文件数量、大小和路径安全，完整的 frontmatter 与技能格式由 ADK 在加载时校验。生成项目中的技能目录名取自 `SKILL.md` 的 `name` 字段或上传目录名。
+- **AgentKit SkillSpace**：浏览当前账号可见的技能空间，选择技能及其版本。
+
+浏览 AgentKit SkillSpace 及其中技能由 Studio 服务端使用自身配置的火山引擎凭证完成，浏览器不会接触凭证。本地启动时通过 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY` 提供访问权限；部署到 VeFaaS 时使用绑定 IAM Role 的临时凭证。启用 SSO 登录后，浏览技能空间需要先完成 Studio 登录。
+
+技能空间列表默认跨地域返回当前账号可见的全部空间；选择某个空间后，按该空间所在地域加载其中的技能列表。需要重新获取列表时使用刷新按钮。
+
+| 现象 | 检查方法 |
+| :--- | :--- |
+| 提示未配置火山引擎凭证 | 本地启动时检查 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY`；VeFaaS 部署检查绑定的 IAM Role。凭证只在服务端使用，不会下发到浏览器。 |
+| 提示需先登录 | 启用 SSO 时，先完成 Studio 登录后再浏览技能空间。 |
+| 技能空间或技能列表为空 | 确认当前凭证有权查看对应地域的技能空间，且所选空间内已有技能；必要时使用刷新按钮重试。 |
+| 列表加载失败 | 检查 Studio 登录状态、网络连通性和凭证权限，然后使用刷新按钮重试。 |
+
+<Note>
+  本地上传不再在导入阶段强制校验 `SKILL.md` 的 `name` 与 `description` 格式，也不要求目录名与 `name` 一致。如果技能在运行时报错，检查 `SKILL.md` frontmatter 是否符合 ADK 技能要求。
+</Note>
+
+<Note>
+  从 AgentKit SkillSpace 添加技能时，若云端版本提供完整文件包，Studio 会下载其中的 `SKILL.md`、脚本、参考文档和资源；未提供完整包时仅使用 `SKILL.md`。单个智能体可添加的技能数量没有固定上限。
+</Note>
+
+### 智能生成智能体配置
+
+自定义创建的构建画布上方提供「智能生成」入口。在输入框中用一句自然语言描述目标，例如「创建一个短视频生产智能体，依次完成趋势调研、脚本编写、素材生产、视频生成和质量复核」，点击「智能生成」即可。
+
+Studio 调用 `doubao-seed-2-0-lite-260428` 模型，根据需求生成一份经过校验的完整智能体配置草稿并填入画布，生成过程会消耗 Token。
+
+<Note>
+  生成结果会替换当前画布与属性配置。如果画布存在未保存的修改，Studio 会先要求确认是否继续。
+</Note>
+
+#### 生成结果的结构
+
+生成的配置遵循以下规则：
+
+- 根智能体始终为顺序编排型，按需求中的执行顺序组织各阶段。
+- 编排型智能体（顺序、并行、循环）只负责调度子智能体，不包含模型、提示词、工具、记忆、知识库或链路观测配置。
+- LLM 智能体始终为叶子节点，自动填充名称、描述、系统提示词、模型、工具、记忆、知识库和链路观测配置，且不能再嵌套子智能体。
+- 生成的 LLM 智能体统一使用 `doubao-seed-2-1-pro-260628` 模型。
+- 编排型智能体的迭代上限默认为 `3`；循环型智能体按需求中指定的循环上限设置。
+- 所有智能体与自定义工具名称为全局唯一的 snake_case Python 标识符。
+- 仅在需求需要时启用记忆、链路观测或工具，不会为只做审查的智能体分配媒体生成工具。
+
+生成的智能体可以选择以下内置工具：
+
+| 工具标识 | 说明 |
+| :--- | :--- |
+| `web_search` | 调用融合信息搜索，检索公开网络结果。 |
+| `parallel_web_search` | 并行执行多次网络搜索。 |
+| `link_reader` | 读取并解析指定 URL 的网页内容。 |
+| `web_scraper` | 抽取公开网页正文。 |
+| `image_generate` | 根据文本提示生成图片。 |
+| `image_edit` | 编辑已有图片。 |
+| `video_generate` | 根据文本或图片输入生成视频。 |
+| `text_to_speech` | 将文本转为语音。 |
+| `run_code` | 在代码沙箱中执行代码。 |
+| `vesearch` | 通过火山引擎联网问答 Agent 搜索公开网络、社媒与新闻。 |
+
+记忆、知识库与链路观测后端按需求选择：
+
+| 能力 | 可选后端 |
+| :--- | :--- |
+| 短期记忆 | `local`、`sqlite`、`mysql`、`postgresql` |
+| 长期记忆 | `local`、`opensearch`、`redis`、`viking`、`mem0` |
+| 知识库 | `viking`、`opensearch`、`context_search` |
+| 链路观测 | `apmplus`、`cozeloop`、`tls` |
+
+当某项能力被禁用时，对应后端使用默认值（记忆使用 `local`，知识库使用 `viking`）。生成配置不会为 LLM 智能体分配企业知识库搜索工具，除非该智能体明确需要公开网络检索。
+
+#### 未决项
+
+生成结果会列出尚未确定的资源或标识（如实例 ID、URL、凭证、MCP 服务或技能 ID），Studio 不会虚构这些信息。生成后需在画布中按需补充实际资源。
+
+#### 使用步骤
+
+<Steps>
+  <Step title="输入需求">
+    在构建画布上方的输入框中用自然语言描述目标，输入长度上限为 8000 字符。
+  </Step>
+  <Step title="生成配置">
+    点击「智能生成」。生成期间输入框置灰，完成后画布填入新的配置草稿，并显示一条摘要说明。
+  </Step>
+  <Step title="检查未决项">
+    查看生成结果中的未决项提示，按需在画布中补充实际资源或标识。
+  </Step>
+  <Step title="调整与测试">
+    像自定义创建一样检查、编辑配置，然后生成项目并启动临时测试，或下载 ZIP、部署到 AgentKit。
+  </Step>
+</Steps>
+
+生成完成后可点击「重新生成」再次基于同一需求生成新配置。
+
+#### 权限与失败处理
+
+启用角色访问控制时，智能生成仅对 `developer` 和 `admin` 开放。
+
+生成失败时 Studio 会弹窗提示。常见情况包括：
+
+| 现象 | 检查方法 |
+| :--- | :--- |
+| 生成超时 | 服务端生成限时 180 秒，超时后返回超时提示，可缩短需求后重试。 |
+| 模型调用失败 | 检查火山引擎凭证与模型访问权限；错误信息已做凭据脱敏处理。 |
+| 提示无权限 | 确认当前账号具有 `developer` 或 `admin` 角色。 |
+
 
 ### 添加远程智能体
 
@@ -90,7 +242,7 @@ Logo 最大 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF 和 ICO。也可以通�
 | 测试时未发现可用智能体 | 确认中心内已有与测试请求匹配且可调用的智能体；必要时调整召回数量。 |
 | 发现成功但远程调用失败 | 检查地域、OpenAPI 地址、中心内智能体状态以及运行环境访问 AgentKit 的权限和网络。 |
 
-测试运行进程默认保留 1800 秒，可通过 `--generated-agent-test-run-ttl` 调整。测试代码可能调用外部服务或访问运行环境中的数据，只应测试可信项目，并为 Studio 使用权限受限的凭证。
+测试运行进程默认保留 1800 秒，可通过 `--generated-agent-test-run-ttl` 调整。每位登录用户最多同时运行 3 个生成智能体测试进程；超出上限时返回 429，需关闭不再使用的调试页面后重试。刷新页面后遗留的测试进程会被自动清理，单次测试运行最多接受 300 个项目文件。测试代码可能调用外部服务或访问运行环境中的数据，只应测试可信项目，并为 Studio 使用权限受限的凭证。
 
 ### 配置知识库
 
@@ -113,6 +265,31 @@ Studio 不提供 `local` 后端，因为创建页面不能为进程内向量库�
 | 知识库列表为空 | 确认北京地域 `default` 项目中已有 VikingDB 知识库集合，并确认当前凭证有权查看。 |
 | 知识库列表加载失败 | 检查 Studio 登录状态、VikingDB Knowledge 服务的网络连通性和凭证权限，然后刷新列表。 |
 | 生成或测试失败 | 确认知识库配置完整，并检查运行环境能否访问对应后端。 |
+
+### 添加代码执行工具
+
+在自定义创建的内置工具中选择「代码执行」后，Studio 会把 `run_code` 工具加入生成的 Python 代码，并在内置工具列表下方显示该工具依赖的沙箱配置。代码、语言和超时由智能体按 `run_code` 的工具函数签名在运行时传入，`tool_context` 由 ADK 自动注入，无需在 Studio 中填写。
+
+| Studio 配置 | 生成项目环境变量 | 类型 | 是否必填 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| 代码执行沙箱 ID | `AGENTKIT_TOOL_ID` | `str` | 是 | — | `run_code` 使用的 AgentKit 代码执行沙箱 ID，形如 `t-xxxxxxxx`。 |
+| AgentKit Tools 地域 | `AGENTKIT_TOOL_REGION` | `str` | 否 | `cn-beijing` | 调用 AgentKit Tools 的地域。 |
+
+<Note>
+  这两个值会同时用于本地调试运行和部署后的运行时，生成的 `.env.example` 也会包含这两个变量。沙箱 ID 与地域只在 Studio 服务端使用，不会下发到浏览器。
+</Note>
+
+关于 `run_code` 的完整参数、Shell 执行和凭证要求，参见[代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox)。
+
+## 查看子智能体移交
+
+在多智能体项目中，根智能体可以把任务移交给子智能体执行。当发生移交时，Studio 会在对话中为子智能体的回复单独显示一张标注「智能体移交」的卡片，并展示该子智能体的名称和描述；子智能体的输出不再与根智能体的回复混在同一个消息气泡中。
+
+子智能体的名称和描述来自项目结构中的智能体配置。如果子智能体未配置描述，卡片会显示默认说明。子智能体完成输出后，后续回复继续显示为根智能体的消息。
+
+<Note>
+该展示适用于本地子智能体和远程智能体。远程智能体只能作为子智能体，不能作为根智能体。
+</Note>
 
 ## 使用智能搜索
 
@@ -139,6 +316,10 @@ Studio 根据智能体元数据启用实际可用的检索源，未挂载的来�
 
 VPC 私有 Runtime 部署完成后不返回公网数据面地址，Studio 通过服务端运行时代理访问该 Runtime，数据面 API Key 始终保留在服务端，不会下发到浏览器。该连接方式与「选择云端 Runtime」中所述的服务端运行时代理一致。
 
+<Note>
+  部署完成后，Studio 会自动连接新创建的 Runtime。若 Runtime 已部署成功但 Studio 暂时无法连接（网关域名可能仍在生效，或当前网络/DNS 无法访问该 Runtime），部署任务会标记为「部署完成，暂未连接」并保留进度卡片与提示信息，可在「管理智能体」中重试连接。
+</Note>
+
 ## 管理智能体
 
 「管理智能体」列出当前登录用户通过该工作台部署的 AgentKit Runtime。列表默认展示北京区域的 Runtime，也可以切换到上海。列表按部署时记录的用户标识过滤，可以查看：
@@ -157,9 +338,36 @@ Studio 不会在浏览器中保存 Runtime API Key，因此管理页只显示 Ru
 
 管理页可能展示 Runtime 的环境变量值。仅应向经过授权的用户开放 Studio，并避免把明文密钥放入普通环境变量；优先使用平台支持的密钥管理能力。
 
+智能体工作台将已部署 Runtime 与本地草稿统一管理。每个已部署智能体显示当前版本号，并标注部署状态：部署中、待更新、尚未发布、失败或已取消。已部署的智能体可直接在工作台中重新编辑并更新到同一 Runtime，无需新建部署。
+
+## 更新已部署的智能体
+
+已部署到 AgentKit 的智能体可以在 Studio 中重新编辑并更新到同一 Runtime，而不必每次创建新部署。更新会基于该 Runtime 的当前版本生成递增的镜像版本，并在原 Runtime 上发布新版本。
+
+<Steps>
+  <Step title="选择已部署的智能体">
+    在智能体工作台中选择一个已部署的智能体。Studio 从该 Runtime 读取智能体的名称、描述、模型、系统提示词、工具与子智能体结构，并加载到可编辑草稿中。
+  </Step>
+  <Step title="修改配置">
+    在画布或配置面板中调整模型、系统提示词、工具、技能或子智能体结构，与创建智能体时使用相同的编辑能力。
+  </Step>
+  <Step title="更新并发布">
+    选择「更新并发布」。Studio 按准备、构建镜像、部署服务、发布的阶段展示进度；部署服务阶段会复用原 Runtime 标识并发布递增版本。
+  </Step>
+  <Step title="验证更新">
+    更新完成后，工作台中该智能体的版本号递增，部署状态恢复为已发布。可在对话页面连接该 Runtime 验证新配置是否生效。
+  </Step>
+</Steps>
+
+<Note>
+  在更新过程中取消部署任务不会销毁已有 Runtime，原版本仍保持可用。仅创建全新部署时，取消任务才会清理未完成的 Runtime 资源。
+</Note>
+
+更新操作仍然受 Studio 角色权限约束：`admin` 可更新全部 Studio 管理的 Runtime，`developer` 只能更新自己创建的 Runtime，普通用户无权更新。
+
 ## 选择云端 Runtime
 
-在云端模式下，对话页面侧边的智能体选择器会列出当前登录用户通过该工作台部署的 AgentKit Runtime，并按区域分页浏览。每条 Runtime 提供两个独立操作：
+在云端模式下，对话页面顶部的智能体选择器会列出当前登录用户通过该工作台部署的 AgentKit Runtime，并按区域分页浏览。每条 Runtime 提供两个独立操作：
 
 - **连接**：将该 Runtime 设为当前对话使用的智能体，选择器随即关闭并切换到该 Runtime。
 - **信息**：展开一个分标签信息面板，无需连接或持久化即可预览该 Runtime 的能力。
@@ -173,29 +381,30 @@ Studio 不会在浏览器中保存 Runtime API Key，因此管理页只显示 Ru
   「Runtime 详情」标签可能展示 Runtime 的环境变量值。仅向经过授权的用户开放 Studio，并优先使用平台支持的密钥管理能力。
 </Note>
 
-连接 Runtime 时若无法建立连接，Studio 会区分失败原因并给出对应提示，便于直接定位问题：
+连接 Runtime 时，Studio 会先对只读接口（智能体列表、智能体信息、会话列表）进行就绪探测：若 Runtime 刚部署尚未就绪，Studio 会自动重试，最多 10 次，每次间隔递增（最长 5 秒）。重试耗尽或遇到其他错误后仍无法连接时，Studio 会区分失败原因并给出对应提示，便于直接定位问题：
 
 - **权限不足**：当前账号无权访问该 Runtime，可刷新列表或重新登录后重试。
 - **Agent Server 不可连接**：Runtime 的 Agent Server 未提供连接接口，通常是 Runtime 尚未就绪或版本不兼容，需确认 Runtime 状态与版本。
+- **私网 Runtime 不可达**：Runtime 仅部署在 VPC 内且未暴露公网地址，而当前 Studio 所在环境无法访问该 VPC。请使用已绑定相同 VPC 的 Studio 访问，或改用公网或公网 + VPC 部署模式。
 - **鉴权失败**：Runtime 服务拒绝了连接请求，需检查 Runtime 的鉴权配置。
 
-这样无需查看日志即可判断应刷新、重新登录，还是检查 Runtime 就绪状态与鉴权配置。
+这样无需查看日志即可判断应刷新、重新登录，检查 Runtime 就绪状态，还是调整网络部署模式。
 
-## 使用临时会话和 Skill 创建
+## 使用内置智能体和 Skill 创建
 
-新会话支持三种模式：
+新会话支持三种模式，模式选择器对所有用户可见：
 
-- **智能体对话**：与当前选中的智能体进行普通多轮对话。
-- **临时会话**：在独立的 AgentKit CodeEnv Session 中进行多轮对话；退出后删除云端 Session，内容不写入普通历史会话。
+- **智能体对话**：与当前选中的智能体进行普通多轮对话。空输入时显示快捷提示，可点击快速填入常用提问。
+- **内置智能体**：使用平台提供的智能体进行对话。当前可选 Codex 智能体，在独立的 AgentKit CodeEnv Session 中进行多轮对话；退出后删除云端 Session，内容不写入普通历史会话。
 - **Skill 创建**：并行生成两个 Skill 候选方案，完成后可对比、预览、下载 ZIP 或添加到 AgentKit。
 
 Skill 创建仅对 `developer` 和 `admin` 开放。每个候选使用独立 Session，生成结果在打包前会检查 `SKILL.md`、文件数量、大小和路径安全。候选 Session 的有效期为 30 分钟；重新创建或离开任务时会立即清理。创建或凭据准备失败时，Studio 会展示不包含凭据的错误信息，便于定位 Tool 状态、区域或模型凭据问题。
 
-普通对话在同一会话中发送后续消息时会继续使用已有消息历史；只有新建会话才会从空上下文开始。若 Runtime 无法连接，Studio 会区分权限不足、Agent Server 不可达和鉴权失败，并显示对应的排查方向。
+普通对话在同一会话中发送后续消息时会继续使用已有消息历史；只有新建会话才会从空上下文开始。若 Runtime 无法连接，Studio 会区分权限不足、Agent Server 不可达、私网 Runtime 不可达和鉴权失败，并显示对应的排查方向。
 
 ### 本地配置
 
-本地使用临时会话和 Skill 创建前，分别准备两个处于 `Ready` 状态的 AgentKit CodeEnv Tool，并配置其 ID：
+本地使用内置智能体和 Skill 创建前，分别准备两个处于 `Ready` 状态的 AgentKit CodeEnv Tool，并配置其 ID：
 
 ```bash
 export SANDBOX_CHAT_CODEX="your-chat-code-env-tool-id"
@@ -206,11 +415,25 @@ veadk studio --agents-dir ./agents --open
 
 | 环境变量 | 默认值 | 说明 |
 | :--- | :--- | :--- |
-| `SANDBOX_CHAT_CODEX` | — | 临时会话使用的 AgentKit CodeEnv Tool ID；本地使用该模式时必填。 |
+| `SANDBOX_CHAT_CODEX` | — | 内置智能体使用的 AgentKit CodeEnv Tool ID；本地使用该模式时必填。 |
 | `SANDBOX_SKILL_CREATOR` | — | Skill 创建使用的 AgentKit CodeEnv Tool ID；本地使用该模式时必填。 |
 | `VEADK_SKILL_CREATOR_TOS_BUCKET` | AgentKit 账户默认 Bucket | 发布 Skill 产物使用的 TOS Bucket。 |
 | `VEADK_SKILL_CREATOR_TOS_PREFIX` | `agentkit/skills` | 发布产物的 TOS 对象 Key 前缀。 |
 | `VEADK_SKILL_CREATOR_PROJECT_NAME` | — | 创建 Skill 时使用的项目名称。 |
+
+
+## 管理会话能力
+
+VeADK 1.0.9 起，连接的 Runtime 暴露会话级能力叠加接口时，Studio 可管理当前会话的工具与技能。
+
+当连接的 Runtime 暴露会话级能力叠加接口时，对话页面的智能体信息面板会在工具与技能列表中显示「在此对话中添加工具」与「在此对话中添加技能」入口。添加的能力仅对当前会话生效，不修改已部署的根智能体，也不会写入其他会话。
+
+- **内置工具**：从 VeADK 内置工具目录中选择，可按中文名称或工具标识搜索。
+- **远程技能**：从公域 Skill Hub 搜索，或从 AgentKit Skill 中心按地域与项目浏览后选择。
+
+已挂载的会话能力可在同一面板中移除，移除后该能力在当前会话中不再可用。会话中的对话通过会话感知的运行接口执行，确保叠加的工具与技能实际参与调用。
+
+列举与挂载远程技能需要火山引擎凭证；本地通过 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY` 提供，VeFaaS 部署使用绑定的 IAM Role。能力叠加接口的完整端点与参数见[部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit)。
 
 ## `veadk studio` 参数
 
@@ -223,7 +446,7 @@ veadk studio --agents-dir ./agents --open
 | `--host` | `str` | `127.0.0.1` | 监听地址。 |
 | `--port` | `int` | `8000` | 监听端口。 |
 | `--dev` | `bool` 标志 | `false` | 在选择器中加载本地智能体，而不是云端 AgentKit Runtime。 |
-| `--vite` | `bool` 标志 | `false` | 只启动 API，并允许 `http://localhost:5173` 的 Vite 开发服务器跨域访问。 |
+| `--vite` | `bool` 标志 | `false` | 只启动 API，并允许 `http://localhost:5173`（及回退端口 `http://localhost:5174`）的 Vite 开发服务器跨域访问。 |
 | `--oauth2-user-pool` | `str \| None` | `None` | VeIdentity 用户池名称。与客户端名称或 UID 配合启用 SSO。 |
 | `--oauth2-user-pool-client` | `str \| None` | `None` | VeIdentity 用户池客户端名称。 |
 | `--oauth2-user-pool-uid` | `str \| None` | `OAUTH2_USER_POOL_ID` | 使用 UID 指定 VeIdentity 用户池。 |
@@ -266,11 +489,31 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 部署成功后，终端会输出公网 URL 和 VeFaaS 应用 ID。打开公网 URL 时，Studio 会先跳转到 VeIdentity 完成登录。
 
-`--region` 指定 Studio 的部署地域，默认为 `cn-beijing`，也支持 `cn-shanghai`；VeFaaS、API Gateway 等资源均创建在该地域。部署时还会自动在所部署地域以及北京、上海两个地域之间查找 VeIdentity 用户池与客户端：优先查询部署地域，未命中时跨地域查询另一个地域；跨地域命中时终端会输出 warning 并继续部署。`--project` 指定 VeFaaS 函数所属项目，默认为 `default`。
+`--region` 指定 Studio 的部署地域，默认为 `cn-beijing`，也支持 `cn-shanghai`；VeFaaS Application、Function、API Gateway 和 AgentKit 资源均使用所选部署地域。部署时还会自动在所部署地域以及北京、上海两个地域之间查找 VeIdentity 用户池与客户端：优先查询部署地域，未命中时跨地域查询另一个地域；跨地域命中时终端会输出 warning 并继续部署。`--project` 指定 VeFaaS 函数所属项目，默认为 `default`。
 
 部署者的长期 AK/SK 不会写入 VeFaaS 应用环境变量。已部署的 Studio 使用绑定 IAM Role 的临时凭证访问火山引擎服务。
 
-未指定 `--sandbox-chat-codex-tool-id` 与 `--sandbox-skill-creator-tool-id` 时，部署命令会在 `--region` 指定的地域创建两个独立的 AgentKit CodeEnv Tool，分别用于临时会话和 Skill 创建；这些 Tool 创建的 Session 与 VeFaaS Function、API Gateway 保持同一地域。模型凭据只配置在各自 Tool 中，VeFaaS Function 只接收 Tool ID。若已有符合要求且地域一致的 Tool，可通过参数直接复用。
+未指定 `--sandbox-chat-codex-tool-id` 与 `--sandbox-skill-creator-tool-id` 时，部署命令会在 `--region` 指定的地域创建两个独立的 AgentKit CodeEnv Tool，分别用于内置智能体和 Skill 创建；这些 Tool 创建的 Session 与 VeFaaS Function、API Gateway 保持同一地域。模型凭据只配置在各自 Tool 中，VeFaaS Function 只接收 Tool ID。若已有符合要求且地域一致的 Tool，可通过参数直接复用。
+
+### 应用内更新
+
+`veadk studio deploy` 默认使用部署地域的 `veadk-studio` TOS Bucket 作为不可变发布渠道，部署完成后管理员可在导航栏中把前端与 Python 后端一起升级，无需额外参数。使用 `--studio-update-bucket`、`--studio-update-region` 与 `--studio-update-prefix`（或对应的 `VEADK_STUDIO_UPDATE_BUCKET`、`VEADK_STUDIO_UPDATE_REGION`、`VEADK_STUDIO_UPDATE_PREFIX` 环境变量）可覆盖默认发布渠道。
+
+Studio 每三分钟检查一次更新，列出可用版本及其变更说明。管理员确认升级后，Studio 会校验完整发布包，同时替换 Python 后端与前端资源并重新发布原 Application；Application 与 Function ID、访问 URL、SSO 客户端和服务端 Secret 保持不变。
+
+```bash
+veadk studio deploy \
+  --user-pool-id "your-user-pool-id" \
+  --allowed-client-id "your-user-pool-client-id" \
+  --vefaas-app-name "veadk-studio" \
+  --studio-update-bucket "custom-studio-releases" \
+  --studio-update-region "cn-shanghai" \
+  --studio-update-prefix "veadk/studio/main"
+```
+
+<Note>
+  应用内更新仅对具备 `admin` 角色的登录用户开放，更新 Studio 自身的 VeFaaS Function，不影响已部署的 AgentKit Runtime。
+</Note>
 
 ### 部署参数
 
@@ -294,8 +537,11 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 | `--volcengine-secret-key` | `str \| None` | 自动解析 | 部署用 Secret Key，依次读取命令参数、`VOLCENGINE_SECRET_KEY` 环境变量与 `~/.volc/credentials` 的 `[default]` 配置。 |
 | `--veadk-version` | `str` | 最新发布版本 | 写入 VeFaaS 依赖的 `veadk-python` 版本；仅在需要固定或复现版本时设置。 |
 | `--from-source` | `bool` 标志 | `false` | 从当前源码目录构建 wheel 后部署，包含未提交改动；用于验证未发布版本，不应与 `--veadk-version` 的发布版本工作流混用。 |
-| `--sandbox-chat-codex-tool-id` | `str \| None` | 自动创建 | 临时会话使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_CHAT_CODEX` 设置。 |
+| `--sandbox-chat-codex-tool-id` | `str \| None` | 自动创建 | 内置智能体使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_CHAT_CODEX` 设置。 |
 | `--sandbox-skill-creator-tool-id`、`--skill-creator-tool-id` | `str \| None` | 自动创建 | Skill 创建使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_SKILL_CREATOR` 设置。 |
+| `--studio-update-bucket` | `str` | `veadk-studio` | 存放 Studio 不可变发布包的 TOS Bucket；部署时写入函数环境变量 `VEADK_STUDIO_UPDATE_BUCKET`。也可通过 `VEADK_STUDIO_UPDATE_BUCKET` 设置。 |
+| `--studio-update-region` | `str \| None` | 部署地域 | Studio 发布 Bundle 的 TOS 地域；省略时与 `--region` 一致。也可通过 `VEADK_STUDIO_UPDATE_REGION` 设置。 |
+| `--studio-update-prefix` | `str` | `veadk/studio/main` | Studio 主发布渠道的 TOS 对象前缀。也可通过 `VEADK_STUDIO_UPDATE_PREFIX` 设置。 |
 
 ## 更新已部署的 Studio
 
@@ -318,7 +564,7 @@ veadk studio update --vefaas-app-name "veadk-studio"
 | `--path` | `str` | `.` | 要构建的 VeADK 源码目录。 |
 | `--site-title` | `str \| None` | 保留云上值 | 显式传入时替换 Studio 名称。 |
 | `--site-logo` | `str \| None` | 保留云上值 | 显式传入时替换 Studio Logo。 |
-| `--sandbox-chat-codex-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换临时会话使用的 Tool ID。 |
+| `--sandbox-chat-codex-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换内置智能体使用的 Tool ID。 |
 | `--sandbox-skill-creator-tool-id`、`--skill-creator-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换 Skill 创建使用的 Tool ID。 |
 | `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | 更新操作使用的 Access Key。 |
 | `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | 更新操作使用的 Secret Key。 |
@@ -357,3 +603,10 @@ Studio 根据登录账号限制 Runtime 的可见范围；没有创建者记录�
 <Warning>
   本地用户名保存在浏览器中，可被用户修改或冒充，仅适用于本地开发与功能验证。生产环境必须使用 OAuth 或 gateway 认证，以经过验证的登录信息确定身份与权限。
 </Warning>
+
+
+## 查看系统版本
+
+登录后，侧边栏底部的账号菜单提供「系统信息」入口，选择后弹出对话框展示 Studio 的「当前版本」。
+
+本地启动或从源码构建部署时，版本号取自已安装的 VeADK 版本。当 Studio 切换到云端 Frontend 发布版本时，显示对应的发布版本号；未取到版本信息时显示「—」。
