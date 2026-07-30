@@ -2,15 +2,41 @@
 title: "Changelog"
 ---
 
-This changelog cumulatively lists all public user-facing changes from VeADK 1.0.0 through 1.0.8, with unreleased Preview changes at the top. Released versions are ordered newest first.
+This changelog cumulatively lists all public user-facing changes from VeADK 1.0.0 through 1.0.9, with unreleased Preview changes at the top. Released versions are ordered newest first.
 
 ## Unreleased
 
 | Module | Change details | Link |
 | --- | --- | --- |
-| Studio knowledge bases | Agent creation now defaults to VikingDB Knowledge. Studio no longer offers the local vector-store option and can select an existing VikingDB knowledge-base collection visible to the current account in the Beijing-region `default` project. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
-| Studio remote agents | Remote-agent configuration can list and refresh AgentKit agent centers by region in a dropdown. Remote agents remain available only as sub-agents. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
-| Long-term memory | Added the TOS ContextBucket backend for managed memory inference and retrieval with per-`user_id` isolation. | [TOS ContextBucket](/productions/veadk/preview/en/components/memory/tos-context) |
+| Studio new-chat experience | The new-chat mode selector is available to all users, the agent picker moves to the top navigation, temporary session is renamed to built-in agent with Codex selection, and empty inputs show starter prompts. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Dev server | The `--vite` mode of `veadk studio` and `veadk frontend` allows `http://localhost:5174` as a fallback to port 5173. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) · [VeADK Frontend](/productions/veadk/preview/en/components/frontend/veadk-frontend) |
+| Studio code-package deployment | Adds an “Add and deploy from a code package” flow for uploading, inspecting, and editing a ZIP project with a root `app.py` before deployment to AgentKit. Archives are limited to 50 MB and 800 files and undergo path-safety checks. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| VeADK Frontend | When an SSO session expires during use, users can sign in again in a separate window while preserving edits, and the original action is retried automatically. | [VeADK Frontend](/productions/veadk/preview/en/components/frontend/veadk-frontend) |
+| Studio chat | Replies from a sub-agent are displayed in a dedicated Agent handoff card when the root agent delegates a task. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Studio skills | SkillSpace browsing uses server-side Studio credentials, local imports perform lightweight safety validation, full cloud skill packages include scripts, references, and assets when available, and the fixed per-agent skill limit is removed. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Codex runtime | Adds the `codex` optional dependency group and `CodexRuntimeConfig`; defaults use session-isolated workspaces, the `workspace_write` sandbox, disabled network access, and denied escalation, while tool, state, authentication, and token-usage events are emitted as standard ADK Events. | [Runtime](/productions/veadk/preview/en/components/agent/runtime) |
+| Studio deployment | The VeFaaS Application now uses the selected deployment region together with the Function, API Gateway, and AgentKit resources. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Studio agent workspace | Adds a canvas-based multi-agent workspace with Runtime versions and deployment states. Deployed agents can be edited and published as incremented versions on the same Runtime, and cancelling an update leaves the existing Runtime intact. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Studio smart generation | Generates a validated recursive agent-configuration draft from a natural-language goal and lists resources the user must supply. Generation replaces the current canvas and consumes tokens. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Studio Runtimes | Read-only readiness probes retry while a Runtime starts, private-Runtime failures provide VPC guidance, and Studio connects after deployment while preserving tasks for retry when the Runtime is temporarily unreachable. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Studio debugging | Agent details and versions refresh after Runtime creation or update. Generated-agent test processes are limited to 3 per user, and processes left by page refreshes are reclaimed automatically. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Studio test runs | A single temporary test run accepts up to 300 project files. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Models | The minimum `google-adk` version required for the Responses API is now `1.34.0`. | [Models](/productions/veadk/preview/en/components/agent/model) |
+
+## 1.0.9
+
+VeADK 1.0.9 was released on July 26, 2026. The following table lists its public user-facing changes. See the [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.0.9) for the complete commit history.
+
+| Module | Change details | Link |
+| --- | --- | --- |
+| Long-term memory | Added the TOS ContextBucket backend for managed memory inference and retrieval with per-`user_id` isolation. | [Store memory in TOS ContextBucket](/productions/veadk/preview/en/components/memory/tos-context) |
+| Studio knowledge bases | Agent creation now defaults to VikingDB Knowledge, removes the local vector-store option, and can select an existing knowledge-base collection visible to the current account in the Beijing-region `default` project. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Studio remote agents | Remote-agent configuration can select and refresh AgentKit agent centers by region. Remote agents remain available only as sub-agents. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Studio message feedback | AgentKit Runtime answers can be rated with like/dislike controls and written idempotently to per-agent evaluation sets. A deterministic fallback is used when the standard set name is reserved but hidden. | [VeADK Frontend](/productions/veadk/preview/en/components/frontend/veadk-frontend) |
+| Studio release and self-update | `veadk studio deploy` uses the `veadk-studio` TOS bucket in the deployment region as its release channel by default. Administrators can update the frontend and backend in Studio, and the account menu shows the current system version. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Session capability overlays | AgentKit applications can add or remove built-in tools and remote skills for one session without changing the deployed agent. | [Deploy to AgentKit](/productions/veadk/preview/en/deploy/agentkit) · [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Studio agent information | The conversation view adds an agent information rail for the current agent's description, model, tools, skills, and collaboration topology. | [VeADK Frontend](/productions/veadk/preview/en/components/frontend/veadk-frontend) |
+| Studio creation workbench | Custom creation adds code-execution configuration and resource-picker search, including `AGENTKIT_TOOL_ID` and `AGENTKIT_TOOL_REGION`. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) · [Code sandbox](/productions/veadk/preview/en/components/tools/code-sandbox) |
 
 ## 1.0.8
 

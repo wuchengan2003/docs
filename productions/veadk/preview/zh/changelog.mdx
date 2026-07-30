@@ -2,15 +2,41 @@
 title: "更新日志"
 ---
 
-本更新日志累计记录 VeADK 1.0.0 至 1.0.8 的全部公开用户能力变化，并在顶部记录尚未发布的 Preview 变更。已发布版本按从新到旧排列。
+本更新日志累计记录 VeADK 1.0.0 至 1.0.9 的全部公开用户能力变化，并在顶部记录尚未发布的 Preview 变更。已发布版本按从新到旧排列。
 
 ## 未发布
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
-| Studio 知识库 | 创建智能体时，知识库默认使用 VikingDB Knowledge；Studio 不再提供本地向量库选项，并支持从北京地域 `default` 项目中选择当前账号可见的已有 VikingDB 知识库集合。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
-| Studio 远程智能体 | 远程智能体配置支持按地域从下拉框选择 AgentKit 智能体中心并刷新列表；远程智能体仍只能作为子智能体使用。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 新会话体验 | 新会话模式选择器对所有用户可见；智能体选择器移至页面顶部；原「临时会话」更名为「内置智能体」，可选择 Codex 智能体；空输入时显示快捷提示。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 开发服务器 | `veadk studio` 和 `veadk frontend` 的 `--vite` 模式允许 `http://localhost:5174` 作为端口 5173 的回退来源。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| Studio 代码包部署 | 新增「从代码包添加和部署」创建方式，可上传、检查并编辑包含根目录 `app.py` 的 ZIP 项目后部署到 AgentKit；压缩包最大 50 MB、800 个文件，并执行路径安全校验。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| VeADK Frontend | SSO 登录态在使用过程中过期时，可在独立窗口重新登录，保留当前编辑内容并自动重试原操作。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| Studio 对话 | 根智能体向子智能体移交任务时，子智能体回复显示在独立的「智能体移交」卡片中。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能 | SkillSpace 浏览改由 Studio 服务端凭证完成；本地技能在导入阶段只做轻量安全校验；云端提供完整技能包时会下载脚本、参考文档和资源，并移除单个智能体的固定技能数量上限。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Codex 运行时 | 新增 `codex` 可选依赖组和 `CodexRuntimeConfig` 安全配置；默认采用会话隔离工作区、`workspace_write` 沙箱、禁用网络并拒绝提权操作，同时将工具、状态、鉴权和 Token 用量转换为标准 ADK Event。 | [运行时](/productions/veadk/preview/zh/components/agent/runtime) |
+| Studio 部署 | VeFaaS Application 与 Function、API Gateway 和 AgentKit 资源统一使用所选部署地域。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能体工作台 | 新增画布式多智能体工作台，集中展示 Runtime 版本和部署状态；已部署智能体可在同一 Runtime 上编辑并发布递增版本，取消更新不影响已有 Runtime。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能生成 | 可根据自然语言目标生成经过校验的递归智能体配置草稿，并列出需要用户补充的资源；生成会替换当前画布并消耗 Token。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio Runtime | Runtime 启动期间会重试只读就绪探测；私网 Runtime 不可达时提供 VPC 排查建议；部署完成后自动连接，暂时不可达时保留任务并允许重试。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 调试 | Runtime 创建或更新后立即刷新智能体详情和版本；生成智能体测试进程按用户限制为最多 3 个，并自动清理刷新页面后遗留的进程。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 测试运行 | 单次临时测试运行最多接受 300 个项目文件。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 模型 | 启用 Responses API 所需的 `google-adk` 最低版本提升至 `1.34.0`。 | [模型](/productions/veadk/preview/zh/components/agent/model) |
+
+## 1.0.9
+
+VeADK 1.0.9 发布于 2026 年 7 月 26 日。下表列出该版本的公开用户能力变化；完整提交记录见 [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.0.9)。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
 | 长期记忆 | 新增 TOS ContextBucket 后端，由托管服务完成记忆推理与检索，并按 `user_id` 隔离记忆。 | [使用 TOS ContextBucket 存储](/productions/veadk/preview/zh/components/memory/tos-context) |
+| Studio 知识库 | 创建智能体时默认使用 VikingDB Knowledge，不再提供本地向量库选项，并可选择北京地域 `default` 项目中当前账号可见的已有知识库集合。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 远程智能体 | 远程智能体配置支持按地域选择并刷新 AgentKit 智能体中心，远程智能体仍只能作为子智能体使用。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 消息反馈 | 连接 AgentKit Runtime 后可使用赞/踩评分，反馈幂等写入按智能体区分的评测集；标准名称被占用但不可见时使用稳定的备用名称。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| Studio 发布与自更新 | `veadk studio deploy` 默认使用部署地域的 `veadk-studio` TOS Bucket 作为发布渠道，管理员可在 Studio 内更新前后端；账号菜单可查看当前系统版本。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 会话能力叠加 | AgentKit 应用支持为单个会话增减内置工具和远程技能，无需修改已部署智能体。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) · [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能体信息 | 对话页面新增智能体信息栏，展示当前智能体的描述、模型、工具、技能和协作拓扑。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| Studio 创建工作台 | 自定义创建新增代码执行工具配置和资源选择器搜索，支持设置 `AGENTKIT_TOOL_ID` 与 `AGENTKIT_TOOL_REGION`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
 
 ## 1.0.8
 

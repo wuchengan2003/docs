@@ -2,9 +2,9 @@
 title: "Studio agent workbench"
 ---
 
-VeADK Studio uses the same service and complete UI as VeADK Frontend. It provides chat, search, session history, the skill center, and agent creation, testing, deployment, and management, and opens on the chat view by default.
+VeADK Studio uses the same service and complete UI as VeADK Frontend. It provides chat, search, session history, the skill center, and agent creation, testing, deployment, and management, and opens on the chat view by default. The agent workspace renders multi-agent topologies as a canvas, surfaces deployed Runtime versions and deployment status, and supports iterating on the same Runtime.
 
-Custom configuration is the available project-creation flow; intelligent, template, and workflow entries are marked as coming soon and cannot be selected. You can preview and edit generated files, run them in a temporary test process, download a ZIP, or deploy to AgentKit. Studio also supports cloud Runtime selection, multiple skill sources, multimodal conversations, and centralized deployment task status and retries.
+Custom configuration and code-package deployment are the available project-creation flows; intelligent, template, and workflow entries are marked as coming soon and cannot be selected. You can preview and edit generated files, run them in a temporary test process, download a ZIP, or deploy to AgentKit. Studio also supports cloud Runtime selection, multiple skill sources, multimodal conversations, and centralized deployment task status and retries.
 
 ## Start locally
 
@@ -36,9 +36,161 @@ The logo can be up to 5 MB in PNG, JPEG, GIF, WebP, AVIF, or ICO format. The equ
 ## Create an agent
 
 1. On Add Agent, select Custom. Intelligent, template, and workflow entries are not available.
-2. Configure the model, instruction, tools, memory, and knowledge base, and add skills from Skill Hub, a local upload, or an AgentKit SkillSpace. Multi-agent projects can also use sequential, parallel, loop, or A2A nodes.
+2. Configure the model, instruction, tools, memory, and knowledge base, and add skills from Skill Hub, a local upload, or an AgentKit SkillSpace. Multi-agent projects can also use sequential, parallel, loop, or A2A nodes, and the canvas lets you inspect and arrange the agent topology.
 3. Review the generated files and run them in a restricted temporary process; download a ZIP if you need to work offline.
-4. Select AgentKit deployment and monitor the build-image, deploy, and publish stages.
+4. Select AgentKit deployment and monitor the build-image, deploy, and publish stages from the workspace. After deployment, the agent appears as published in the workspace and can be updated on the same Runtime.
+
+<Note>
+  Resource pickers in custom creation (such as agent centers and knowledge-base collections) support local keyword filtering: type in the dropdown to filter the currently loaded options. Filtering applies only to the loaded list and does not change the region, project scope, or refresh behavior.
+</Note>
+
+### Add and deploy from a code package
+
+Code-package deployment is an independent creation flow: on Add Agent, select “Add and deploy from a code package” and upload an existing Agent project archive. You can then inspect or edit its files in Studio and deploy directly to AgentKit without configuring the model, tools, or skills individually. It suits getting an externally authored VeADK project online quickly, or re-deploying an existing project after small adjustments.
+
+<Steps>
+  <Step title="Upload the code package">
+    On the Add Agent menu, choose “Add and deploy from a code package” and click the upload area or drag a file to select a `.zip` archive. The archive can be up to 50 MB, contain no more than 800 files after extraction, and must include `app.py` at the root as the AgentKit entry point.
+  </Step>
+  <Step title="Review or edit files">
+    After a successful upload, Studio reports the recognized file count and derives a project name from the archive file name (following Google ADK naming rules: starting with an ASCII letter or underscore, containing only ASCII letters, digits, and underscores, never using the reserved name `user`, and at most 64 characters). Use “View files” to preview or edit file contents in the code browser; re-upload the archive to replace the contents.
+  </Step>
+  <Step title="Configure deployment">
+    Select the region and network mode in the deployment configuration area, the same as the custom-creation deploy page. Code-package deployment does not show the agent topology or the Feishu channel toggle.
+  </Step>
+  <Step title="Deploy to AgentKit">
+    After selecting “Deploy”, Studio reports progress across four stages: upload code package, build image, create Runtime, and publish service. Each stage reports its completion or failure in the deployment progress area.
+  </Step>
+</Steps>
+
+<Note>
+  Studio sanitizes the archive: it ignores `__MACOSX` directories and `.DS_Store` files, and when all files share a single top-level directory it strips that wrapping directory before validating the entry. Entries with absolute paths, empty segments, `.`, `..` segments, or null bytes are rejected, and duplicate file paths raise an error. `app.py` must be in the root after the wrapping directory is removed.
+</Note>
+
+<Warning>
+  The uploaded `app.py` runs inside the deployed AgentKit Runtime and can call external services or access data available to the runtime. Deploy only trusted projects and give Studio restricted credentials.
+</Warning>
+
+| Check | Limit | Description |
+| :--- | :--- | :--- |
+| Archive size | 50 MB | Maximum size of a single uploaded archive. |
+| File count | 800 | Maximum number of files retained after extraction. |
+| Uncompressed size | 50 MB | Maximum total size after extraction. |
+| Entry point | `app.py` | The root after the wrapping directory is removed must contain this file. |
+| Path safety | — | Absolute paths, `.` / `..` segments, and null bytes are rejected; `__MACOSX` and `.DS_Store` are ignored. |
+| Wrapping directory | Single level | When all files share one top-level directory, that level is stripped automatically. |
+| Project name | 64 characters | Derived from the archive file name and follows ADK naming rules. |
+
+### Add skills
+
+When creating an agent, add skills from the following sources. Skill files are written to the generated project's `skills/` directory:
+
+- **Skill Hub**: Search the public Volcengine skill repository by keyword and add a skill.
+- **Local upload**: Drag in a folder or select a ZIP archive. Each skill directory must contain `SKILL.md`. Studio checks file presence, count, size, and path safety; ADK performs full frontmatter and skill-format validation at load time. The generated skill directory uses the `name` field from `SKILL.md` or the uploaded directory name.
+- **AgentKit SkillSpace**: Browse skill spaces visible to the current account, then select a skill and version.
+
+Browsing AgentKit SkillSpaces and their skills is performed by the Studio server using its own configured Volcengine credentials; the browser never sees credentials. For a local Studio, grant access through `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY`. A VeFaaS deployment uses temporary credentials from its bound IAM role. When SSO login is enabled, you must be signed in to Studio before browsing skill spaces.
+
+The skill-space list returns every space visible to the current account across all regions by default. After you select a space, Studio loads its skills in the space's region. Use the refresh button to reload a list.
+
+| Symptom | Check |
+| :--- | :--- |
+| Studio reports missing Volcengine credentials | For a local Studio, check `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY`. For VeFaaS, check the bound IAM role. Credentials remain on the server and are never delivered to the browser. |
+| Studio prompts you to sign in | When SSO is enabled, sign in to Studio before browsing skill spaces. |
+| The skill-space or skill list is empty | Confirm that the current credentials can view skill spaces in the corresponding region and that the selected space contains skills; use the refresh button when necessary. |
+| A list does not load | Check the Studio login session, network access, and credential permissions, then use the refresh button to retry. |
+
+<Note>
+  Local uploads no longer enforce `SKILL.md` `name` and `description` format or require the directory name to match `name` at import time. If a skill fails at runtime, check that the `SKILL.md` frontmatter meets ADK skill requirements.
+</Note>
+
+<Note>
+  When adding a skill from AgentKit SkillSpace, Studio downloads `SKILL.md`, scripts, references, and assets when the cloud version provides a complete package; otherwise it uses `SKILL.md` only. There is no fixed limit on the number of skills added to one agent.
+</Note>
+
+### Generate an agent draft from a requirement
+
+The custom-creation build canvas offers a "smart generate" entry above the canvas. Describe your goal in one sentence, for example "Create a short-video production agent that performs trend research, script writing, asset production, video generation, and quality review in order," and select "smart generate".
+
+Studio calls the `doubao-seed-2-0-lite-260428` model to produce a validated, complete agent-configuration draft that is loaded onto the canvas. Generation consumes tokens.
+
+<Note>
+  The generated result replaces the current canvas and property configuration. When the canvas has unsaved changes, Studio asks for confirmation before continuing.
+</Note>
+
+#### Structure of the generated draft
+
+The generated configuration follows these rules:
+
+- The root agent is always a sequential orchestrator that organizes stages in the order described by the requirement.
+- Orchestrator agents (sequential, parallel, loop) only schedule sub-agents and do not carry a model, instruction, tools, memory, knowledge base, or tracing configuration.
+- LLM agents are always leaf nodes. Their name, description, instruction, model, tools, memory, knowledge base, and tracing are populated automatically, and they cannot contain sub-agents.
+- Every generated LLM agent uses the `doubao-seed-2-1-pro-260628` model.
+- The iteration limit for orchestrator agents defaults to `3`; loop agents use the limit stated in the requirement.
+- All agent and custom-tool names are globally unique snake_case Python identifiers.
+- Memory, tracing, and tools are enabled only when the requirement needs them; review-only agents are not given media-generation tools.
+
+The generated agent can select from these built-in tools:
+
+| Tool identifier | Description |
+| :--- | :--- |
+| `web_search` | Searches the public Internet through the fused information search API. |
+| `parallel_web_search` | Runs several web searches in parallel. |
+| `link_reader` | Reads and parses the web content of given URLs. |
+| `web_scraper` | Extracts the body of public web pages. |
+| `image_generate` | Generates images from text prompts. |
+| `image_edit` | Edits an existing image. |
+| `video_generate` | Generates video from text or image inputs. |
+| `text_to_speech` | Converts text into audio. |
+| `run_code` | Executes code in a sandbox. |
+| `vesearch` | Searches the public Internet, social media, and news through the Volcengine online Q&A Agent. |
+
+Memory, knowledge-base, and tracing backends are selected per the requirement:
+
+| Capability | Available backends |
+| :--- | :--- |
+| Short-term memory | `local`, `sqlite`, `mysql`, `postgresql` |
+| Long-term memory | `local`, `opensearch`, `redis`, `viking`, `mem0` |
+| Knowledge base | `viking`, `opensearch`, `context_search` |
+| Tracing | `apmplus`, `cozeloop`, `tls` |
+
+When a capability is disabled, its backend uses the default (memory uses `local`; the knowledge base uses `viking`). The generated configuration does not assign an enterprise knowledge-base search tool to an LLM agent unless that agent explicitly needs public-Internet research.
+
+#### Unresolved items
+
+The result lists real resources or identifiers that still need to be provided (such as instance IDs, URLs, credentials, MCP servers, or skill IDs). Studio does not invent them; after generation, supply the actual resources on the canvas as needed.
+
+#### Steps
+
+<Steps>
+  <Step title="Enter the requirement">
+    Describe the goal in natural language in the input above the build canvas. The input is limited to 8,000 characters.
+  </Step>
+  <Step title="Generate the configuration">
+    Select "smart generate". The input is dimmed during generation; when it finishes, the new draft is loaded onto the canvas along with a one-sentence summary.
+  </Step>
+  <Step title="Review unresolved items">
+    Check the unresolved-items list in the result and supply the actual resources or identifiers on the canvas as needed.
+  </Step>
+  <Step title="Adjust and test">
+    Review and edit the configuration as in custom creation, then generate the project and start a temporary test, download a ZIP, or deploy to AgentKit.
+  </Step>
+</Steps>
+
+After generation you can select "regenerate" to produce a new configuration from the same requirement.
+
+#### Permissions and failure handling
+
+When role-based access control is enabled, smart generation is available only to `developer` and `admin` users.
+
+On failure, Studio shows an error dialog. Common cases include:
+
+| Symptom | Check |
+| :--- | :--- |
+| Generation timed out | Generation is limited to 180 seconds on the server. On timeout it returns a timeout prompt; retry after shortening the requirement. |
+| Model call failed | Check the Volcengine credentials and model access permissions. Error details are credential-redacted. |
+| Access denied | Confirm the current account has the `developer` or `admin` role. |
+
 
 ### Add a remote agent
 
@@ -90,7 +242,7 @@ For example, create an LLM root agent named `support_router`, add a remote-agent
 | Testing does not discover an available agent | Confirm that the center contains an invokable agent matching the test request; adjust the recall count when necessary. |
 | Discovery succeeds but remote invocation fails | Check the region, OpenAPI endpoint, agent status in the center, and the runtime's AgentKit permissions and network access. |
 
-The temporary test process is retained for 1,800 seconds by default and can be changed with `--generated-agent-test-run-ttl`. Generated code can call external services or access data available to Studio, so test only trusted projects and give Studio restricted credentials.
+The temporary test process is retained for 1,800 seconds by default and can be changed with `--generated-agent-test-run-ttl`. Each logged-in user can run at most 3 generated-agent test processes concurrently; exceeding the limit returns 429 with a prompt to close unused debug pages and retry. Studio reclaims test processes left behind after a page refresh, and a single test run accepts at most 300 project files. Generated code can call external services or access data available to Studio, so test only trusted projects and give Studio restricted credentials.
 
 ### Configure a knowledge base
 
@@ -113,6 +265,31 @@ For a local Studio, provide access through `VOLCENGINE_ACCESS_KEY` and `VOLCENGI
 | The knowledge base list is empty | Confirm that the `default` project in Beijing contains a VikingDB knowledge base collection and that the current credentials can view it. |
 | The knowledge base list does not load | Check the Studio login session, network access to VikingDB Knowledge, and credential permissions, then refresh the list. |
 | Project generation or testing fails | Confirm that the knowledge base configuration is complete and that the runtime can access the selected backend. |
+
+### Add the code-execution tool
+
+Selecting **Code execution** in the custom agent's built-in tools adds the `run_code` tool to the generated Python and reveals the sandbox configuration it depends on, below the built-in tool list. The code, language, and timeout are supplied by the agent at runtime from the `run_code` tool signature, while `tool_context` is injected automatically by ADK and does not need to be set in Studio.
+
+| Studio setting | Generated-project env var | Type | Required | Default | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Code-execution sandbox ID | `AGENTKIT_TOOL_ID` | `str` | Yes | — | AgentKit code-execution sandbox ID used by `run_code`, e.g. `t-xxxxxxxx`. |
+| AgentKit Tools region | `AGENTKIT_TOOL_REGION` | `str` | No | `cn-beijing` | Region for calling AgentKit Tools. |
+
+<Note>
+  Both values apply to local debug runs and deployed runtimes, and the generated `.env.example` includes both variables. The sandbox ID and region are used only on the Studio server and are never delivered to the browser.
+</Note>
+
+For the full parameters, shell execution, and credential requirements of `run_code`, see the [Code sandbox](/productions/veadk/preview/en/components/tools/code-sandbox).
+
+## View sub-agent handoffs
+
+In multi-agent projects, the root agent can hand a task off to a sub-agent for execution. When a handoff occurs, Studio shows the sub-agent's replies in a dedicated card labeled “Agent handoff” that displays the sub-agent's name and description, instead of mixing the sub-agent's output into the root agent's reply bubble.
+
+The sub-agent's name and description come from the agent configuration in the project structure. If the sub-agent has no description, the card shows a default note. After the sub-agent finishes, subsequent replies continue to appear as the root agent's messages.
+
+<Note>
+This presentation applies to both local sub-agents and remote agents. A remote agent can only be a sub-agent and cannot be the root agent.
+</Note>
 
 ## Use smart search
 
@@ -139,6 +316,10 @@ When you select VPC or Public + VPC, you must provide the VPC ID and subnet ID.
 
 A private VPC runtime does not return a public data-plane address after deployment. Studio reaches it through the server-side runtime proxy, and the data-plane API key stays server-side and is never delivered to the browser. This is the same server-side runtime proxy described in "Select a cloud Runtime".
 
+<Note>
+  After a deployment completes, Studio automatically connects to the newly created runtime. If the runtime deployed successfully but Studio cannot reach it yet (the gateway domain may still be propagating, or the current network or DNS cannot access the runtime), the deployment task is marked "Deployed, not yet connected" and the progress card with its message stays visible. You can retry the connection from Manage Agents.
+</Note>
+
 ## Manage agents
 
 Manage Agents lists AgentKit runtimes deployed through this workbench by the signed-in user. The list defaults to the Beijing region and can be switched to Shanghai. It is filtered by the user identity recorded during deployment and exposes:
@@ -157,9 +338,36 @@ Studio does not store the Runtime API key in the browser. The management page th
 
 The management page can display runtime environment-variable values. Restrict Studio to authorized users and avoid storing plaintext secrets in ordinary environment variables; prefer the platform's secret-management features.
 
+The agent workspace unifies deployed Runtimes and local drafts. Each deployed agent shows its current version number and a deployment status: deploying, update pending, not yet published, failed, or cancelled. A deployed agent can be edited directly in the workspace and updated on the same Runtime without creating a new deployment.
+
+## Update a deployed agent
+
+An agent deployed to AgentKit can be edited again in Studio and updated on the same Runtime instead of creating a new deployment each time. The update produces an incremented image version based on the Runtime's current version and publishes it on the existing Runtime.
+
+<Steps>
+  <Step title="Select a deployed agent">
+    In the agent workspace, select a deployed agent. Studio reads the agent's name, description, model, instruction, tools, and sub-agent structure from the Runtime and loads them into an editable draft.
+  </Step>
+  <Step title="Modify the configuration">
+    Adjust the model, instruction, tools, skills, or sub-agent structure on the canvas or in the configuration panel, using the same editing capabilities as when creating an agent.
+  </Step>
+  <Step title="Update and publish">
+    Select "Update and publish". Studio reports progress through the prepare, build-image, deploy, and publish stages; the deploy stage reuses the existing Runtime identifier and publishes an incremented version.
+  </Step>
+  <Step title="Verify the update">
+    After the update completes, the agent's version number increments in the workspace and its status returns to published. Connect the Runtime from the chat view to verify the new configuration.
+  </Step>
+</Steps>
+
+<Note>
+  Cancelling a deployment task during an update does not destroy the existing Runtime; the previous version remains available. Only when creating a brand-new deployment does cancelling the task clean up the unfinished Runtime resources.
+</Note>
+
+Updates are still governed by Studio role permissions: `admin` can update all Studio-managed Runtimes, `developer` can update only their own, and regular users cannot update.
+
 ## Select a cloud Runtime
 
-In cloud mode, the agent selector in the chat sidebar lists AgentKit Runtimes that the signed-in user deployed through this workbench, paginated by region. Each Runtime exposes two independent actions:
+In cloud mode, the agent selector at the top of the chat page lists AgentKit Runtimes that the signed-in user deployed through this workbench, paginated by region. Each Runtime exposes two independent actions:
 
 - **Connect**: makes the Runtime the agent for the current conversation and closes the selector after switching.
 - **Info**: opens a tabbed preview panel that shows the Runtime's capabilities without connecting to it or persisting the selection.
@@ -173,29 +381,30 @@ The info panel has two tabs:
   The Runtime details tab can display runtime environment-variable values. Restrict Studio to authorized users and prefer the platform's secret-management features.
 </Note>
 
-When a Runtime connection cannot be established, Studio distinguishes the failure cause and shows a corresponding message so you can locate the problem directly:
+When connecting to a Runtime, Studio first probes read-only endpoints (agent list, agent info, session list) for readiness: if the Runtime was just deployed and is not yet ready, Studio automatically retries up to 10 times with increasing delays (up to 5 seconds). After retries are exhausted or another error occurs, Studio distinguishes the failure cause and shows a corresponding message so you can locate the problem directly:
 
 - **Access denied**: the current account is not allowed to use the Runtime. Refresh the list or sign in again and retry.
 - **Agent Server unreachable**: the Runtime's Agent Server does not expose a connection interface, usually because the Runtime is not ready or its version is incompatible. Confirm the Runtime status and version.
+- **Private Runtime unreachable**: the Runtime is deployed inside a VPC without a public address, and the current Studio environment cannot reach that VPC. Use a Studio bound to the same VPC, or switch to a Public or Public + VPC deployment.
 - **Authentication failure**: the Runtime service rejected the connection request. Check the Runtime's authentication configuration.
 
-This lets you decide whether to refresh, sign in again, or inspect the Runtime's readiness and authentication settings without reading logs.
+This lets you decide whether to refresh, sign in again, inspect the Runtime's readiness, or adjust the network deployment mode without reading logs.
 
-## Use temporary sessions and Skill creation
+## Use built-in agents and Skill creation
 
-The new-conversation view provides three modes:
+The new-conversation view provides three modes visible to all users:
 
-- **Agent chat**: starts a normal multi-turn conversation with the selected agent.
-- **Temporary session**: starts a multi-turn conversation in an independent AgentKit CodeEnv Session. Exiting deletes the cloud Session and does not add it to ordinary session history.
+- **Agent chat**: starts a normal multi-turn conversation with the selected agent. When the input is empty, starter prompts appear for quick access to common questions.
+- **Built-in agent**: uses a platform-provided agent for conversation. You can select Codex, which starts a multi-turn conversation in an independent AgentKit CodeEnv Session. Exiting deletes the cloud Session and does not add it to ordinary session history.
 - **Skill creation**: generates two Skill candidates in parallel. You can compare and preview the results, download a ZIP, or add one to AgentKit.
 
 Skill creation is available only to `developer` and `admin` users. Each candidate uses a separate Session, and Studio checks its `SKILL.md`, file count, size, and paths before packaging. Candidate Sessions expire after 30 minutes and are deleted immediately when the user starts over or leaves the task. If candidate or credential provisioning fails, Studio displays a credential-safe error that helps identify Tool-state, region, or model-credential problems.
 
-Follow-up messages in an ordinary conversation continue to use the existing message history for that session; only a new session starts with empty context. When a Runtime cannot be connected, Studio distinguishes insufficient permission, an unreachable Agent Server, and authentication failure, and displays the corresponding troubleshooting direction.
+Follow-up messages in an ordinary conversation continue to use the existing message history for that session; only a new session starts with empty context. When a Runtime cannot be connected, Studio distinguishes insufficient permission, an unreachable Agent Server, a private unreachable Runtime, and authentication failure, and displays the corresponding troubleshooting direction.
 
 ### Local configuration
 
-Before using temporary sessions or Skill creation locally, prepare two AgentKit CodeEnv Tools in the `Ready` state and configure their IDs:
+Before using built-in agents or Skill creation locally, prepare two AgentKit CodeEnv Tools in the `Ready` state and configure their IDs:
 
 ```bash
 export SANDBOX_CHAT_CODEX="your-chat-code-env-tool-id"
@@ -206,11 +415,25 @@ veadk studio --agents-dir ./agents --open
 
 | Environment variable | Default | Description |
 | :--- | :--- | :--- |
-| `SANDBOX_CHAT_CODEX` | — | AgentKit CodeEnv Tool ID for temporary sessions; required when using this mode locally. |
+| `SANDBOX_CHAT_CODEX` | — | AgentKit CodeEnv Tool ID for built-in agents; required when using this mode locally. |
 | `SANDBOX_SKILL_CREATOR` | — | AgentKit CodeEnv Tool ID for Skill creation; required when using this mode locally. |
 | `VEADK_SKILL_CREATOR_TOS_BUCKET` | AgentKit account default bucket | TOS bucket used for published Skill artifacts. |
 | `VEADK_SKILL_CREATOR_TOS_PREFIX` | `agentkit/skills` | TOS object-key prefix for published artifacts. |
 | `VEADK_SKILL_CREATOR_PROJECT_NAME` | — | Project name used when creating a Skill. |
+
+
+## Manage session capabilities
+
+Starting with VeADK 1.0.9, Studio can manage tools and skills for the current session when the connected Runtime exposes the session-scoped capability-overlay endpoints.
+
+When the connected Runtime exposes the session-scoped capability-overlay endpoints, the agent info panel on the conversation page shows "Add a tool to this conversation" and "Add a skill to this conversation" entries in the tool and skill lists. Added capabilities apply only to the current session: they do not modify the deployed root agent and are not written to other sessions.
+
+- **Built-in tools**: chosen from the VeADK built-in tool catalog; searchable by Chinese name or tool identifier.
+- **Remote skills**: searched from the public Skill Hub, or browsed from AgentKit Skill Spaces by region and project.
+
+Mounted session capabilities can be removed from the same panel; once removed, the capability is no longer available in the current session. Conversations in the session run through a session-aware runner so that the overlaid tools and skills actually participate in calls.
+
+Listing and mounting remote skills requires Volcengine credentials; provide them locally with `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY`, and on VeFaaS use the bound IAM Role. For the complete overlay endpoints and parameters, see [Deploy to AgentKit](/productions/veadk/preview/en/deploy/agentkit).
 
 ## `veadk studio` options
 
@@ -223,7 +446,7 @@ veadk studio --agents-dir ./agents --open
 | `--host` | `str` | `127.0.0.1` | Bind address. |
 | `--port` | `int` | `8000` | Bind port. |
 | `--dev` | Boolean flag | `false` | Load local agents in the picker instead of cloud AgentKit Runtimes. |
-| `--vite` | Boolean flag | `false` | Serve only the API and allow CORS from the Vite development server at `http://localhost:5173`. |
+| `--vite` | Boolean flag | `false` | Serve only the API and allow CORS from the Vite development server at `http://localhost:5173` (and the fallback port `http://localhost:5174`). |
 | `--oauth2-user-pool` | `str \| None` | `None` | VeIdentity user-pool name. Combine with a client name or UID to enable SSO. |
 | `--oauth2-user-pool-client` | `str \| None` | `None` | VeIdentity user-pool client name. |
 | `--oauth2-user-pool-uid` | `str \| None` | `OAUTH2_USER_POOL_ID` | Select the VeIdentity user pool by UID. |
@@ -266,11 +489,31 @@ Deployment credentials are resolved in the following order: explicit `--volcengi
 
 On success, the terminal prints the public URL and VeFaaS application ID. Opening the URL redirects the user through VeIdentity login.
 
-`--region` selects the Studio deployment region, defaults to `cn-beijing`, and also supports `cn-shanghai`; VeFaaS, API Gateway, and other resources are created in that region. Deployment also locates the VeIdentity user pool and client across the deployment region and the Beijing and Shanghai regions: it queries the deployment region first, then searches the other region on a miss, emitting a warning and continuing when matched cross-region. `--project` selects the VeFaaS function project and defaults to `default`.
+`--region` selects the Studio deployment region, defaults to `cn-beijing`, and also supports `cn-shanghai`; the VeFaaS Application, Function, API Gateway, and AgentKit resources use the selected deployment region. Deployment also locates the VeIdentity user pool and client across the deployment region and the Beijing and Shanghai regions: it queries the deployment region first, then searches the other region on a miss, emitting a warning and continuing when matched cross-region. `--project` selects the VeFaaS function project and defaults to `default`.
 
 The deployer's long-lived access and secret keys are not written to the VeFaaS application environment. Deployed Studio uses temporary credentials from its bound IAM role.
 
-When `--sandbox-chat-codex-tool-id` and `--sandbox-skill-creator-tool-id` are omitted, deployment creates two independent AgentKit CodeEnv Tools in the region selected by `--region`, one for temporary sessions and one for Skill creation. Sessions created by these Tools use the same region as the VeFaaS Function and API Gateway. Model credentials are configured only on the respective Tools; the VeFaaS Function receives only the Tool IDs. You can pass existing Tool IDs when suitable Tools are already available in the same region.
+When `--sandbox-chat-codex-tool-id` and `--sandbox-skill-creator-tool-id` are omitted, deployment creates two independent AgentKit CodeEnv Tools in the region selected by `--region`, one for built-in agents and one for Skill creation. Sessions created by these Tools use the same region as the VeFaaS Function and API Gateway. Model credentials are configured only on the respective Tools; the VeFaaS Function receives only the Tool IDs. You can pass existing Tool IDs when suitable Tools are already available in the same region.
+
+### In-app updates
+
+`veadk studio deploy` uses the `veadk-studio` TOS bucket in the deployment region as its immutable release channel by default, so administrators can update the frontend and Python backend together from the navbar without extra options. Use `--studio-update-bucket`, `--studio-update-region`, and `--studio-update-prefix` (or the matching `VEADK_STUDIO_UPDATE_BUCKET`, `VEADK_STUDIO_UPDATE_REGION`, and `VEADK_STUDIO_UPDATE_PREFIX` environment variables) to override the default release channel.
+
+Studio checks for updates every three minutes and lists available versions with their change notes. After an administrator confirms an update, Studio verifies the complete release bundle, replaces the Python backend and frontend assets together, and re-releases the existing Application. The Application and Function IDs, public URL, SSO client, and server-side secrets are preserved.
+
+```bash
+veadk studio deploy \
+  --user-pool-id "your-user-pool-id" \
+  --allowed-client-id "your-user-pool-client-id" \
+  --vefaas-app-name "veadk-studio" \
+  --studio-update-bucket "custom-studio-releases" \
+  --studio-update-region "cn-shanghai" \
+  --studio-update-prefix "veadk/studio/main"
+```
+
+<Note>
+  In-app updates are available only to signed-in users with the `admin` role. They update Studio's own VeFaaS Function and do not affect deployed AgentKit Runtimes.
+</Note>
 
 ### Deployment options
 
@@ -294,8 +537,11 @@ When `--sandbox-chat-codex-tool-id` and `--sandbox-skill-creator-tool-id` are om
 | `--volcengine-secret-key` | `str \| None` | Auto-resolved | Deployment secret key, resolved from the option, `VOLCENGINE_SECRET_KEY`, then the `[default]` profile in `~/.volc/credentials`. |
 | `--veadk-version` | `str` | Latest release | `veadk-python` version installed in VeFaaS; set it only when pinning or reproducing a release. |
 | `--from-source` | Boolean flag | `false` | Build and deploy a wheel from the current checkout, including uncommitted changes. Use it for unreleased validation, not together with a pinned release workflow. |
-| `--sandbox-chat-codex-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for temporary sessions; also read from `SANDBOX_CHAT_CODEX`. |
+| `--sandbox-chat-codex-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for built-in agents; also read from `SANDBOX_CHAT_CODEX`. |
 | `--sandbox-skill-creator-tool-id`, `--skill-creator-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for Skill creation; also read from `SANDBOX_SKILL_CREATOR`. |
+| `--studio-update-bucket` | `str` | `veadk-studio` | TOS bucket holding immutable Studio release bundles; written to the function env as `VEADK_STUDIO_UPDATE_BUCKET`. Also read from `VEADK_STUDIO_UPDATE_BUCKET`. |
+| `--studio-update-region` | `str \| None` | Deployment region | TOS region for Studio release bundles; defaults to `--region` when omitted. Also read from `VEADK_STUDIO_UPDATE_REGION`. |
+| `--studio-update-prefix` | `str` | `veadk/studio/main` | TOS object prefix for the Studio main release channel. Also read from `VEADK_STUDIO_UPDATE_PREFIX`. |
 
 ## Update a deployed Studio
 
@@ -318,7 +564,7 @@ When `--region` and `--project` are omitted, the command searches Beijing, Shang
 | `--path` | `str` | `.` | VeADK source checkout to build. |
 | `--site-title` | `str \| None` | Preserve deployed value | Replace the Studio name only when supplied. |
 | `--site-logo` | `str \| None` | Preserve deployed value | Replace the Studio logo only when supplied. |
-| `--sandbox-chat-codex-tool-id` | `str \| None` | Preserve deployed value | Replace the temporary-session Tool ID only when supplied. |
+| `--sandbox-chat-codex-tool-id` | `str \| None` | Preserve deployed value | Replace the built-in-agent Tool ID only when supplied. |
 | `--sandbox-skill-creator-tool-id`, `--skill-creator-tool-id` | `str \| None` | Preserve deployed value | Replace the Skill-creation Tool ID only when supplied. |
 | `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | Access key used for the update. |
 | `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | Secret key used for the update. |
@@ -357,3 +603,10 @@ Studio restricts Runtime visibility according to the signed-in account. Existing
 <Warning>
   A local username is stored in the browser and can be changed or impersonated. Use it only for local development and feature testing. Production deployments must use OAuth or gateway authentication so identity and permissions are determined from verified sign-in information.
 </Warning>
+
+
+## View the system version
+
+After signing in, the account menu at the bottom of the sidebar offers a "System info" entry. Selecting it opens a dialog showing the Studio "Current version".
+
+When Studio is started locally or built and deployed from source, the version is the installed VeADK version. When Studio is switched to a cloud Frontend release, the corresponding release version is shown. If no version is available, "—" is displayed.
