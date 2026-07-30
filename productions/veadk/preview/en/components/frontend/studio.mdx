@@ -336,6 +336,10 @@ Studio does not store the Runtime API key in the browser. The management page th
   Delete permanently removes the corresponding AgentKit runtime. Confirm that it no longer serves traffic and back up required data and configuration before proceeding.
 </Warning>
 
+<Note>
+  Before deleting, Studio shows a confirmation dialog listing the agents or drafts that will be removed; deletion only proceeds after confirmation. While deletion is in progress, the affected agents are temporarily hidden from the list. If the deleted agent is the one in use for the current conversation, Studio clears the current selection and returns to the agent management page.
+</Note>
+
 The management page can display runtime environment-variable values. Restrict Studio to authorized users and avoid storing plaintext secrets in ordinary environment variables; prefer the platform's secret-management features.
 
 The agent workspace unifies deployed Runtimes and local drafts. Each deployed agent shows its current version number and a deployment status: deploying, update pending, not yet published, failed, or cancelled. A deployed agent can be edited directly in the workspace and updated on the same Runtime without creating a new deployment.
@@ -401,6 +405,10 @@ The new-conversation view provides three modes visible to all users:
 Skill creation is available only to `developer` and `admin` users. Each candidate uses a separate Session, and Studio checks its `SKILL.md`, file count, size, and paths before packaging. Candidate Sessions expire after 30 minutes and are deleted immediately when the user starts over or leaves the task. If candidate or credential provisioning fails, Studio displays a credential-safe error that helps identify Tool-state, region, or model-credential problems.
 
 Follow-up messages in an ordinary conversation continue to use the existing message history for that session; only a new session starts with empty context. When a Runtime cannot be connected, Studio distinguishes insufficient permission, an unreachable Agent Server, a private unreachable Runtime, and authentication failure, and displays the corresponding troubleshooting direction.
+
+<Note>
+  In cloud mode, Studio does not auto-select the first available agent. Before starting a new conversation, connect a Runtime from the agent selector at the top of the chat page. Starting a new chat without a selected agent prompts you to choose one first and opens the agent management page.
+</Note>
 
 ### Local configuration
 
