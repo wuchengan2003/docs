@@ -124,11 +124,12 @@ The generated configuration follows these rules:
 
 - The root agent is always a sequential orchestrator that organizes stages in the order described by the requirement.
 - Orchestrator agents (sequential, parallel, loop) only schedule sub-agents and do not carry a model, instruction, tools, memory, knowledge base, or tracing configuration.
-- LLM agents are always leaf nodes. Their name, description, instruction, model, tools, memory, knowledge base, and tracing are populated automatically, and they cannot contain sub-agents.
+- LLM agents are always leaf nodes. Their name, description, instruction, model, and tools are populated automatically, and they cannot contain sub-agents.
 - Every generated LLM agent uses the `doubao-seed-2-1-pro-260628` model.
 - The iteration limit for orchestrator agents defaults to `3`; loop agents use the limit stated in the requirement.
 - All agent and custom-tool names are globally unique snake_case Python identifiers.
-- Memory, tracing, and tools are enabled only when the requirement needs them; review-only agents are not given media-generation tools.
+- Tools are enabled only when the requirement needs them; review-only agents are not given media-generation tools.
+- Smart generation does not configure memory, knowledge base, or tracing. These capabilities are always disabled in the generated draft, with their backends left at the defaults (memory uses `local`; the knowledge base uses `viking`). To enable them, configure them manually on the canvas after generation.
 
 The generated agent can select from these built-in tools:
 
@@ -137,24 +138,14 @@ The generated agent can select from these built-in tools:
 | `web_search` | Searches the public Internet through the fused information search API. |
 | `parallel_web_search` | Runs several web searches in parallel. |
 | `link_reader` | Reads and parses the web content of given URLs. |
-| `web_scraper` | Extracts the body of public web pages. |
 | `image_generate` | Generates images from text prompts. |
 | `image_edit` | Edits an existing image. |
 | `video_generate` | Generates video from text or image inputs. |
-| `text_to_speech` | Converts text into audio. |
 | `run_code` | Executes code in a sandbox. |
-| `vesearch` | Searches the public Internet, social media, and news through the Volcengine online Q&A Agent. |
 
-Memory, knowledge-base, and tracing backends are selected per the requirement:
-
-| Capability | Available backends |
-| :--- | :--- |
-| Short-term memory | `local`, `sqlite`, `mysql`, `postgresql` |
-| Long-term memory | `local`, `opensearch`, `redis`, `viking`, `mem0` |
-| Knowledge base | `viking`, `opensearch`, `context_search` |
-| Tracing | `apmplus`, `cozeloop`, `tls` |
-
-When a capability is disabled, its backend uses the default (memory uses `local`; the knowledge base uses `viking`). The generated configuration does not assign an enterprise knowledge-base search tool to an LLM agent unless that agent explicitly needs public-Internet research.
+<Note>
+  The generated configuration does not assign an enterprise knowledge-base search tool to an LLM agent. Memory, knowledge base, and tracing can be enabled on the canvas after generation; see the corresponding component pages for each backend's full parameters.
+</Note>
 
 #### Unresolved items
 
