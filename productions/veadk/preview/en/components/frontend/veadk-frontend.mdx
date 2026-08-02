@@ -71,6 +71,7 @@ cd frontend && npm run dev                    # http://localhost:5173, proxies A
 | `--frontend-dir` | packaged build, falling back to `./frontend/dist` | Override the built React UI directory. Priority: the explicitly passed directory, then the packaged UI, then `./frontend/dist` relative to the current directory. |
 | `--host` | `127.0.0.1` | Address to bind. |
 | `--port` | `8000` | Port to bind. |
+| `--provider` | `volcengine` \| `byteplus` | Cloud provider for AgentKit services. Defaults to `volcengine`; selecting `byteplus` reads credentials from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`, with runtime listings defaulting to the region in `BYTEPLUS_REGION` or `ap-southeast-1`. |
 | `--dev` | off | Load local agents in the picker instead of cloud AgentKit runtimes. |
 | `--vite` | off | Serve the API only and allow the Vite development server through CORS. |
 | `--oauth2-user-pool` | — | VeIdentity User Pool name. Enables SSO when set together with the client. |
