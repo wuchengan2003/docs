@@ -21,6 +21,8 @@ veadk studio --agents-dir ./agents --open
 
 Volcengine credentials are used for models, cloud-resource queries, and AgentKit deployment from the workbench. In production, provide them through environment variables or a secret manager rather than project files.
 
+To use BytePlus as the cloud provider, pass `--provider byteplus` and supply credentials via `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN` environment variables. Runtime listings default to the region in `BYTEPLUS_REGION` or `ap-southeast-1`. Without an explicit `--provider`, the local CLI always uses Volcengine.
+
 ## Customize branding
 
 Use `--site-title` to set a system name of up to six characters and `--site-logo` to provide a local image or HTTP(S) image URL. The logo appears in the sidebar, login page, and browser favicon, while the system name becomes the browser title. Omitting `--site-title` uses the default `VeADK Studio` name.
@@ -444,6 +446,7 @@ Listing and mounting remote skills requires Volcengine credentials; provide them
 | `--site-logo` | `str \| None` | `VEADK_SITE_LOGO` | Custom logo as a local image path or HTTP(S) URL. |
 | `--host` | `str` | `127.0.0.1` | Bind address. |
 | `--port` | `int` | `8000` | Bind port. |
+| `--provider` | `volcengine` \| `byteplus` | `volcengine` | Cloud provider for AgentKit services. BytePlus is used only when explicitly selected and reads credentials from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`. |
 | `--dev` | Boolean flag | `false` | Load local agents in the picker instead of cloud AgentKit Runtimes. |
 | `--vite` | Boolean flag | `false` | Serve only the API and allow CORS from the Vite development server at `http://localhost:5173` (and the fallback port `http://localhost:5174`). |
 | `--oauth2-user-pool` | `str \| None` | `None` | VeIdentity user-pool name. Combine with a client name or UID to enable SSO. |

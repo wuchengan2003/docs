@@ -21,6 +21,8 @@ veadk studio --agents-dir ./agents --open
 
 火山引擎凭证用于工作台中的模型、云资源查询和 AgentKit 部署。生产环境应通过环境变量或密钥管理服务提供凭证，不要把凭证写入项目文件。
 
+使用 BytePlus 作为云服务商时，传入 `--provider byteplus`，并通过 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 环境变量提供凭证；Runtime 列表默认查询的地域为 `BYTEPLUS_REGION` 或 `ap-southeast-1`。未显式指定 `--provider` 时，本地 CLI 始终使用火山引擎。
+
 ## 自定义品牌
 
 使用 `--site-title` 设置最多 6 个字符的系统名称，使用 `--site-logo` 指定本地图片或 HTTP(S) 图片 URL。Logo 会用于侧边栏、登录页和浏览器 favicon，系统名称也会作为浏览器页面标题；省略 `--site-title` 时使用默认名称 `VeADK Studio`。
@@ -444,6 +446,7 @@ VeADK 1.0.9 起，连接的 Runtime 暴露会话级能力叠加接口时，Studi
 | `--site-logo` | `str \| None` | `VEADK_SITE_LOGO` | 自定义 Logo，支持本地图片路径或 HTTP(S) URL。 |
 | `--host` | `str` | `127.0.0.1` | 监听地址。 |
 | `--port` | `int` | `8000` | 监听端口。 |
+| `--provider` | `volcengine` \| `byteplus` | `volcengine` | 选择 AgentKit 服务的云服务商。BytePlus 仅在显式指定时启用，使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证。 |
 | `--dev` | `bool` 标志 | `false` | 在选择器中加载本地智能体，而不是云端 AgentKit Runtime。 |
 | `--vite` | `bool` 标志 | `false` | 只启动 API，并允许 `http://localhost:5173`（及回退端口 `http://localhost:5174`）的 Vite 开发服务器跨域访问。 |
 | `--oauth2-user-pool` | `str \| None` | `None` | VeIdentity 用户池名称。与客户端名称或 UID 配合启用 SSO。 |

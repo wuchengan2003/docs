@@ -71,6 +71,7 @@ cd frontend && npm run dev                    # http://localhost:5173，代理 A
 | `--frontend-dir` | 包内置构建产物，回退至 `./frontend/dist` | 覆盖已构建 React 界面所在目录。优先使用显式传入的目录，其次为包内置界面，最后回退至相对当前目录的 `./frontend/dist`。 |
 | `--host` | `127.0.0.1` | 监听地址。 |
 | `--port` | `8000` | 监听端口。 |
+| `--provider` | `volcengine` \| `byteplus` | 选择 AgentKit 服务的云服务商。默认为 `volcengine`；选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证，Runtime 列表默认地域为 `BYTEPLUS_REGION` 或 `ap-southeast-1`。 |
 | `--dev` | 关闭 | 在智能体选择器中加载本地智能体，而不是云端 AgentKit Runtime。 |
 | `--vite` | 关闭 | 仅提供 API，并允许 Vite 开发服务器跨域访问；用于开发 React 前端。 |
 | `--oauth2-user-pool` | — | VeIdentity 用户池名称。与客户端同时设置后启用 SSO。 |
