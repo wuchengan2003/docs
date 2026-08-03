@@ -4,6 +4,10 @@ title: "APMPlus"
 
 `APMPlusExporter` reports span data to the Volcengine APMPlus platform over OTLP (gRPC). Beyond traces, its built-in metrics uploader collects model invocation counts, token usage, operation duration, exception counts, and tool latency, writing them to APMPlus metrics dashboards.
 
+<Note>
+When content tracing is enabled, reasoning content in model output is labeled with the `reasoning` type to distinguish it from regular text, making it easier to inspect the reasoning process separately in APMPlus.
+</Note>
+
 ## When to use
 
 - You want unified trace observation for your agent on Volcengine APMPlus;
