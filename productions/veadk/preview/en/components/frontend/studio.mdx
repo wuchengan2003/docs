@@ -436,6 +436,65 @@ veadk studio --agents-dir ./agents --open
 | `VEADK_SKILL_CREATOR_PROJECT_NAME` | — | Project name used when creating a Skill. |
 
 
+### Codex session controls
+
+After selecting the Codex agent, conversations use a dedicated Codex session composer. The composer exposes permissions and workspace entries on the left of the input, terminal, browser, and file-upload entries in the Add menu, and supports slash commands, model switching, and Skill invocation. These controls apply only to the current Sandbox Session and do not modify the deployed agent.
+
+#### Slash commands
+
+Typing `/` in the input opens a slash-command menu that can be filtered by name or keyword. Selecting a command fills the input; press Enter to submit it to the current Codex Session for execution.
+
+| Command | Description |
+| :--- | :--- |
+| `/model [model]` | Show or switch the model for the current conversation. Without an argument, lists available models to choose from. |
+| `/models` | Lists the models currently available. |
+| `/skill` | Browse and invoke a Skill available in the current workspace. |
+| `/skills` | Browse and invoke Skills available in the current workspace. |
+| `/new` | Starts a new conversation. |
+| `/resume [thread]` | Opens the conversation history list, or resumes a specified thread. |
+| `/fork` | Forks a new conversation from the current context. |
+| `/compact` | Compresses the current conversation context. |
+| `/archive` | Archives the current conversation and starts a new one. |
+| `/status` | Shows the current connection, thread, model, and token status. |
+| `/clear` | Clears the current view and starts a new conversation. |
+| `/help` | Shows the supported slash commands. |
+
+#### Models and Skills
+
+Typing `/model ` triggers the model list; choose one or type a model ID directly to switch the model used by the current conversation. Typing `$` browses Skills available in the current workspace; selecting one inserts it as a chip in the input and it is submitted with the message. When the input is empty, pressing Backspace removes the last selected Skill.
+
+#### Workspace
+
+The workspace button on the left of the input selects the directory where the current Codex Thread runs commands and modifies files. In the dialog you can enter an absolute path directly or browse the directory tree. Once a conversation starts, the workspace is locked; start a new Sandbox Session to choose again.
+
+#### Permissions
+
+The permissions button on the left of the input opens the Codex Permissions dialog. Settings are saved to the current Sandbox Session and synced to all Threads within it.
+
+| Setting | Options | Description |
+| :--- | :--- | :--- |
+| Sandbox mode | Read-only / Workspace write / Full access | Controls the file-system isolation scope. Full access disables file-system and network isolation and forces network access on. |
+| Approval policy | Untrusted commands only / On request / Never | Determines when Codex pauses to request human confirmation for commands or file modifications. |
+| Approval reviewer | By me / Auto review | Whether approval requests are handled by you in Studio or by the Codex automatic review process. |
+| Network access | On / Off | Controls external network access in Workspace write and Read-only modes. Forced on for Full access and cannot be turned off. |
+
+<Warning>
+  Full access disables file-system and network isolation. Use it only for trusted tasks that require full host permissions.
+</Warning>
+
+#### Action approvals
+
+When the approval policy requires human confirmation and Codex requests a command execution or file modification, Studio opens an approval dialog showing the pending command, file changes, and execution directory. You can Decline, Allow once, or Allow for this session. The decision is recorded as an activity entry in the conversation.
+
+#### Terminal and browser
+
+From the Add menu, choose Enter terminal or View browser to open an interactive terminal or browser view attached to the current AgentKit Session. A loading state is shown while connecting, and you can retry on failure. The same menu also lets you upload images, documents or PDFs, and videos to the current conversation.
+
+#### Status and history
+
+`/status` shows the current Thread, workspace, model, run state, total tokens, and context window as an activity record. After each assistant reply, the token usage for that turn is displayed. Typing `/resume` opens the Resume Codex conversation dialog to select and restore a recently updated Thread.
+
+
 ## Manage session capabilities
 
 Starting with VeADK 1.0.9, Studio can manage tools and skills for the current session when the connected Runtime exposes the session-scoped capability-overlay endpoints.
