@@ -14,6 +14,7 @@ title: "更新日志"
 | Studio 智能体删除 | 删除前弹出确认对话框并列出待删除项；删除过程中从列表暂时隐藏；若当前对话使用被删除的智能体则清除选择并返回管理页。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 消息反馈 | 反馈按 Runtime 实际 app 名称关联评测集，首选地域查询失败时自动回退另一地域；赞/踩旁新增「查看评测案例」入口，可预览当前消息对应的评测样本。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
 | AgentKit 集成 | 动态 A2A 运行接口在会话不存在时自动创建会话，不再返回 404。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) |
+| AgentKit 集成 | `create_agentkit_app` 新增可选 `identity` 参数，传入后 AgentKit 在 VeADK 智能体或工具代码执行前验证并绑定入站用户身份；`/ping` 健康检查端点排除在身份绑定之外。使用该参数需要 `agentkit-sdk-python>=0.8.2`。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) |
 | Studio 新会话体验 | 新会话模式选择器对所有用户可见；智能体选择器移至页面顶部；原「临时会话」更名为「内置智能体」，可选择 Codex 智能体；空输入时显示快捷提示。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | 开发服务器 | `veadk studio` 和 `veadk frontend` 的 `--vite` 模式允许 `http://localhost:5174` 作为端口 5173 的回退来源。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
 | Studio 代码包部署 | 新增「从代码包添加和部署」创建方式，可上传、检查并编辑包含根目录 `app.py` 的 ZIP 项目后部署到 AgentKit；压缩包最大 50 MB、800 个文件，并执行路径安全校验。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
