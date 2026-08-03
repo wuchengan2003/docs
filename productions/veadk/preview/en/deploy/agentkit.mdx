@@ -34,6 +34,28 @@ The application exposes AgentKit conversation APIs and these public endpoints:
 | `/web/agent-graph` | Agent topology; each node includes skills, components, path, and whether it can be selected in a conversation. |
 | `/` | Built-in Web UI. |
 
+## Runtime identity binding
+
+`create_agentkit_app` accepts an optional `identity` parameter that passes an AgentKit Runtime identity boundary to the application. When supplied, AgentKit verifies and binds the inbound user identity before VeADK Agent or Tool code runs. Omitting `identity` preserves the previous behavior.
+
+<Warning>
+  Using the `identity` parameter requires `agentkit-sdk-python>=0.8.2`. On older versions, passing `identity` raises an error; upgrade the AgentKit SDK first.
+</Warning>
+
+VeADK excludes the `/ping` health-check endpoint from identity binding; that endpoint always returns `{"status": "ok"}`. All other business and introspection endpoints are identity-bound.
+
+```python title="app.py"
+from agentkit.identity import RuntimeIdentity
+from agents.customer_support.agent import root_agent
+from veadk.integrations.agentkit import create_agentkit_app
+
+app = create_agentkit_app(
+    root_agent,
+    {root_agent.name: "Customer support"},
+    identity=RuntimeIdentity(),
+)
+```
+
 ## Dynamic A2A run endpoints
 
 Applications built with `create_agentkit_app` override the standard AgentKit run endpoints (`/run`, `/run_sse`, `/invoke`) to support dynamic A2A agent discovery. When the agent is configured with an AgentKit agent center via environment variables such as `REGISTRY_SPACE_ID`, the run endpoints dynamically discover matching remote agents from the center and attach them as callable tools for the current turn. Without an agent center configured, the run endpoints behave identically to the standard AgentKit run endpoints.
