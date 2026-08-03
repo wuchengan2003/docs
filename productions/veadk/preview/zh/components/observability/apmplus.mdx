@@ -4,6 +4,10 @@ title: "APMPlus"
 
 `APMPlusExporter` 将 span 数据以 OTLP（gRPC）协议上报至火山引擎 APMPlus 平台。除追踪链路外，它还会通过内置的指标上报器采集模型调用次数、token 用量、操作耗时、异常次数以及工具耗时等指标，写入 APMPlus 的指标面板。
 
+<Note>
+启用内容追踪时，模型输出中的推理内容以 `reasoning` 类型标注，与普通文本内容区分，便于在 APMPlus 中单独查看推理过程。
+</Note>
+
 ## 何时使用
 
 - 需要在火山引擎 APMPlus 平台上统一观测智能体的调用链路；
