@@ -46,6 +46,19 @@ The logo can be up to 5 MB in PNG, JPEG, GIF, WebP, AVIF, or ICO format. The equ
   Resource pickers in custom creation (such as agent centers and knowledge-base collections) support local keyword filtering: type in the dropdown to filter the currently loaded options. Filtering applies only to the loaded list and does not change the region, project scope, or refresh behavior.
 </Note>
 
+### Configure deployment settings
+
+In the deployment configuration area, select the region and network mode, and optionally set Runtime instance counts. Instance settings appear only when creating a new Runtime; they are hidden when updating an existing Runtime.
+
+| Setting | Default | Description |
+| :--- | :--- | :--- |
+| Region | `cn-beijing` | Runtime deployment region. |
+| Network mode | Public | Choose public, VPC, or public + VPC; VPC mode requires a VPC ID. |
+| Min instances | `1` | Minimum number of Runtime instances. |
+| Max instances | `5` | Maximum number of Runtime instances; defaults to `1` when using in-memory short-term memory. |
+
+Instance counts must be positive integers, and the minimum cannot exceed the maximum. When the agent's short-term memory backend is `local` (in-memory) or unconfigured, Studio defaults the maximum instance count to 1 and warns that multiple instances, process restarts, or rolling updates can cause session loss; a database-backed short-term memory store is recommended. The deployment progress shows a corresponding stage: when the instance range differs from the default 1–5, an "Update instance configuration" stage is added after Runtime creation.
+
 ### Add and deploy from a code package
 
 Code-package deployment is an independent creation flow: on Add Agent, select “Add and deploy from a code package” and upload an existing Agent project archive. You can then inspect or edit its files in Studio and deploy directly to AgentKit without configuring the model, tools, or skills individually. It suits getting an externally authored VeADK project online quickly, or re-deploying an existing project after small adjustments.

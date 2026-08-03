@@ -8,6 +8,9 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 部署 | 创建新 Runtime 时支持配置最小和最大实例数；使用 in-memory 短期记忆时默认为 1～1 并提示改用持久化存储。实例范围非默认值时在部署进度中增加「更新实例配置」阶段。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 会话 | 列举会话时跳过已不存在的会话，不再导致整个列表加载失败。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 错误提示 | `run_sse` 失败时区分会话不存在和 Runtime 版本不兼容，分别给出改用持久化存储或检查 Runtime 版本的排查建议。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 云服务商 | `veadk studio` 和 `veadk frontend` 新增 `--provider` 选项，可选择 `volcengine`（默认）或 `byteplus`；选择 BytePlus 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证，Runtime 列表默认地域为 `BYTEPLUS_REGION` 或 `ap-southeast-1`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
 | Studio 智能生成 | 智能生成的草稿不再配置记忆、知识库与链路观测，这些能力始终关闭并使用默认后端，生成后可在画布中手动启用；生成可选内置工具移除 `web_scraper`、`text_to_speech`、`vesearch`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 智能体选择 | 云端模式下不再自动选择第一个可用智能体；开始新会话前需手动连接 Runtime，未选择时提示先选择智能体并打开管理页。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
