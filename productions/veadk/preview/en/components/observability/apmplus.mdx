@@ -95,3 +95,7 @@ export ENABLE_APMPLUS=true
 <Tip>
 With `ENABLE_APMPLUS=true`, `Agent` creates an `OpentelemetryTracer` and attaches `APMPlusExporter` automatically, even when the agent provides no `tracers`.
 </Tip>
+
+<Note>
+If a global `TracerProvider` already exists when `OpentelemetryTracer` is initialized, VeADK reuses that provider and automatically removes `APMPlusExporter`, because the existing provider is assumed to be responsible for APMPlus trace reporting. You can check this with the `apmplus_managed_externally` property; see [Observability overview](/productions/veadk/preview/en/components/observability) for details.
+</Note>
