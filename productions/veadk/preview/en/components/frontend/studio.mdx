@@ -350,6 +350,20 @@ The management page can display runtime environment-variable values. Restrict St
 
 The agent workspace unifies deployed Runtimes and local drafts. Each deployed agent shows its current version number and a deployment status: deploying, update pending, not yet published, failed, or cancelled. A deployed agent can be edited directly in the workspace and updated on the same Runtime without creating a new deployment.
 
+### Manage drafts
+
+During custom creation, Studio saves unpublished agent drafts in the current browser, isolated by signed-in user. Drafts appear alongside deployed Runtimes in the Manage agents list, each showing its update time and a "Draft" badge. A draft being deployed shows a "Deploying" badge and lets you view its deployment progress. Drafts can be edited or deleted; deletion asks for confirmation first.
+
+<Warning>
+  Drafts are stored only in the current browser and are not synced to the server or other devices. Clearing browser storage, using private browsing, or switching browsers discards them.
+</Warning>
+
+<Note>
+  For security, drafts strip MCP tool auth tokens and deployment environment values before they are saved. These must be re-entered and are not restored after a page reload.
+</Note>
+
+Drafts use the browser's local storage. When storage is full or writes are rejected, Studio shows the corresponding reason; remove unneeded drafts or clear site storage and retry.
+
 ## Update a deployed agent
 
 An agent deployed to AgentKit can be edited again in Studio and updated on the same Runtime instead of creating a new deployment each time. The update produces an incremented image version based on the Runtime's current version and publishes it on the existing Runtime.
