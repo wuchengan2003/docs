@@ -73,10 +73,30 @@ tracer = OpentelemetryTracer(
 | :--- | :--- | :--- | :--- |
 | `name` | `str` | `veadk_opentelemetry_tracer` | Tracer identifier, used for logging and naming dump files. |
 | `exporters` | `list[BaseExporter]` | `[]` | List of exporters. `InMemoryExporter` may not be added explicitly, or validation fails; the in-memory exporter is attached automatically. |
+| `apmplus_managed_externally` | `bool` | — | Read-only property. Whether a global `TracerProvider` already existed at initialization. When `True`, VeADK reuses the external provider instead of overriding it and automatically removes `APMPlusExporter`. |
 
 <Note>
 `InMemoryExporter` is managed automatically by `OpentelemetryTracer` and records every span. Do not add it to the `exporters` list manually, or initialization fails.
 </Note>
+
+### Reusing a preconfigured global TracerProvider
+
+By default, `OpentelemetryTracer` creates and sets the global `TracerProvider` during initialization. If a global `TracerProvider` already exists at that point (for example, set by another library or the application itself), VeADK reuses it instead of overriding it.
+
+In this case VeADK automatically removes `APMPlusExporter` from the exporters list, because the existing provider is assumed to be responsible for APMPlus trace reporting. Other exporters (such as `CozeloopExporter` and `TLSExporter`) are still registered with that provider. The VeADK in-memory exporter is also attached as usual.
+
+<Note>
+This behavior also applies when `ENABLE_APMPLUS=true` auto-creates the exporter: if a global `TracerProvider` already exists, the auto-created `APMPlusExporter` is also removed.
+</Note>
+
+You can check the `apmplus_managed_externally` property to determine whether the tracer detected an external provider:
+
+```python
+tracer = OpentelemetryTracer(exporters=[APMPlusExporter()])
+if tracer.apmplus_managed_externally:
+    # VeADK reused an existing global TracerProvider; APMPlusExporter was removed
+    pass
+```
 
 ## Enabling exporters via environment variables
 

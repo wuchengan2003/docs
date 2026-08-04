@@ -73,10 +73,30 @@ tracer = OpentelemetryTracer(
 | :--- | :--- | :--- | :--- |
 | `name` | `str` | `veadk_opentelemetry_tracer` | 追踪器标识，用于日志与落盘文件命名。 |
 | `exporters` | `list[BaseExporter]` | `[]` | 导出器列表。不允许显式加入 `InMemoryExporter`，否则会校验报错；内存导出器由追踪器自动附加。 |
+| `apmplus_managed_externally` | `bool` | — | 只读属性。初始化时是否检测到已存在的全局 `TracerProvider`。为 `True` 时表示 VeADK 复用外部 provider 而不再覆盖，并自动移除 `APMPlusExporter`。 |
 
 <Note>
 `InMemoryExporter` 由 `OpentelemetryTracer` 自动管理，用于记录全部 span。请勿手动加入 `exporters` 列表，否则初始化会报错。
 </Note>
+
+### 复用全局 TracerProvider
+
+默认情况下，`OpentelemetryTracer` 初始化时会创建并设置全局 `TracerProvider`。如果在初始化之前已存在一个全局 `TracerProvider`（例如由其他库或应用主程序设置），VeADK 将复用该 provider 而不再覆盖它。
+
+此时，VeADK 会自动从导出器列表中移除 `APMPlusExporter`，因为已存在的 provider 被视为已负责 APMPlus 的链路数据上报。其他导出器（如 `CozeloopExporter`、`TLSExporter`）仍会被正常注册到该 provider。VeADK 的内存导出器也会正常附加。
+
+<Note>
+此行为同样适用于通过 `ENABLE_APMPLUS=true` 自动创建导出器的场景：如果全局 `TracerProvider` 已存在，自动创建的 `APMPlusExporter` 也会被移除。
+</Note>
+
+可通过 `apmplus_managed_externally` 属性判断当前追踪器是否检测到了外部 provider：
+
+```python
+tracer = OpentelemetryTracer(exporters=[APMPlusExporter()])
+if tracer.apmplus_managed_externally:
+    # VeADK 复用了已存在的全局 TracerProvider，APMPlusExporter 已被自动移除
+    pass
+```
 
 ## 通过环境变量启用导出器
 
