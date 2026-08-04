@@ -389,6 +389,123 @@ Studio 不会在浏览器中保存 Runtime API Key，因此管理页只显示 Ru
 
 更新操作仍然受 Studio 角色权限约束：`admin` 可更新全部 Studio 管理的 Runtime，`developer` 只能更新自己创建的 Runtime，普通用户无权更新。
 
+## 查看接入方式
+
+在「管理智能体」中选择一个已部署的智能体后，详情页提供「接入方法」标签。该标签探测当前 Runtime 实际暴露的公开接入协议与端点，并给出可直接参考的调用示例，方便在不查阅控制台的情况下从外部调用该智能体。
+
+<Note>
+  接入方式由 Studio 在打开标签时向 Runtime 发起只读探测确认，仅展示已确认的协议与地址。Runtime 未暴露的协议显示为不可用，Studio 不会虚构未确认的端点。
+</Note>
+
+### 支持的协议
+
+| 协议 | 发现方式 | 调用地址 |
+| :--- | :--- | :--- |
+| API Server | 探测 Runtime 的 `/list-apps` 接口 | `<Runtime 公网端点>/run_sse` |
+| A2A | 读取 Runtime 的 `/.well-known/agent-card.json` | Agent Card 中声明的调用地址 |
+
+探测期间 Studio 会显示加载状态。若探测因网络或鉴权问题失败，标签内会显示错误提示并提供「重试」按钮；Runtime 未暴露某个协议时该协议显示为不可用，不影响另一协议的展示。
+
+### 鉴权方式与 API Key
+
+标签会显示 Runtime 当前的鉴权方式：
+
+| 鉴权方式 | 说明 |
+| :--- | :--- |
+| API Key | Runtime 使用 API Key 鉴权。 |
+| OAuth / JWT | Runtime 使用自定义 JWT 鉴权。 |
+| 无需鉴权 | Runtime 未启用鉴权。 |
+
+当鉴权方式为 API Key 时，标签会显示 API Key 字段。出于安全考虑，API Key 默认以 `****` 掩码显示，仅当点击显示按钮后才会向 Runtime 请求真实值并在页面中短暂展示；切换标签或离开当前智能体后会自动清除已显示的值。示例代码中的凭证始终使用占位符，不会填入真实 API Key。
+
+<Warning>
+  显示的 API Key 会出现在浏览器中。仅向经过授权的用户开放 Studio，并在使用后及时关闭显示；如需在程序中调用，应通过密钥管理服务或环境变量获取凭证，不要从 Studio 页面复制明文密钥长期保存。
+</Warning>
+
+### 调用示例
+
+标签根据探测到的协议和鉴权方式，生成对应的 Python 请求示例。示例中的端点和应用名称来自探测结果，凭证使用占位符。
+
+API Server 协议的示例通过 `requests` 创建会话并调用 `/run_sse` 流式接口：
+
+```python
+import uuid
+
+import requests
+
+BASE_URL = "<Runtime 公网端点>"
+APP_NAME = "<应用名称>"
+USER_ID = "demo-user"
+SESSION_ID = str(uuid.uuid4())
+API_KEY = "<API_KEY>"
+HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+
+session_response = requests.post(
+    f"{BASE_URL}/apps/{APP_NAME}/users/{USER_ID}/sessions/{SESSION_ID}",
+    headers=HEADERS,
+    json={},
+    timeout=30,
+)
+session_response.raise_for_status()
+
+with requests.post(
+    f"{BASE_URL}/run_sse",
+    headers=HEADERS,
+    json={
+        "app_name": APP_NAME,
+        "user_id": USER_ID,
+        "session_id": SESSION_ID,
+        "new_message": {
+            "role": "user",
+            "parts": [{"text": "你好，请介绍一下自己"}],
+        },
+        "streaming": True,
+    },
+    stream=True,
+    timeout=120,
+) as response:
+    response.raise_for_status()
+    for line in response.iter_lines():
+        if line:
+            print(line.decode("utf-8"))
+```
+
+A2A 协议的示例通过 JSON-RPC `message/send` 方法调用智能体：
+
+```python
+import uuid
+
+import requests
+
+AGENT_URL = "<A2A 调用地址>"
+API_KEY = "<API_KEY>"
+HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+
+response = requests.post(
+    AGENT_URL,
+    headers=HEADERS,
+    json={
+        "jsonrpc": "2.0",
+        "id": str(uuid.uuid4()),
+        "method": "message/send",
+        "params": {
+            "message": {
+                "messageId": str(uuid.uuid4()),
+                "role": "user",
+                "parts": [{"kind": "text", "text": "你好，请介绍一下自己"}],
+            }
+        },
+    },
+    timeout=120,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+<Note>
+  示例仅用于说明调用方式。实际端点、应用名称和鉴权方式以标签中探测到的结果为准；未启用鉴权时无需传入 `Authorization` 头。
+</Note>
+
 ## 选择云端 Runtime
 
 在云端模式下，对话页面顶部的智能体选择器会列出当前登录用户通过该工作台部署的 AgentKit Runtime，并按区域分页浏览。每条 Runtime 提供两个独立操作：

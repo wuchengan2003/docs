@@ -389,6 +389,123 @@ An agent deployed to AgentKit can be edited again in Studio and updated on the s
 
 Updates are still governed by Studio role permissions: `admin` can update all Studio-managed Runtimes, `developer` can update only their own, and regular users cannot update.
 
+## View integration methods
+
+After selecting a deployed agent in "Manage agents", the detail page offers an "Integration methods" tab. The tab probes the protocols and endpoints that the current Runtime actually exposes and provides ready-to-use request examples, so you can call the agent from outside Studio without consulting the console.
+
+<Note>
+  Integration methods are confirmed at runtime by read-only probes issued when the tab opens; only confirmed protocols and addresses are shown. Protocols the Runtime does not expose appear as unavailable, and Studio never invents unconfirmed endpoints.
+</Note>
+
+### Supported protocols
+
+| Protocol | Discovery | Call endpoint |
+| :--- | :--- | :--- |
+| API Server | Probes the Runtime `/list-apps` endpoint | `<Runtime public endpoint>/run_sse` |
+| A2A | Reads the Runtime `/.well-known/agent-card.json` | The call address declared in the Agent Card |
+
+While probing, Studio shows a loading state. If a probe fails due to network or authentication issues, the tab shows an error with a "Retry" button. When the Runtime does not expose a protocol, that protocol appears as unavailable without affecting the other one.
+
+### Authentication and API Key
+
+The tab shows the Runtime's current authentication type:
+
+| Authentication | Description |
+| :--- | :--- |
+| API Key | The Runtime authenticates with an API Key. |
+| OAuth / JWT | The Runtime authenticates with a custom JWT. |
+| No authentication | The Runtime has no authentication enabled. |
+
+When the authentication type is API Key, the tab shows an API Key field. For security, the key is masked as `****` by default and is only fetched from the Runtime after you click the reveal button; switching tabs or leaving the agent clears the revealed value. Examples always use placeholders and never embed a real API Key.
+
+<Warning>
+  A revealed API Key is present in the browser. Only grant Studio access to authorized users, close the reveal view after use, and obtain credentials from a secrets manager or environment variable for programmatic calls rather than copying the plaintext key from Studio.
+</Warning>
+
+### Request examples
+
+The tab generates a Python request example for each detected protocol, based on the probe results. Endpoints and app names come from the probe; credentials use placeholders.
+
+For the API Server protocol, the example uses `requests` to create a session and call the `/run_sse` streaming endpoint:
+
+```python
+import uuid
+
+import requests
+
+BASE_URL = "<Runtime public endpoint>"
+APP_NAME = "<app name>"
+USER_ID = "demo-user"
+SESSION_ID = str(uuid.uuid4())
+API_KEY = "<API_KEY>"
+HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+
+session_response = requests.post(
+    f"{BASE_URL}/apps/{APP_NAME}/users/{USER_ID}/sessions/{SESSION_ID}",
+    headers=HEADERS,
+    json={},
+    timeout=30,
+)
+session_response.raise_for_status()
+
+with requests.post(
+    f"{BASE_URL}/run_sse",
+    headers=HEADERS,
+    json={
+        "app_name": APP_NAME,
+        "user_id": USER_ID,
+        "session_id": SESSION_ID,
+        "new_message": {
+            "role": "user",
+            "parts": [{"text": "Hello, please introduce yourself"}],
+        },
+        "streaming": True,
+    },
+    stream=True,
+    timeout=120,
+) as response:
+    response.raise_for_status()
+    for line in response.iter_lines():
+        if line:
+            print(line.decode("utf-8"))
+```
+
+For the A2A protocol, the example calls the agent via the JSON-RPC `message/send` method:
+
+```python
+import uuid
+
+import requests
+
+AGENT_URL = "<A2A call address>"
+API_KEY = "<API_KEY>"
+HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+
+response = requests.post(
+    AGENT_URL,
+    headers=HEADERS,
+    json={
+        "jsonrpc": "2.0",
+        "id": str(uuid.uuid4()),
+        "method": "message/send",
+        "params": {
+            "message": {
+                "messageId": str(uuid.uuid4()),
+                "role": "user",
+                "parts": [{"kind": "text", "text": "Hello, please introduce yourself"}],
+            }
+        },
+    },
+    timeout=120,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+<Note>
+  The examples illustrate the calling convention only. Actual endpoints, app names, and authentication depend on the probe results; when no authentication is enabled, the `Authorization` header is not required.
+</Note>
+
 ## Select a cloud Runtime
 
 In cloud mode, the agent selector at the top of the chat page lists AgentKit Runtimes that the signed-in user deployed through this workbench, paginated by region. Each Runtime exposes two independent actions:
