@@ -563,7 +563,7 @@ veadk studio deploy \
 
 To deploy the unreleased Studio capabilities documented in Preview, run this command from the VeADK source directory and use `--from-source` so the current source is built into VeFaaS. Without this option, deployment uses the latest PyPI release, which does not contain unreleased capabilities.
 
-Deployment credentials are resolved in the following order: explicit `--volcengine-access-key` / `--volcengine-secret-key` options take precedence; otherwise the `VOLCENGINE_ACCESS_KEY` / `VOLCENGINE_SECRET_KEY` environment variables of the current process are read; when neither is present, the `[default]` profile in `~/.volc/credentials` is used. Any source that yields a complete access key and secret key is sufficient to proceed.
+Deployment credentials are resolved in the following order: explicit `--volcengine-access-key` / `--volcengine-secret-key` options take precedence; otherwise the `VOLCENGINE_ACCESS_KEY` / `VOLCENGINE_SECRET_KEY` environment variables of the current process are read; when neither is present, the `[default]` profile in `~/.volc/credentials` is used. Any source that yields a complete access key and secret key is sufficient to proceed. For STS temporary credentials, the session token is supplied via `--volcengine-session-token`, or resolved from the `VOLCENGINE_SESSION_TOKEN` / `VOLC_SESSIONTOKEN` environment variables and the `session_token` field of the `[default]` profile in `~/.volc/credentials`; when not provided it is left empty and only long-lived AK/SK are used.
 
 On success, the terminal prints the public URL and VeFaaS application ID. Opening the URL redirects the user through VeIdentity login.
 
@@ -613,6 +613,7 @@ veadk studio deploy \
 | `--gateway-upstream-name` | `str` | `""` | Gateway upstream name; leave empty for automatic configuration. |
 | `--volcengine-access-key` | `str \| None` | Auto-resolved | Deployment access key, resolved from the option, `VOLCENGINE_ACCESS_KEY`, then the `[default]` profile in `~/.volc/credentials`. |
 | `--volcengine-secret-key` | `str \| None` | Auto-resolved | Deployment secret key, resolved from the option, `VOLCENGINE_SECRET_KEY`, then the `[default]` profile in `~/.volc/credentials`. |
+| `--volcengine-session-token` | `str \| None` | Auto-resolved | STS temporary-credential session token, resolved from the option, `VOLCENGINE_SESSION_TOKEN` / `VOLC_SESSIONTOKEN`, then the `session_token` field of the `[default]` profile in `~/.volc/credentials`. |
 | `--veadk-version` | `str` | Latest release | `veadk-python` version installed in VeFaaS; set it only when pinning or reproducing a release. |
 | `--from-source` | Boolean flag | `false` | Build and deploy a wheel from the current checkout, including uncommitted changes. Use it for unreleased validation, not together with a pinned release workflow. |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for built-in agents; also read from `SANDBOX_CHAT_CODEX`. |

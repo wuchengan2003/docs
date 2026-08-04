@@ -563,7 +563,7 @@ veadk studio deploy \
 
 Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，并使用 `--from-source` 将当前源码构建进 VeFaaS。省略该参数时，部署使用最新 PyPI 发布版本，不包含尚未发布的能力。
 
-部署凭据按以下顺序解析：优先使用 `--volcengine-access-key` / `--volcengine-secret-key` 显式传入；未提供时读取当前进程的 `VOLCENGINE_ACCESS_KEY` / `VOLCENGINE_SECRET_KEY` 环境变量；两者均缺失时，读取 `~/.volc/credentials` 中的 `[default]` 配置。任一来源解析到完整的 Access Key 与 Secret Key 即可继续部署。
+部署凭据按以下顺序解析：优先使用 `--volcengine-access-key` / `--volcengine-secret-key` 显式传入；未提供时读取当前进程的 `VOLCENGINE_ACCESS_KEY` / `VOLCENGINE_SECRET_KEY` 环境变量；两者均缺失时，读取 `~/.volc/credentials` 中的 `[default]` 配置。任一来源解析到完整的 Access Key 与 Secret Key 即可继续部署。STS 临时凭证的 Session Token 通过 `--volcengine-session-token` 显式传入，或依次读取 `VOLCENGINE_SESSION_TOKEN`、`VOLC_SESSIONTOKEN` 环境变量和 `~/.volc/credentials` 中 `[default]` 配置的 `session_token` 字段；未提供时留空，仅使用长期 AK/SK。
 
 部署成功后，终端会输出公网 URL 和 VeFaaS 应用 ID。打开公网 URL 时，Studio 会先跳转到 VeIdentity 完成登录。
 
@@ -613,6 +613,7 @@ veadk studio deploy \
 | `--gateway-upstream-name` | `str` | `""` | 指定网关上游名称；留空时自动配置。 |
 | `--volcengine-access-key` | `str \| None` | 自动解析 | 部署用 Access Key，依次读取命令参数、`VOLCENGINE_ACCESS_KEY` 环境变量与 `~/.volc/credentials` 的 `[default]` 配置。 |
 | `--volcengine-secret-key` | `str \| None` | 自动解析 | 部署用 Secret Key，依次读取命令参数、`VOLCENGINE_SECRET_KEY` 环境变量与 `~/.volc/credentials` 的 `[default]` 配置。 |
+| `--volcengine-session-token` | `str \| None` | 自动解析 | STS 临时凭证的 Session Token，依次读取命令参数、`VOLCENGINE_SESSION_TOKEN` / `VOLC_SESSIONTOKEN` 环境变量与 `~/.volc/credentials` 中 `[default]` 配置的 `session_token` 字段。 |
 | `--veadk-version` | `str` | 最新发布版本 | 写入 VeFaaS 依赖的 `veadk-python` 版本；仅在需要固定或复现版本时设置。 |
 | `--from-source` | `bool` 标志 | `false` | 从当前源码目录构建 wheel 后部署，包含未提交改动；用于验证未发布版本，不应与 `--veadk-version` 的发布版本工作流混用。 |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | 自动创建 | 内置智能体使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_CHAT_CODEX` 设置。 |
