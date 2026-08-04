@@ -8,6 +8,8 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| 知识库 | OpenViking 知识库默认资源目录改为 `viking://user/<openviking_user_id>/resources/<index>/`，新增 `openviking_user_id` 构造参数与 `DATABASE_OPENVIKING_USER_ID` 环境变量用于隔离不同应用的资源；`KnowledgeBase` 新增 `close()` 方法用于释放后端客户端。 | [使用 OpenViking 存储](/productions/veadk/preview/zh/components/knowledge/openviking) |
+| 长期记忆 | OpenViking 长期记忆新增 `openviking_user_id` 作为 owner/context 标识并区分于 `Runner.user_id`（peer ID），新增 `memory_policy` 构造参数与 `DATABASE_OPENVIKING_MEMORY_POLICY` 环境变量用于覆盖默认记忆提取策略。 | [使用 OpenViking 存储](/productions/veadk/preview/zh/components/memory/openviking) |
 | Studio Codex 会话 | 内置 Codex 智能体对话新增专用会话控件：快捷命令、模型切换、Skill 调用、工作空间选择、Codex 权限设置、操作审批、终端与浏览器工具，以及每轮 Token 用量和历史会话恢复。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | 创建新 Runtime 时支持配置最小和最大实例数；使用 in-memory 短期记忆时默认为 1～1 并提示改用持久化存储。实例范围非默认值时在部署进度中增加「更新实例配置」阶段。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 会话 | 列举会话时跳过已不存在的会话，不再导致整个列表加载失败。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
