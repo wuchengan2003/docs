@@ -254,6 +254,38 @@ Studio 调用 `doubao-seed-2-0-lite-260428` 模型，根据需求生成一份经
 
 测试运行进程默认保留 1800 秒，可通过 `--generated-agent-test-run-ttl` 调整。每位登录用户最多同时运行 3 个生成智能体测试进程；超出上限时返回 429，需关闭不再使用的调试页面后重试。刷新页面后遗留的测试进程会被自动清理，单次测试运行最多接受 300 个项目文件。测试代码可能调用外部服务或访问运行环境中的数据，只应测试可信项目，并为 Studio 使用权限受限的凭证。
 
+### 配置记忆
+
+为智能体启用长期记忆后，可在 Studio 中选择以下后端：
+
+| 后端 | 适用场景 |
+| :--- | :--- |
+| [本地向量库](/productions/veadk/preview/zh/components/memory/local) | 进程内向量库，适合本地调试，不持久化，需要配置向量化模型。 |
+| [OpenSearch](/productions/veadk/preview/zh/components/memory/opensearch) | 使用自建或托管的 OpenSearch 集群，并自行配置向量化模型。 |
+| [Redis](/productions/veadk/preview/zh/components/memory/redis) | 使用 Redis 向量检索，并自行配置向量化模型。 |
+| [VikingDB Memory](/productions/veadk/preview/zh/components/memory/vikingdb) | 火山 VikingDB 记忆库（支持用户画像），使用 Studio 的火山引擎凭证。 |
+| [OpenViking](/productions/veadk/preview/zh/components/memory/openviking) | OpenViking 长期记忆，按用户维度保存和检索偏好、事件与实体。 |
+| [mem0](/productions/veadk/preview/zh/components/memory/mem0) | Mem0 托管记忆服务。 |
+
+本地向量库、OpenSearch、Redis 与 mem0 后端的连接和向量化模型参数以环境变量形式写入生成项目；VikingDB Memory 与 OpenViking 使用火山引擎凭证链，由 Studio 服务端转发到调试运行和 AgentKit 运行时，无需在创建页重复填写 AK/SK。各后端的完整参数、默认值和限制见对应组件页面。
+
+选择 OpenViking 时，Studio 在创建页填写以下配置项并写入生成项目的环境变量：
+
+| Studio 配置项 | 生成项目环境变量 | 是否必填 | 默认值 / 占位 | 说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| OpenViking 服务地址 | `DATABASE_OPENVIKING_URL` | 是 | `https://api.vikingdb.cn-beijing.volces.com/openviking` | OpenViking 服务地址，可在[控制台](https://console.volcengine.com/vikingdb/openviking)获取。 |
+| OpenViking API Key | `DATABASE_OPENVIKING_API_KEY` | 是 | — | OpenViking API Key，可在[控制台](https://console.volcengine.com/vikingdb/openviking)获取。 |
+| 记忆归属 ID | `DATABASE_OPENVIKING_USER_ID` | 否 | `default` | 对应 `viking://user/<此值>/peers/<请求用户>/memories` 中的 user 段，用于隔离 Agent、租户或业务场景。 |
+| 记忆策略 | `DATABASE_OPENVIKING_MEMORY_POLICY` | 否 | — | 记忆的抽取与隔离策略，JSON 格式；不填写时由 OpenViking 服务应用其官方默认策略，结构以 [OpenViking 会话接口](https://github.com/volcengine/OpenViking/blob/main/docs/zh/api/05-sessions.md)为准。 |
+
+<Note>
+  OpenViking 的记忆归属 ID（`DATABASE_OPENVIKING_USER_ID`）与运行时用户标识（`Runner.user_id`）是不同的概念：前者隔离不同应用或租户的记忆，后者作为 OpenViking 的 peer ID 隔离终端用户记忆。详见[使用 OpenViking 存储](/productions/veadk/preview/zh/components/memory/openviking)。
+</Note>
+
+<Warning>
+  启用 OpenViking 长期记忆会把会话写入外部 OpenViking 服务。使用前应确认数据处理、访问控制和保留策略符合业务要求。
+</Warning>
+
 ### 配置知识库
 
 为智能体启用知识库后，可在 Studio 中选择以下后端：

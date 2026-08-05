@@ -254,6 +254,38 @@ For example, create an LLM root agent named `support_router`, add a remote-agent
 
 The temporary test process is retained for 1,800 seconds by default and can be changed with `--generated-agent-test-run-ttl`. Each logged-in user can run at most 3 generated-agent test processes concurrently; exceeding the limit returns 429 with a prompt to close unused debug pages and retry. Studio reclaims test processes left behind after a page refresh, and a single test run accepts at most 300 project files. Generated code can call external services or access data available to Studio, so test only trusted projects and give Studio restricted credentials.
 
+### Configure memory
+
+After enabling long-term memory for an agent, select one of these backends in Studio:
+
+| Backend | When to use |
+| :--- | :--- |
+| [Local vector store](/productions/veadk/preview/en/components/memory/local) | In-process vector store for local debugging; not persistent and requires an embedding model. |
+| [OpenSearch](/productions/veadk/preview/en/components/memory/opensearch) | Uses a self-managed or managed OpenSearch cluster with your embedding model. |
+| [Redis](/productions/veadk/preview/en/components/memory/redis) | Uses Redis vector retrieval with your embedding model. |
+| [VikingDB Memory](/productions/veadk/preview/en/components/memory/vikingdb) | Managed Volcengine VikingDB memory store (supports user profiles) using Studio's Volcengine credentials. |
+| [OpenViking](/productions/veadk/preview/en/components/memory/openviking) | OpenViking long-term memory that stores and retrieves preferences, events, and entities per user. |
+| [mem0](/productions/veadk/preview/en/components/memory/mem0) | Mem0 hosted memory service. |
+
+Connection and embedding-model parameters for the local, OpenSearch, Redis, and mem0 backends are written to the generated project as environment variables. VikingDB Memory and OpenViking use the Volcengine credential chain, forwarded by the Studio server to debug runs and AgentKit runtimes, so AK/SK do not need to be re-entered on the creation page. For full parameters, defaults, and limits, see each backend's component page.
+
+When you select OpenViking, Studio collects the following settings on the creation page and writes them to the generated project's environment variables:
+
+| Studio setting | Generated env var | Required | Default / placeholder | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| OpenViking service URL | `DATABASE_OPENVIKING_URL` | Yes | `https://api.vikingdb.cn-beijing.volces.com/openviking` | OpenViking service URL, available in the [console](https://console.volcengine.com/vikingdb/openviking). |
+| OpenViking API key | `DATABASE_OPENVIKING_API_KEY` | Yes | — | OpenViking API key, available in the [console](https://console.volcengine.com/vikingdb/openviking). |
+| Memory owner ID | `DATABASE_OPENVIKING_USER_ID` | No | `default` | The `user` segment in `viking://user/<this value>/peers/<requesting user>/memories`; isolates agents, tenants, or business scenarios. |
+| Memory policy | `DATABASE_OPENVIKING_MEMORY_POLICY` | No | — | Memory extraction and isolation policy as JSON; when left blank the OpenViking service applies its official default, with the structure following the [OpenViking session API](https://github.com/volcengine/OpenViking/blob/main/docs/zh/api/05-sessions.md). |
+
+<Note>
+  The OpenViking memory owner ID (`DATABASE_OPENVIKING_USER_ID`) and the runtime user identifier (`Runner.user_id`) are distinct concepts: the former isolates memories per application or tenant, while the latter serves as the OpenViking peer ID to isolate end-user memories. See [Store memory in OpenViking](/productions/veadk/preview/en/components/memory/openviking).
+</Note>
+
+<Warning>
+  Enabling OpenViking long-term memory writes conversation data to an external OpenViking service. Confirm that data processing, access control, and retention meet your requirements before enabling it.
+</Warning>
+
 ### Configure a knowledge base
 
 After enabling a knowledge base for an agent, select one of these backends in Studio:

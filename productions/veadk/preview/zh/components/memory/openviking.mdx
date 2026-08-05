@@ -23,7 +23,7 @@ memory = LongTermMemory(
         "api_key": "填入 OpenViking API Key",
         # 可选；不传时默认 default
         "openviking_user_id": "support_app",
-        # 可选；不传时保持 VeADK 默认 policy
+        # 可选；显式指定记忆策略，不传时由 OpenViking 服务应用其官方默认策略
         "memory_policy": {
             "self": {"enabled": False},
             "peer": {"enabled": True},
@@ -60,7 +60,7 @@ agent = Agent(
 | `url` | `str` | `DATABASE_OPENVIKING_URL` | OpenViking 服务地址，必填。 |
 | `api_key` | `str` | `DATABASE_OPENVIKING_API_KEY` | OpenViking API Key，必填。 |
 | `openviking_user_id` | `str` | `DATABASE_OPENVIKING_USER_ID` 或 `default` | OpenViking owner/context 标识，用于构建记忆路径。只允许字母、数字、`.`、`_`、`@`、`-`，不能为 `.` 或 `..`。 |
-| `memory_policy` | `dict \| None` | `None` | OpenViking 记忆提取策略。未配置时使用默认 policy。 |
+| `memory_policy` | `dict \| None` | `None` | OpenViking 记忆提取策略。未配置时不向 OpenViking 发送策略，由服务端应用其官方默认策略。 |
 | `peer_id_resolver` | `Callable \| None` | 使用 `user_id` | 把 `app_name` 与 `user_id` 转换为 OpenViking peer ID。 |
 | `timeout` | `float` | `30` | OpenViking 请求超时秒数。 |
 
@@ -68,13 +68,13 @@ agent = Agent(
 
 `openviking_user_id` 未配置时按 `DATABASE_OPENVIKING_USER_ID` 顺序查找，都未配置时使用 `default` 并输出告警日志。建议为每个应用或租户显式设置，避免不同应用的记忆混在同一个 `default` 路径下。
 
-未配置 `memory_policy` 时使用默认策略：
+未配置 `memory_policy` 时，VeADK 不向 OpenViking 发送策略，由 OpenViking 服务应用其官方默认策略。如需显式控制记忆的抽取范围与隔离方式，传入合法的 `memory_policy`，其结构以 OpenViking 会话接口为准。例如：
 
 ```json
 {"self": {"enabled": false}, "peer": {"enabled": true}, "memory_types": ["entities", "events", "preferences"]}
 ```
 
-默认不提取自身记忆，只从 peer（对话对象）提取实体、事件与偏好。需要开启自身记忆或调整记忆类型时，传入合法的 `memory_policy`。
+该示例关闭自身记忆提取，仅从对话对象提取实体、事件与偏好；实际取值与可用字段以 OpenViking 服务端支持的策略为准。
 
 <Warning>
   `auto_save_session=True` 会把会话内容写入外部 OpenViking 服务。使用前应确认数据处理、访问控制和保留策略符合业务要求。
@@ -87,7 +87,7 @@ agent = Agent(
 | `DATABASE_OPENVIKING_URL` | 无 | OpenViking 服务地址。 |
 | `DATABASE_OPENVIKING_API_KEY` | 无 | OpenViking service owner API Key。 |
 | `DATABASE_OPENVIKING_USER_ID` | `default` | OpenViking owner/context 标识。 |
-| `DATABASE_OPENVIKING_MEMORY_POLICY` | 默认 policy | 长期记忆 `memory_policy` 的 JSON 字符串；未配置时使用默认 policy。 |
+| `DATABASE_OPENVIKING_MEMORY_POLICY` | 不发送策略 | 长期记忆 `memory_policy` 的 JSON 字符串；未配置时不向 OpenViking 发送策略，由服务端应用官方默认策略。 |
 
 ## 自定义用户映射
 
