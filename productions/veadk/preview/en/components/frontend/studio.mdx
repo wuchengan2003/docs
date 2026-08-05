@@ -333,6 +333,39 @@ The sub-agent's name and description come from the agent configuration in the pr
 This presentation applies to both local sub-agents and remote agents. A remote agent can only be a sub-agent and cannot be the root agent.
 </Note>
 
+## Conversation traces and issue feedback
+
+On the conversation page, each assistant reply provides trace and issue-feedback controls to help investigate a single turn. These controls are available only in regular agent conversations and are not shown in built-in Codex agent conversations.
+
+### View the call trace
+
+The “Tracing flame graph” button next to an assistant reply opens the call-trace observation panel, which renders the session's execution trace as a span tree with a detail panel and uses the reply's end time as the query cutoff when opened.
+
+- Local debug sessions read the ADK debug trace directly.
+- For a connected cloud Runtime, the Studio server queries APMPlus for the session trace using its own Volcengine credentials; the browser never touches the credentials.
+
+<Note>
+  Trace observation for a cloud Runtime requires enabling APMPlus tracing for the corresponding agent in the Volcengine console. Runtimes deployed through Studio have APMPlus tracing enabled by default. Opening the trace panel for a Runtime without tracing enabled prompts you to enable APMPlus tracing in the console first, and a failed trace query prompts you to retry later.
+</Note>
+
+### Issue feedback
+
+The “Issue feedback” button next to an assistant reply reports a problem for that turn. In the dialog, select an issue type and add a description before submitting. The submission includes the turn's input, output, tool-call records, and trace information for investigation, and is redacted for credentials before being sent. Available issue types:
+
+| Issue type | Description |
+| :--- | :--- |
+| Slow execution | Reply generation or tool calls took too long. |
+| Crash | Agent execution was interrupted or errored. |
+| Inaccurate result | The reply did not match expectations or contained errors. |
+| Tool call failure | A tool execution failed or returned an exception. |
+| Other | Anything not covered above. |
+
+The “Issue feedback” entry in the sidebar footer (labeled Beta) reports general Studio issues: select the affected module, an issue type, and add a description before submitting. The module corresponds to the current page and can be Conversation, Agents, Automation, Search, or Other; platform issue types include slow page loading, unavailable features, display anomalies, no response, and other issues.
+
+<Note>
+  Issue feedback is sent to the AgentKit team to improve the product; a confirmation appears after a successful submission. Avoid entering keys, tokens, or other sensitive information in the description. Feedback may fail when the current session is unavailable; close and retry in that case.
+</Note>
+
 ## Use smart search
 
 Smart search provides four retrieval sources:

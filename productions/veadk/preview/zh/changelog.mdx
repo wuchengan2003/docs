@@ -8,6 +8,8 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 问题反馈 | 对话页面每条助手回复新增「问题反馈」入口，可针对单轮回复选择问题类型（执行速度慢、运行崩溃、结果不准确、工具调用失败或其他）并补充描述后上报，提交时携带该轮输入、输出、工具调用记录和链路信息并做凭据脱敏；侧边栏底部新增「问题反馈」入口（Beta），用于按所属模块反馈 Studio 整体使用问题。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 调用链路 | 对话页面助手回复旁的调用链路观测面板支持查看云端 Runtime 的链路：Studio 服务端使用自身火山引擎凭证向 APMPlus 查询会话链路，浏览器不接触凭证；通过 Studio 部署的 Runtime 默认启用 APMPlus 链路观测，未开启链路观测时打开面板会提示先在控制台开启。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 自动化 | 侧边栏「自动化」页面新增「配置 Coding Agents」本地集成：检测本机已安装的 Trae、Claude Code 和 Codex 客户端，并将内置的 VeADK 开发与 AgentKit 平台操作 Skills 全局安装到对应客户端的 Skills 目录；浏览器只能选择固定标识，不接受任意命令或 Skill 内容。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 埋点 | `veadk studio deploy` 新增 `--apmplus-aid`、`--apmplus-token`、`--apmplus-domain` 与 `--apmplus-env` 选项（及对应环境变量）配置 APMPlus 前端埋点；同时提供 aid 与 token 后启用，默认关闭，上报失败不影响 Studio 使用；埋点仅采集使用统计维度，不采集对话内容、提示词、代码或密钥。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 创建 | 「添加智能体」菜单新增「从存量迁移」入口，用于将 LangChain、Dify 等存量项目迁移至 AgentKit Runtime，当前标记为「敬请期待」并禁用，暂不可用。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
