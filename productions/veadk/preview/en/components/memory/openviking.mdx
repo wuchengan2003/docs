@@ -23,7 +23,7 @@ memory = LongTermMemory(
         "api_key": "your-openviking-api-key",
         # Optional; defaults to default when omitted
         "openviking_user_id": "support_app",
-        # Optional; keeps VeADK's default policy when omitted
+        # Optional; explicitly sets the memory policy; when omitted the OpenViking service applies its official default
         "memory_policy": {
             "self": {"enabled": False},
             "peer": {"enabled": True},
@@ -60,7 +60,7 @@ agent = Agent(
 | `url` | `str` | `DATABASE_OPENVIKING_URL` | OpenViking service URL. Required. |
 | `api_key` | `str` | `DATABASE_OPENVIKING_API_KEY` | OpenViking API key. Required. |
 | `openviking_user_id` | `str` | `DATABASE_OPENVIKING_USER_ID` or `default` | OpenViking owner/context used to build the memory path. Allowed characters: letters, digits, `.`, `_`, `@`, `-`; cannot be `.` or `..`. |
-| `memory_policy` | `dict \| None` | `None` | OpenViking memory extraction policy. When unset, the default policy is used. |
+| `memory_policy` | `dict \| None` | `None` | OpenViking memory extraction policy. When unset, no policy is sent to OpenViking and the service applies its official default. |
 | `peer_id_resolver` | `Callable \| None` | Uses `user_id` | Maps `app_name` and `user_id` to an OpenViking peer ID. |
 | `timeout` | `float` | `30` | OpenViking request timeout in seconds. |
 
@@ -68,13 +68,13 @@ By default, `user_id` becomes the peer ID and may contain only letters, digits, 
 
 When `openviking_user_id` is not configured, VeADK checks `DATABASE_OPENVIKING_USER_ID` and falls back to `default`, emitting a warning. Set it explicitly for each application or tenant to avoid mixing memories from different applications under the same `default` path.
 
-When `memory_policy` is unset, VeADK uses the default policy:
+When `memory_policy` is unset, VeADK sends no policy to OpenViking and the OpenViking service applies its official default. To explicitly control the extraction scope and isolation, pass a valid `memory_policy` whose structure follows the OpenViking session API. For example:
 
 ```json
 {"self": {"enabled": false}, "peer": {"enabled": true}, "memory_types": ["entities", "events", "preferences"]}
 ```
 
-By default, self-memory is disabled and only peer (counterparty) entities, events, and preferences are extracted. Provide a valid `memory_policy` to enable self-memory or adjust the memory types.
+This example disables self-memory extraction and only extracts entities, events, and preferences from the counterparty; the actual accepted values and fields depend on what the OpenViking service supports.
 
 <Warning>
   Setting `auto_save_session=True` writes conversation data to an external OpenViking service. Confirm that data processing, access control, and retention meet your requirements before enabling it.
@@ -87,7 +87,7 @@ By default, self-memory is disabled and only peer (counterparty) entities, event
 | `DATABASE_OPENVIKING_URL` | None | OpenViking service URL. |
 | `DATABASE_OPENVIKING_API_KEY` | None | OpenViking service-owner API key. |
 | `DATABASE_OPENVIKING_USER_ID` | `default` | OpenViking owner/context ID. |
-| `DATABASE_OPENVIKING_MEMORY_POLICY` | Default policy | JSON string for the long-term memory `memory_policy`; the default policy is used when unset. |
+| `DATABASE_OPENVIKING_MEMORY_POLICY` | None (server default) | JSON string for the long-term memory `memory_policy`; when unset, no policy is sent to OpenViking and the service applies its official default. |
 
 ## Customize user mapping
 
