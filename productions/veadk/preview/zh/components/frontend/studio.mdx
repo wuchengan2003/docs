@@ -2,9 +2,9 @@
 title: "Studio 智能体工作台"
 ---
 
-VeADK Studio 使用与 VeADK Frontend 相同的服务和完整界面，提供对话、搜索、历史会话、技能中心，以及智能体创建、测试、部署和管理功能，启动后默认进入对话页面。智能体工作台以画布形式呈现多智能体拓扑，并集中展示已部署 Runtime 的版本与部署状态，支持在同一 Runtime 上迭代更新。
+VeADK Studio 使用与 VeADK Frontend 相同的服务和完整界面，提供对话、搜索、历史会话、技能中心、自动化集成，以及智能体创建、测试、部署和管理功能，启动后默认进入对话页面。智能体工作台以画布形式呈现多智能体拓扑，并集中展示已部署 Runtime 的版本与部署状态，支持在同一 Runtime 上迭代更新。
 
-当前可通过自定义配置或代码包部署创建项目；智能模式、模板和工作流入口显示为「敬请期待」，暂不可用。你可以预览和编辑生成的文件，启动临时测试进程，将项目下载为 ZIP，或者部署到 AgentKit。Studio 还支持选择云端 Runtime、多来源技能、多模态会话，以及集中查看和重试部署任务。
+当前可通过自定义配置或代码包部署创建项目；智能模式、模板和工作流入口显示为「敬请期待」，暂不可用。你可以预览和编辑生成的文件，启动临时测试进程，将项目下载为 ZIP，或者部署到 AgentKit。Studio 还支持选择云端 Runtime、多来源技能、多模态会话、自动化集成，以及集中查看和重试部署任务。
 
 ## 在本地启动
 
@@ -722,6 +722,90 @@ VeADK 1.0.9 起，连接的 Runtime 暴露会话级能力叠加接口时，Studi
 ### 查看评测案例
 
 工作台的「评测集」标签展示该智能体的所有评测案例，支持按 Good Case / Bad Case 和自动回流 / 手动回流筛选。自动回流案例显示评分（0–100 分制）和评分理由；手动回流案例（用户通过赞/踩创建）的评分列显示为「—」。两种来源的案例均可删除。
+
+## 自动化集成
+
+Studio 侧边栏的「自动化」页面提供研发工具和消息渠道的自动化集成。自动化按分类组织，当前包括「研发」和「消息渠道」两个分类。GitHub 自动化通过浏览器直接调用 GitHub API 创建分支、文件和 Pull Request；飞书自动化在 Studio 中生成基础智能体并直接部署到 AgentKit Runtime。
+
+### 模板项目导入
+
+在目标仓库中创建一个包含完整 Studio App Server 的最简 VeADK 智能体项目，并附带持续交付工作流。提交后 Studio 在目标仓库创建发布分支，发起包含模板文件和 GitHub Actions 工作流的 PR。
+
+模板项目包含 `app.py` 服务入口、一个带示例工具的智能体、`requirements.txt`、`Dockerfile`、`.env.example`、`.gitignore` 和 `.dockerignore`，以及持续交付工作流文件。合并 PR 后，推送到目标分支即触发 AgentKit Runtime 发布。
+
+| 参数 | 必填 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- |
+| GitHub Repo | 是 | — | 支持 `owner/repository` 或完整 GitHub URL。 |
+| 目标分支 | 否 | `main` | PR 的 base 分支。 |
+| Agent 项目目录 | 是 | `agentkit-basic-agent` | 模板文件创建的目录。 |
+| Runtime 名称 | 是 | — | 用于发布配置的 Runtime 名称，以字母开头，仅含字母、数字、下划线和连字符。 |
+| Runtime ID | 是 | — | 持续更新的目标 AgentKit Runtime ID。 |
+| 地域 | 是 | `cn-beijing` | 必须与目标 Runtime 所在地域一致。 |
+| GitHub Token | 是 | — | 需要对目标仓库的写入权限；仅用于当前请求，不持久化。 |
+
+### AgentKit Runtime 持续交付
+
+为已有仓库添加持续发布到 AgentKit Runtime 的 GitHub Actions 工作流。推送代码到目标分支时自动构建并发布 Runtime 新版本。
+
+| 参数 | 必填 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- |
+| GitHub Repo | 是 | — | 支持 `owner/repository` 或完整 GitHub URL。 |
+| 目标分支 | 否 | `main` | 工作流监听的分支，也是 PR 的 base 分支。 |
+| Agent 项目目录 | 否 | `.` | 包含 `app.py` 的项目目录；留空时使用仓库根目录。 |
+| Runtime 名称 | 是 | — | 用于发布配置的 Runtime 名称。 |
+| Runtime ID | 是 | — | 持续更新的目标 AgentKit Runtime ID。 |
+| 地域 | 是 | `cn-beijing` | 必须与目标 Runtime 所在地域一致。 |
+| GitHub Token | 是 | — | 需要对目标仓库的写入权限；仅用于当前请求，不持久化。 |
+
+<Note>
+  持续交付和模板导入工作流均需要在仓库中配置 `VOLCENGINE_ACCESS_KEY` 和 `VOLCENGINE_SECRET_KEY` GitHub Secrets；使用临时凭据时还需配置 `VOLCENGINE_SESSION_TOKEN`。这些 Secrets 在 GitHub 中管理，不经过 Studio。
+</Note>
+
+### PR 自动评审
+
+在目标仓库中添加 GitHub Actions 工作流，在隔离的 AgentKit Sandbox 中评审同仓库的非草稿 PR，并将评审结果发布为 GitHub Review。
+
+<Warning>
+  PR 评审工作流仅评审与目标仓库相同的非草稿 PR，不评审 fork 仓库的 PR，不会读取 fork PR 的仓库 Secrets。
+</Warning>
+
+| 参数 | 必填 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- |
+| GitHub Repo | 是 | — | 支持 `owner/repository` 或完整 GitHub URL。 |
+| 目标分支 | 否 | `main` | PR 的 base 分支。 |
+| Sandbox Tool ID | 是 | — | 用于运行每次评审的 AgentKit CodeEnv Tool ID。 |
+| 评审模型 | 是 | — | 注入 Sandbox 的代码评审模型名称。 |
+| 模型 API 地址 | 是 | `https://ark.cn-beijing.volces.com/api/coding/v3` | 必须使用 OpenAI 兼容的 HTTPS 地址，不能包含凭据、查询参数或锚点。 |
+| 地域 | 是 | `cn-beijing` | 必须与 Sandbox Tool 所在地域一致。 |
+| GitHub Token | 是 | — | 需要对目标仓库的写入权限；仅用于当前请求，不持久化。 |
+
+PR 评审工作流需要在仓库中配置以下 GitHub Secrets：
+
+| Secret | 说明 |
+| :--- | :--- |
+| `VOLCENGINE_ACCESS_KEY` | 火山引擎 Access Key（必填）。 |
+| `VOLCENGINE_SECRET_KEY` | 火山引擎 Secret Key（必填）。 |
+| `CODEX_MODEL_API_KEY` | 评审模型的 API Key（必填）。 |
+| `VOLCENGINE_SESSION_TOKEN` | 使用临时凭据时必填。 |
+
+### 飞书机器人
+
+<Note>
+  飞书机器人自动化当前标记为 Beta。
+</Note>
+
+在 Studio 中直接创建一个由 AgentKit Runtime 驱动的飞书智能体。填写已发布飞书应用的凭据后，Studio 生成基础智能体、创建独立 Runtime，并启用飞书消息长连接。部署按生成智能体、构建镜像、创建 Runtime 和发布服务四个阶段展示进度。部署完成后可在页面中打开 Runtime 控制台。
+
+| 参数 | 必填 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- |
+| 智能体名称 | 是 | `feishu_assistant` | 将作为新 Runtime 中的根智能体名称。 |
+| 部署地域 | 是 | `cn-beijing` | Runtime 与构建产物创建的地域，可选 `cn-beijing` 或 `cn-shanghai`。 |
+| 飞书 App ID | 是 | — | 来自飞书开放平台的应用凭证。 |
+| 飞书 App Secret | 是 | — | 仅用于本次部署，不会写入生成源码或浏览器存储。 |
+
+<Note>
+  飞书机器人的 App Secret 仅用于本次部署，不写入生成源码、工作流或日志。部署期间可取消部署，取消将停止任务并清理已创建的 Runtime。
+</Note>
 
 ## `veadk studio` 参数
 
