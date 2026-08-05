@@ -52,6 +52,7 @@ This changelog cumulatively lists all public user-facing changes from VeADK 1.0.
 | APMPlus tracing | Reasoning content in model output is labeled with the `reasoning` type to distinguish it from regular text, making it easier to inspect the reasoning process separately in APMPlus. | [APMPlus](/productions/veadk/preview/en/components/observability/apmplus) |
 | APMPlus tracing | When `OpentelemetryTracer` initialization detects an existing global `TracerProvider`, it reuses that provider instead of overriding it and automatically removes `APMPlusExporter`; a new read-only property `apmplus_managed_externally` is available to query this state. | [Observability overview](/productions/veadk/preview/en/components/observability) · [APMPlus](/productions/veadk/preview/en/components/observability/apmplus) |
 | Code sandbox | When `run_code` runs code or Shell commands, the AgentKit request timeout now extends with `timeout` and `hard_timeout`, preventing long-running tasks from being interrupted by a fixed read timeout. | [Code sandbox](/productions/veadk/preview/en/components/tools/code-sandbox) |
+| Code sandbox | `execute_skills` adds an `invocation_mode` parameter and the `AGENTKIT_SKILL_INVOCATION_MODE` environment variable to switch the skill sandbox backend between `execute` (default), `run_sse`, `a2a`, and `python_agent` modes; the `prefer_stream` parameter has been removed. | [Code sandbox](/productions/veadk/preview/en/components/tools/code-sandbox) |
 
 ## 1.0.9
 
