@@ -8,6 +8,8 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 自动化 | 侧边栏「自动化」页面新增模板项目导入、AgentKit Runtime 持续交付和 PR 自动评审三种 GitHub 自动化集成：通过浏览器直接调用 GitHub API 创建分支、文件和 Pull Request，为仓库添加持续交付工作流或自动评审工作流；GitHub Token 仅用于当前请求，不持久化。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 自动化 | 侧边栏「自动化」页面新增飞书机器人自动化（Beta）：填写飞书应用凭据后，Studio 生成基础智能体并直接部署到 AgentKit Runtime，启用飞书消息长连接；App Secret 仅用于本次部署，不写入生成源码或浏览器存储。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 记忆 | 自定义创建智能体时，长期记忆新增 OpenViking 后端，可在创建页配置服务地址、API Key、记忆归属 ID 和记忆策略，并写入生成项目的环境变量。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [使用 OpenViking 存储](/productions/veadk/preview/zh/components/memory/openviking) |
 | 长期记忆 | OpenViking 长期记忆未配置 `memory_policy` 时不再使用 VeADK 内置默认策略，改为不向 OpenViking 发送策略，由服务端应用其官方默认策略。 | [使用 OpenViking 存储](/productions/veadk/preview/zh/components/memory/openviking) |
 | Studio 评测 | 部署智能体时新增「自动创建评测集」开关（默认开启），部署成功后自动为该智能体创建 Good Case 和 Bad Case 评测集；创建失败时在部署结果中显示警告，不影响已部署的 Runtime。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
