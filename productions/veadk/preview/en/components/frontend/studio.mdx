@@ -729,7 +729,44 @@ The workspace's "Evaluation sets" tab shows all evaluation cases for the agent, 
 
 ## Automation integrations
 
-The "Automation" page in the Studio sidebar provides automation integrations for development tools and message channels. Automations are organized into "Development" and "Channels" categories. GitHub automations create branches, files, and Pull Requests directly through the browser using the GitHub API; the Feishu automation generates a basic agent and deploys it directly to an AgentKit Runtime from Studio.
+The "Automation" page in the Studio sidebar provides automation integrations for development tools and message channels. Automations are organized into "Development" and "Channels" categories. The Coding Agents integration detects and configures locally installed coding-agent clients; GitHub automations create branches, files, and Pull Requests directly through the browser using the GitHub API; the Feishu automation generates a basic agent and deploys it directly to an AgentKit Runtime from Studio.
+
+### Configure Coding Agents
+
+Globally installs the bundled VeADK and AgentKit Skills to locally installed coding-agent clients so they can build, debug, deploy, and operate the platform while developing VeADK applications. This integration is badged "Local": detection and installation run only on the machine hosting Studio and do not access cloud resources.
+
+Open the "Configure Coding Agents" card on the Automation page to detect installed coding-agent clients on the current operating system (macOS, Linux, Windows) and list the bundled Skills available for global installation.
+
+Supported coding-agent clients:
+
+| Client | Detection | Global skills path |
+| :--- | :--- | :--- |
+| Trae | `trae` or `trae-cn` on the PATH, a `.trae` or `.trae-cn` marker in the home directory, or an installed Trae app (macOS `/Applications` or the Windows program directory) | `~/.trae/skills` |
+| Claude Code | `claude` on the PATH or a `.claude` marker in the home directory | `~/.claude/skills` |
+| Codex | `codex` on the PATH, a `.codex` or `.agents` marker in the home directory, or an installed ChatGPT/Codex app | `~/.agents/skills` |
+
+When a CLI executable is found, Studio also reports its version; clients that are not detected are marked unavailable.
+
+The bundled Skills are a fixed set and cannot be customized:
+
+| Skill | Description |
+| :--- | :--- |
+| `veadk-agent-development` | VeADK development skill for building, debugging, and delivering VeADK-based agent applications. |
+| `agentkit-cli` | AgentKit platform-operation skill for managing deployments, runtimes, and platform resources with the AgentKit CLI. |
+
+After selecting one or more detected clients and one or more bundled Skills, Studio writes the selected Skills to each client's global skills directory (for example `~/.claude/skills/<skill_id>`). Each Skill is written to its own subdirectory containing `SKILL.md` and any bundled scripts, references, and assets.
+
+<Note>
+  The browser can only choose from fixed client and Skill identifiers; arbitrary shell commands, filesystem paths, and Skill content are never accepted. Skills come from Studio's bundled resources, not from browser uploads. You can preview the files in each Skill before installing.
+</Note>
+
+Installation is atomic: Studio stages the Skill files in a temporary directory, validates them, and then swaps them into the target directory. When a Skill with the same name already exists, it is backed up before replacement; a failed install rolls back to the original content automatically.
+
+<Warning>
+  Installation writes to the global skills path under the home directory of the user that runs Studio. Make sure the user running Studio is the same user that owns the coding-agent client, so Skills are installed in the correct user directory.
+</Warning>
+
+When role-based access control is enabled, configuring Coding Agents requires the `developer` or `admin` role.
 
 ### Template project import
 
