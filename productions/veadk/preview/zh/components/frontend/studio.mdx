@@ -395,7 +395,7 @@ Studio 不会在浏览器中保存 Runtime API Key，因此管理页只显示 Ru
 </Warning>
 
 <Note>
-  出于安全考虑，草稿在保存时会移除 MCP 工具的鉴权 Token 和部署配置中的环境变量值。这些内容需要重新填写，刷新页面后不会自动恢复。
+  MCP 工具的鉴权 Token 会转换为环境变量引用保存：生成源码仅保留 `${ENV_NAME}` 引用，Token 值写入部署环境变量；YAML 导出与浏览器草稿均保留对应的环境变量值。更新已部署的 Runtime 时会重新加载已有环境变量值，在部署表单中输入新的 Token 会覆盖原有值。
 </Note>
 
 草稿保存使用浏览器本地存储空间。存储空间不足或被浏览器拒绝写入时，Studio 会提示对应原因，可删除不再需要的草稿或清理站点存储后重试。
@@ -424,6 +424,10 @@ Studio 不会在浏览器中保存 Runtime API Key，因此管理页只显示 Ru
 </Note>
 
 更新操作仍然受 Studio 角色权限约束：`admin` 可更新全部 Studio 管理的 Runtime，`developer` 只能更新自己创建的 Runtime，普通用户无权更新。
+
+<Note>
+  更新 Runtime 时，Studio 会从该 Runtime 加载已有环境变量并保留；在部署表单中显式填写的值覆盖原有值。选择 Runtime 目标进行调试测试时，该 Runtime 的环境变量会注入测试进程。
+</Note>
 
 ## 查看接入方式
 
