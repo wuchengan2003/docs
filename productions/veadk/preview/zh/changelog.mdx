@@ -8,6 +8,9 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 评测 | 部署智能体时新增「自动创建评测集」开关（默认开启），部署成功后自动为该智能体创建 Good Case 和 Bad Case 评测集；创建失败时在部署结果中显示警告，不影响已部署的 Runtime。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 评测 | 会话结束后自动评估每轮对话质量，调用模型从任务完成度、事实可靠性等维度评分（0–1），按评分归入 Good Case 或 Bad Case 评测集；自动评测案例标记为「自动回流」并展示评分与评分理由，可与手动反馈案例一起筛选和删除。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 评测 | 智能体工作台新增「优化项」标签，基于累计评测案例自动生成优化建议，按优先级和模块分组展示；评测模型可通过 `VEADK_STUDIO_EVALUATION_MODEL` 环境变量覆盖。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | 创建新 Runtime 时支持选择访问鉴权方式：默认使用 API Key，也可改用 VeIdentity 用户池；Studio 服务端加载当前账号可见的用户池并标记当前登录所用用户池，选择该用户池时由 Studio 转发登录 JWT，选择其他用户池时调用方需使用该用户池签发的 JWT；更新已有 Runtime 时保留其当前鉴权方式。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 接入方式 | 智能体详情页新增「接入方法」标签，探测 Runtime 暴露的 API Server 与 A2A 协议端点，显示鉴权方式与 API Key（默认掩码，按需显式显示），并提供对应的 Python 调用示例。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 草稿 | 自定义创建的未发布智能体草稿保存在当前浏览器并按登录用户隔离；草稿在管理列表显示草稿与部署中标识，支持编辑和删除；草稿不保存 MCP 鉴权 Token 与部署环境变量值，刷新后需重新填写。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
