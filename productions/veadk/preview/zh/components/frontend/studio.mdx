@@ -729,7 +729,44 @@ VeADK 1.0.9 起，连接的 Runtime 暴露会话级能力叠加接口时，Studi
 
 ## 自动化集成
 
-Studio 侧边栏的「自动化」页面提供研发工具和消息渠道的自动化集成。自动化按分类组织，当前包括「研发」和「消息渠道」两个分类。GitHub 自动化通过浏览器直接调用 GitHub API 创建分支、文件和 Pull Request；飞书自动化在 Studio 中生成基础智能体并直接部署到 AgentKit Runtime。
+Studio 侧边栏的「自动化」页面提供研发工具和消息渠道的自动化集成。自动化按分类组织，当前包括「研发」和「消息渠道」两个分类。Coding Agents 集成在本地检测并配置已安装的编程智能体客户端；GitHub 自动化通过浏览器直接调用 GitHub API 创建分支、文件和 Pull Request；飞书自动化在 Studio 中生成基础智能体并直接部署到 AgentKit Runtime。
+
+### 配置 Coding Agents
+
+将 VeADK 与 AgentKit 内置 Skills 全局安装到本机已安装的编程智能体客户端，使其在开发 VeADK 应用时具备构建、调试、部署与平台操作能力。该集成标记为「本地」，仅在启动 Studio 的本机执行检测与安装，不访问云资源。
+
+打开「自动化」页面中的「配置 Coding Agents」卡片后，Studio 会检测当前操作系统（macOS、Linux、Windows）下已安装的编程智能体客户端，并展示可全局安装的内置 Skills。
+
+支持的编程智能体客户端：
+
+| 客户端 | 检测方式 | 全局 Skills 安装路径 |
+| :--- | :--- | :--- |
+| Trae | 命令行 `trae` 或 `trae-cn`、主目录下的 `.trae` 或 `.trae-cn` 标记，或已安装的 Trae 应用（macOS 的 `/Applications`、Windows 的程序目录） | `~/.trae/skills` |
+| Claude Code | 命令行 `claude` 或主目录下的 `.claude` 标记 | `~/.claude/skills` |
+| Codex | 命令行 `codex`、主目录下的 `.codex` 或 `.agents` 标记，或已安装的 ChatGPT/Codex 应用 | `~/.agents/skills` |
+
+检测到命令行可执行文件时，Studio 还会显示其版本号；未检测到时标注为不可用。
+
+内置 Skills 为固定集合，不可自定义内容：
+
+| Skill | 说明 |
+| :--- | :--- |
+| `veadk-agent-development` | VeADK 开发技能，用于构建、调试并交付基于 VeADK 的智能体应用。 |
+| `agentkit-cli` | AgentKit 平台操作技能，使用 AgentKit CLI 管理部署、运行时与平台资源。 |
+
+选择一个或多个已检测到的客户端与一个或多个内置 Skills 后，Studio 会将所选 Skills 写入对应客户端的全局 Skills 目录（如 `~/.claude/skills/<skill_id>`）。每个 Skill 以独立子目录写入，包含 `SKILL.md` 及其附带的脚本、参考文档和资源。
+
+<Note>
+  浏览器只能从固定的客户端与 Skill 标识中选择，不接受任意的 Shell 命令、文件系统路径或 Skill 内容；Skills 来源于 Studio 内置资源，不来自浏览器上传。安装前可预览每个 Skill 包含的文件。
+</Note>
+
+安装采用原子替换：Studio 先将 Skill 文件写入临时目录，校验通过后再替换目标目录；目标目录已存在同名 Skill 时会先备份再替换，安装失败时自动回滚到原内容。
+
+<Warning>
+  安装会写入启动 Studio 的用户主目录下的全局 Skills 路径。请确认运行 Studio 的用户身份与编程智能体客户端所属用户一致，避免 Skills 安装到错误的用户目录。
+</Warning>
+
+启用角色权限控制时，配置 Coding Agents 需要 `developer` 或 `admin` 角色。
 
 ### 模板项目导入
 
