@@ -911,7 +911,7 @@ When `--sandbox-chat-codex-tool-id` and `--sandbox-skill-creator-tool-id` are om
 
 ### In-app updates
 
-`veadk studio deploy` uses the `veadk-studio` TOS bucket in the deployment region as its immutable release channel by default, so administrators can update the frontend and Python backend together from the navbar without extra options. Use `--studio-update-bucket`, `--studio-update-region`, and `--studio-update-prefix` (or the matching `VEADK_STUDIO_UPDATE_BUCKET`, `VEADK_STUDIO_UPDATE_REGION`, and `VEADK_STUDIO_UPDATE_PREFIX` environment variables) to override the default release channel.
+Studio reads new releases from the centrally maintained `veadk-studio` TOS source in `cn-beijing`, regardless of the deployment region, so administrators can update the frontend and Python backend together from the navbar without extra options. Use `--studio-update-bucket` and `--studio-update-prefix` (or the matching `VEADK_STUDIO_UPDATE_BUCKET` and `VEADK_STUDIO_UPDATE_PREFIX` environment variables) to override the default release source; the release source region is always `cn-beijing`.
 
 Studio checks for updates every three minutes and lists available versions with their change notes. After an administrator confirms an update, Studio verifies the complete release bundle, replaces the Python backend and frontend assets together, and re-releases the existing Application. The Application and Function IDs, public URL, SSO client, and server-side secrets are preserved.
 
@@ -921,7 +921,6 @@ veadk studio deploy \
   --allowed-client-id "your-user-pool-client-id" \
   --vefaas-app-name "veadk-studio" \
   --studio-update-bucket "custom-studio-releases" \
-  --studio-update-region "cn-shanghai" \
   --studio-update-prefix "veadk/studio/main"
 ```
 
@@ -955,7 +954,6 @@ veadk studio deploy \
 | `--sandbox-chat-codex-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for built-in agents; also read from `SANDBOX_CHAT_CODEX`. |
 | `--sandbox-skill-creator-tool-id`, `--skill-creator-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for Skill creation; also read from `SANDBOX_SKILL_CREATOR`. |
 | `--studio-update-bucket` | `str` | `veadk-studio` | TOS bucket holding immutable Studio release bundles; written to the function env as `VEADK_STUDIO_UPDATE_BUCKET`. Also read from `VEADK_STUDIO_UPDATE_BUCKET`. |
-| `--studio-update-region` | `str \| None` | Deployment region | TOS region for Studio release bundles; defaults to `--region` when omitted. Also read from `VEADK_STUDIO_UPDATE_REGION`. |
 | `--studio-update-prefix` | `str` | `veadk/studio/main` | TOS object prefix for the Studio main release channel. Also read from `VEADK_STUDIO_UPDATE_PREFIX`. |
 | `--apmplus-aid` | `str` | `""` | APMPlus Client aid for Studio frontend telemetry. Also read from `VEADK_STUDIO_APMPLUS_AID`. |
 | `--apmplus-token` | `str` | `""` | APMPlus Client token for Studio frontend telemetry. Also read from `VEADK_STUDIO_APMPLUS_TOKEN`. |
