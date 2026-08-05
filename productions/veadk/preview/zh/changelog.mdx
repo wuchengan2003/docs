@@ -8,6 +8,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 应用内更新 | Studio 固定从维护在北京地域的 `veadk-studio` TOS 发布源读取新版本，不再随部署地域变化；`veadk studio deploy` 移除 `--studio-update-region` 选项与 `VEADK_STUDIO_UPDATE_REGION` 环境变量，`--studio-update-bucket` 与 `--studio-update-prefix` 仍可覆盖发布源。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 自动化 | 侧边栏「自动化」页面新增「配置 Coding Agents」本地集成：检测本机已安装的 Trae、Claude Code 和 Codex 客户端，并将内置的 VeADK 开发与 AgentKit 平台操作 Skills 全局安装到对应客户端的 Skills 目录；浏览器只能选择固定标识，不接受任意命令或 Skill 内容。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 埋点 | `veadk studio deploy` 新增 `--apmplus-aid`、`--apmplus-token`、`--apmplus-domain` 与 `--apmplus-env` 选项（及对应环境变量）配置 APMPlus 前端埋点；同时提供 aid 与 token 后启用，默认关闭，上报失败不影响 Studio 使用；埋点仅采集使用统计维度，不采集对话内容、提示词、代码或密钥。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 创建 | 「添加智能体」菜单新增「从存量迁移」入口，用于将 LangChain、Dify 等存量项目迁移至 AgentKit Runtime，当前标记为「敬请期待」并禁用，暂不可用。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |

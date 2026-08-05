@@ -911,7 +911,7 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 ### 应用内更新
 
-`veadk studio deploy` 默认使用部署地域的 `veadk-studio` TOS Bucket 作为不可变发布渠道，部署完成后管理员可在导航栏中把前端与 Python 后端一起升级，无需额外参数。使用 `--studio-update-bucket`、`--studio-update-region` 与 `--studio-update-prefix`（或对应的 `VEADK_STUDIO_UPDATE_BUCKET`、`VEADK_STUDIO_UPDATE_REGION`、`VEADK_STUDIO_UPDATE_PREFIX` 环境变量）可覆盖默认发布渠道。
+Studio 固定从维护在北京地域的 `veadk-studio` TOS 发布源读取新版本，客户部署地域无需额外配置；部署完成后管理员可在导航栏中把前端与 Python 后端一起升级。使用 `--studio-update-bucket` 与 `--studio-update-prefix`（或对应的 `VEADK_STUDIO_UPDATE_BUCKET`、`VEADK_STUDIO_UPDATE_PREFIX` 环境变量）可覆盖默认发布源，发布源地域始终为 `cn-beijing`。
 
 Studio 每三分钟检查一次更新，列出可用版本及其变更说明。管理员确认升级后，Studio 会校验完整发布包，同时替换 Python 后端与前端资源并重新发布原 Application；Application 与 Function ID、访问 URL、SSO 客户端和服务端 Secret 保持不变。
 
@@ -921,7 +921,6 @@ veadk studio deploy \
   --allowed-client-id "your-user-pool-client-id" \
   --vefaas-app-name "veadk-studio" \
   --studio-update-bucket "custom-studio-releases" \
-  --studio-update-region "cn-shanghai" \
   --studio-update-prefix "veadk/studio/main"
 ```
 
@@ -955,7 +954,6 @@ veadk studio deploy \
 | `--sandbox-chat-codex-tool-id` | `str \| None` | 自动创建 | 内置智能体使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_CHAT_CODEX` 设置。 |
 | `--sandbox-skill-creator-tool-id`、`--skill-creator-tool-id` | `str \| None` | 自动创建 | Skill 创建使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_SKILL_CREATOR` 设置。 |
 | `--studio-update-bucket` | `str` | `veadk-studio` | 存放 Studio 不可变发布包的 TOS Bucket；部署时写入函数环境变量 `VEADK_STUDIO_UPDATE_BUCKET`。也可通过 `VEADK_STUDIO_UPDATE_BUCKET` 设置。 |
-| `--studio-update-region` | `str \| None` | 部署地域 | Studio 发布 Bundle 的 TOS 地域；省略时与 `--region` 一致。也可通过 `VEADK_STUDIO_UPDATE_REGION` 设置。 |
 | `--studio-update-prefix` | `str` | `veadk/studio/main` | Studio 主发布渠道的 TOS 对象前缀。也可通过 `VEADK_STUDIO_UPDATE_PREFIX` 设置。 |
 | `--apmplus-aid` | `str` | `""` | APMPlus Client aid，用于 Studio 前端埋点。也可通过 `VEADK_STUDIO_APMPLUS_AID` 设置。 |
 | `--apmplus-token` | `str` | `""` | APMPlus Client token，用于 Studio 前端埋点。也可通过 `VEADK_STUDIO_APMPLUS_TOKEN` 设置。 |
