@@ -51,6 +51,7 @@ title: "更新日志"
 | 模型 | 启用 Responses API 所需的 `google-adk` 最低版本提升至 `1.34.0`。 | [模型](/productions/veadk/preview/zh/components/agent/model) |
 | APMPlus 追踪 | 模型输出中的推理内容以 `reasoning` 类型标注，与普通文本内容区分，便于在 APMPlus 中单独查看推理过程。 | [APMPlus](/productions/veadk/preview/zh/components/observability/apmplus) |
 | APMPlus 追踪 | `OpentelemetryTracer` 初始化时若检测到已存在的全局 `TracerProvider`，将复用该 provider 而不再覆盖，并自动移除 `APMPlusExporter`；新增只读属性 `apmplus_managed_externally` 用于查询此状态。 | [可观测概述](/productions/veadk/preview/zh/components/observability) · [APMPlus](/productions/veadk/preview/zh/components/observability/apmplus) |
+| 代码沙箱 | `run_code` 执行代码或 Shell 命令时，调用 AgentKit 的请求超时随 `timeout` 与 `hard_timeout` 自动延长，避免长耗时任务在固定超时下被提前中断。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
 
 ## 1.0.9
 
