@@ -2,7 +2,7 @@
 title: "Use VikingDB storage"
 ---
 
-The `viking` backend integrates with the managed Volcengine VikingDB knowledge base service. Files are first uploaded to TOS (object storage), then registered into a VikingDB collection; splitting, embedding, and retrieval all run server-side, so **no local embedding is required**. It is the recommended backend for production.
+The `viking` backend integrates with the managed VikingDB knowledge base service. Files are first uploaded to TOS (object storage), then registered into a VikingDB collection; splitting, embedding, and retrieval all run server-side, so **no local embedding is required**. It is the recommended backend for production.
 
 ## When to use
 
@@ -12,7 +12,7 @@ The `viking` backend integrates with the managed Volcengine VikingDB knowledge b
 
 ## Prerequisites
 
-- A Volcengine account with a VikingDB knowledge base created;
+- A Volcengine or BytePlus account with a VikingDB knowledge base created;
 - A TOS bucket for uploading files;
 - On first use, the backend automatically creates the target collection if it does not exist.
 
@@ -65,17 +65,22 @@ kb = KnowledgeBase(
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `index` | `str` | No default; provided by `KnowledgeBase` | VikingDB collection name; must start with a letter, contain only letters/digits/underscores, length 1-128. |
-| `volcengine_access_key` | `str \| None` | Read from env var `VOLCENGINE_ACCESS_KEY` | Volcengine access key (AK). Falls back to vefaas IAM temporary credentials when absent. |
-| `volcengine_secret_key` | `str \| None` | Read from env var `VOLCENGINE_SECRET_KEY` | Volcengine secret key (SK). |
-| `session_token` | `str` | `""` | STS temporary-credential token. |
+| `volcengine_access_key` | `str \| None` | See below | Access key (AK). Reads `BYTEPLUS_ACCESS_KEY` in `byteplus` mode, otherwise `VOLCENGINE_ACCESS_KEY`. Falls back to VeFaaS IAM temporary credentials when absent. |
+| `volcengine_secret_key` | `str \| None` | See below | Secret key (SK). Reads `BYTEPLUS_SECRET_KEY` in `byteplus` mode, otherwise `VOLCENGINE_SECRET_KEY`. |
+| `session_token` | `str` | See below | STS temporary-credential token. Reads `BYTEPLUS_SESSION_TOKEN` in `byteplus` mode, otherwise `VOLCENGINE_SESSION_TOKEN`. |
 | `volcengine_project` | `str` | Read from env var `DATABASE_VIKING_PROJECT`, defaults to `default` | VikingDB knowledge base project. |
+| `resource_id` | `str` | Read from env var `DATABASE_VIKING_RESOURCE_ID`, defaults to `""` | VikingDB knowledge base resource ID, used for request routing in multi-resource scenarios. Left empty to omit. |
 | `version` | `str` | Read from env var `DATABASE_VIKING_VERSION`, defaults to `"2"` | Collection version, either `"2"` or `"4"`. |
 | `cloud_provider` | `str` | Read from env var `CLOUD_PROVIDER`, defaults to `volces` | Cloud provider, `volces` or `byteplus`; determines the endpoint and default region. |
-| `region` | `str` | Derived from `cloud_provider` (`cn-beijing` for `volces`, `cn-hongkong` for `byteplus`), overridable via `DATABASE_VIKING_REGION` | Service region. |
+| `region` | `str` | Derived from `cloud_provider` (`cn-beijing` for `volces`, `ap-southeast-1` for `byteplus`), overridable via `DATABASE_VIKING_REGION` | Service region. |
 | `base_url` | `str` | Derived from `region` and `cloud_provider` | Knowledge base API base URL, overridable via `DATABASE_VIKING_BASE_URL`. |
 | `host` | `str` | Derived from `region` and `cloud_provider` | Knowledge base API host. |
 | `schema` | `str` | `https` | Request scheme. |
 | `tos_config` | `TOSConfig` | Read automatically from `DATABASE_TOS_*` env vars | TOS config used for uploading files. |
+
+<Note>
+Credential resolution checks `AGENTKIT_CLOUD_PROVIDER` and then `CLOUD_PROVIDER` to determine the cloud provider. When set to `byteplus`, credentials are read from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and `BYTEPLUS_SESSION_TOKEN`; otherwise from `VOLCENGINE_ACCESS_KEY`, `VOLCENGINE_SECRET_KEY`, and `VOLCENGINE_SESSION_TOKEN`.
+</Note>
 
 ### TOS config
 
