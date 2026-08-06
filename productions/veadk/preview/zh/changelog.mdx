@@ -8,6 +8,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 品牌 | `veadk studio` 和 `veadk frontend` 的默认系统名称由 `VeADK Studio` 改为 `AgentKit Studio`，默认 Logo 更新为 AgentKit 品牌 Logo；未通过 `--site-title`、`--site-logo` 或对应环境变量自定义时使用新默认值。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | 更新已有 Runtime 时保留其当前网络配置（网络模式、VPC、子网和共享公网），不再丢失。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 问题反馈 | 对话页面每条助手回复新增「问题反馈」入口，可针对单轮回复选择问题类型（执行速度慢、运行崩溃、结果不准确、工具调用失败或其他）并补充描述后上报，提交时携带该轮输入、输出、工具调用记录和链路信息并做凭据脱敏；侧边栏底部新增「问题反馈」入口（Beta），用于按所属模块反馈 Studio 整体使用问题。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 调用链路 | 对话页面助手回复旁的调用链路观测面板支持查看云端 Runtime 的链路：Studio 服务端使用自身火山引擎凭证向 APMPlus 查询会话链路，浏览器不接触凭证；通过 Studio 部署的 Runtime 默认启用 APMPlus 链路观测，未开启链路观测时打开面板会提示先在控制台开启。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
