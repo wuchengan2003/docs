@@ -995,7 +995,7 @@ veadk studio deploy \
 
 ## Frontend usage telemetry
 
-When deploying Studio, APMPlus frontend telemetry can collect Studio instance visits, sign-in usage, agent deployment outcomes, and sandbox creation outcomes. Telemetry is disabled by default and is enabled only when both the APMPlus Client aid and token are configured; if it is unconfigured or reporting fails, Studio continues to work normally.
+When deploying Studio, APMPlus frontend telemetry can collect Studio instance visits, sign-in usage, and the outcomes of agent deployment, sandbox creation, agent connection, message sending, debug test runs, and source code downloads. Telemetry is disabled by default and is enabled only when both the APMPlus Client aid and token are configured; if it is unconfigured or reporting fails, Studio continues to work normally.
 
 `veadk studio deploy` configures telemetry with `--apmplus-aid`, `--apmplus-token`, `--apmplus-domain`, and `--apmplus-env`. During deployment it automatically injects the deploy ID, user-pool ID, deployment region, and project so the frontend can correlate events; no manual setup is required. If any APMPlus option is set, both `--apmplus-aid` and `--apmplus-token` must be provided, otherwise deployment fails with an error.
 
@@ -1011,7 +1011,7 @@ veadk studio deploy \
 You can also supply configuration through the `VEADK_STUDIO_APMPLUS_AID` and `VEADK_STUDIO_APMPLUS_TOKEN` environment variables; `VEADK_STUDIO_APMPLUS_DOMAIN` and `VEADK_STUDIO_APMPLUS_ENV` override the reporting domain (default `apmplus.volces.com`) and environment name (default `production`) respectively. Setting these environment variables when running `veadk studio` locally also enables telemetry.
 
 <Note>
-  Telemetry collects only usage dimensions such as deploy ID, user ID, role, region, source, and deployment phase outcomes. It does not collect conversation content, prompts, generated code, environment variable values, or any secrets. In-app updates of Studio preserve the configured APMPlus environment variables.
+  Telemetry collects only usage dimensions, including deploy ID, user ID, role, region, source, creation mode, whether AI-assisted generation was used, and the success or failure outcomes and failure phases of agent deployment, sandbox creation, agent connection, message sending, debug test runs, and source code downloads. Error summaries attached to failure events are automatically redacted for secrets, tokens, and passwords, and truncated to 300 characters before reporting. Telemetry does not collect conversation content, prompts, generated code, environment variable values, or any secrets. In-app updates of Studio preserve the configured APMPlus environment variables.
 </Note>
 
 ## Update a deployed Studio
