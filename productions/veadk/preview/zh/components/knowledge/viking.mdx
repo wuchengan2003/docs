@@ -2,7 +2,7 @@
 title: "使用 VikingDB 知识库存储"
 ---
 
-`viking` 后端对接火山引擎 VikingDB 托管知识库服务。文件先上传至 TOS（对象存储），再登记进 VikingDB 集合，切分、向量化与检索均在服务端完成，因此**无需本地 embedding**。它是生产环境的推荐后端。
+`viking` 后端对接 VikingDB 托管知识库服务。文件先上传至 TOS（对象存储），再登记进 VikingDB 集合，切分、向量化与检索均在服务端完成，因此**无需本地 embedding**。它是生产环境的推荐后端。
 
 ## 何时使用
 
@@ -12,7 +12,7 @@ title: "使用 VikingDB 知识库存储"
 
 ## 前置条件
 
-- 已开通火山引擎账号并创建 VikingDB 知识库；
+- 已开通火山引擎或 BytePlus 账号并创建 VikingDB 知识库；
 - 已创建 TOS 桶用于上传文件；
 - 首次使用时，若目标集合不存在，后端会自动创建。
 
@@ -65,17 +65,22 @@ kb = KnowledgeBase(
 | 参数 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
 | `index` | `str` | 无默认，由 `KnowledgeBase` 传入 | VikingDB 集合名，须以英文字母开头，仅含字母、数字、下划线，长度 1-128。 |
-| `volcengine_access_key` | `str \| None` | 读取环境变量 `VOLCENGINE_ACCESS_KEY` | 火山引擎访问密钥 AK。缺省时尝试从 vefaas IAM 获取临时凭证。 |
-| `volcengine_secret_key` | `str \| None` | 读取环境变量 `VOLCENGINE_SECRET_KEY` | 火山引擎访问密钥 SK。 |
-| `session_token` | `str` | `""` | STS 临时凭证令牌。 |
+| `volcengine_access_key` | `str \| None` | 见下方说明 | 访问密钥 AK。`byteplus` 模式下读取 `BYTEPLUS_ACCESS_KEY`，其余读取 `VOLCENGINE_ACCESS_KEY`。缺省时尝试从 VeFaaS IAM 获取临时凭证。 |
+| `volcengine_secret_key` | `str \| None` | 见下方说明 | 访问密钥 SK。`byteplus` 模式下读取 `BYTEPLUS_SECRET_KEY`，其余读取 `VOLCENGINE_SECRET_KEY`。 |
+| `session_token` | `str` | 见下方说明 | STS 临时凭证令牌。`byteplus` 模式下读取 `BYTEPLUS_SESSION_TOKEN`，其余读取 `VOLCENGINE_SESSION_TOKEN`。 |
 | `volcengine_project` | `str` | 读取环境变量 `DATABASE_VIKING_PROJECT`，缺省 `default` | VikingDB 知识库所属项目。 |
+| `resource_id` | `str` | 读取环境变量 `DATABASE_VIKING_RESOURCE_ID`，缺省 `""` | VikingDB 知识库资源 ID，用于多资源场景下的请求路由。留空时不附加该字段。 |
 | `version` | `str` | 读取环境变量 `DATABASE_VIKING_VERSION`，缺省 `"2"` | 集合版本，取值 `"2"` 或 `"4"`。 |
 | `cloud_provider` | `str` | 读取环境变量 `CLOUD_PROVIDER`，缺省 `volces` | 云服务商，`volces` 或 `byteplus`，决定接入域名与默认区域。 |
-| `region` | `str` | 由 `cloud_provider` 推导（`volces` 为 `cn-beijing`，`byteplus` 为 `cn-hongkong`），可用 `DATABASE_VIKING_REGION` 覆盖 | 服务区域。 |
+| `region` | `str` | 由 `cloud_provider` 推导（`volces` 为 `cn-beijing`，`byteplus` 为 `ap-southeast-1`），可用 `DATABASE_VIKING_REGION` 覆盖 | 服务区域。 |
 | `base_url` | `str` | 由 `region` 与 `cloud_provider` 推导 | 知识库 API 地址，可用 `DATABASE_VIKING_BASE_URL` 覆盖。 |
 | `host` | `str` | 由 `region` 与 `cloud_provider` 推导 | 知识库 API 主机名。 |
 | `schema` | `str` | `https` | 请求协议。 |
 | `tos_config` | `TOSConfig` | 自动从 `DATABASE_TOS_*` 环境变量读取 | 上传文件所用的 TOS 配置。 |
+
+<Note>
+凭证解析时依次检查 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER` 环境变量判断云服务商。设为 `byteplus` 时，凭证从 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和 `BYTEPLUS_SESSION_TOKEN` 读取；否则从 `VOLCENGINE_ACCESS_KEY`、`VOLCENGINE_SECRET_KEY` 和 `VOLCENGINE_SESSION_TOKEN` 读取。
+</Note>
 
 ### TOS 配置
 

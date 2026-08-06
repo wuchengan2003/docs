@@ -65,9 +65,9 @@ print(profile)
 | 参数 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
 | `index` | `str` | 无默认，由 `LongTermMemory` 传入 | 记忆集合名，须符合 VikingDB 命名规则。 |
-| `volcengine_access_key` | `str \| None` | 读取环境变量 `VOLCENGINE_ACCESS_KEY` | 火山引擎 Access Key。未提供时尝试从 VeFaaS IAM 获取凭证。 |
-| `volcengine_secret_key` | `str \| None` | 读取环境变量 `VOLCENGINE_SECRET_KEY` | 火山引擎 Secret Key。未提供时尝试从 VeFaaS IAM 获取凭证。 |
-| `session_token` | `str` | `""` | STS 临时凭证的会话令牌，配合临时 AK/SK 使用。 |
+| `volcengine_access_key` | `str \| None` | 见下方说明 | 访问密钥 AK。`byteplus` 模式下读取 `BYTEPLUS_ACCESS_KEY`，其余读取 `VOLCENGINE_ACCESS_KEY`。缺省时尝试从 VeFaaS IAM 获取凭证。 |
+| `volcengine_secret_key` | `str \| None` | 见下方说明 | 访问密钥 SK。`byteplus` 模式下读取 `BYTEPLUS_SECRET_KEY`，其余读取 `VOLCENGINE_SECRET_KEY`。缺省时尝试从 VeFaaS IAM 获取凭证。 |
+| `session_token` | `str` | 见下方说明 | STS 临时凭证令牌。`byteplus` 模式下读取 `BYTEPLUS_SESSION_TOKEN`，其余读取 `VOLCENGINE_SESSION_TOKEN`。 |
 | `cloud_provider` | `str` | 读取环境变量 `CLOUD_PROVIDER`，默认 `volces` | 云服务商，`volces` 或 `byteplus`，影响服务域名与默认区域。 |
 | `region` | `str` | 见下方说明 | VikingDB 记忆库所在区域。 |
 | `volcengine_project` | `str` | 读取环境变量 `DATABASE_VIKINGMEM_PROJECT`，默认 `default` | VikingDB 记忆库项目名。 |
@@ -79,7 +79,7 @@ print(profile)
 
 ### region 与 memory_type 的默认值
 
-- `region`：未显式设置时读取环境变量 `DATABASE_VIKING_REGION`；仍为空时，`byteplus` 默认为 `cn-hongkong`，其余默认为 `cn-beijing`。
+- `region`：未显式设置时读取环境变量 `DATABASE_VIKING_REGION`；仍为空时，`byteplus` 默认为 `ap-southeast-1`，其余默认为 `cn-beijing`。
 - `memory_type`：未显式设置时读取环境变量 `DATABASE_VIKINGMEM_MEMORY_TYPE`（逗号分隔的字符串会被解析为列表）；仍为空时默认为 `["sys_event_v1", "sys_profile_v1"]`。
 
 ## 环境变量配置
@@ -89,7 +89,7 @@ print(profile)
 | `VOLCENGINE_ACCESS_KEY` | 无 | 火山引擎 Access Key。 |
 | `VOLCENGINE_SECRET_KEY` | 无 | 火山引擎 Secret Key。 |
 | `CLOUD_PROVIDER` | `volces` | 云服务商，`volces` 或 `byteplus`。 |
-| `DATABASE_VIKING_REGION` | `cn-beijing`（byteplus 为 `cn-hongkong`） | 记忆库区域。 |
+| `DATABASE_VIKING_REGION` | `cn-beijing`（byteplus 为 `ap-southeast-1`） | 记忆库区域。 |
 | `DATABASE_VIKINGMEM_PROJECT` | `default` | 记忆库项目名。 |
 | `DATABASE_VIKINGMEM_MEMORY_TYPE` | `sys_event_v1,sys_profile_v1` | 记忆类型，逗号分隔。 |
 

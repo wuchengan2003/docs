@@ -969,9 +969,11 @@ veadk studio deploy \
 | `--allowed-client-id` | `str` | 必填 | 用于登录的用户池客户端 UID。 |
 | `--client-secret` | `str` | `""` | 无法通过客户端 UID 读取密钥时显式提供。直接传参可能进入 shell 历史，能够读取时应省略。 |
 | `--vefaas-app-name` | `str` | 必填 | VeFaaS 应用名称，长度 4–64，只能包含字母、数字和连字符，不能包含下划线。 |
-| `--region` | `cn-beijing \| cn-shanghai` | `cn-beijing` | Studio 部署地域，同时决定 VeFaaS、API Gateway 等资源所在区域。部署时会跨北京、上海查找 VeIdentity 用户池。 |
+| `--provider` | `volcengine` \| `byteplus` | `volcengine` | 部署使用的云服务商。选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证，默认地域为 `ap-southeast-1`。 |
+| `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | 由 `--provider` 推导 | Studio 部署地域，同时决定 VeFaaS、API Gateway 等资源所在区域。部署时会跨北京、上海查找 VeIdentity 用户池。 |
 | `--project` | `str` | `default` | VeFaaS 函数所属项目。 |
 | `--iam-role` | `str \| None` | `None` | 绑定到函数的既有 IAM Role TRN；省略时创建或复用默认 Role。 |
+| `--vefaas-application-template-id` | `str \| None` | 内置模板 | 覆盖 VeFaaS Application Center 的内置模板 ID。也可通过 `VEFAAS_APPLICATION_TEMPLATE_ID` 设置。 |
 | `--admin` | `str \| None` | `None` | 逗号分隔的管理员名单（用户名或 OAuth 邮箱）。省略 `--admin` 与 `--developer` 时，所有登录用户都按 `admin` 处理。也可通过 `VEADK_STUDIO_ADMINS` 设置。 |
 | `--developer` | `str \| None` | `None` | 逗号分隔的开发者名单（用户名或 OAuth 邮箱）。也可通过 `VEADK_STUDIO_DEVELOPERS` 设置。 |
 | `--site-title` | `str \| None` | `None` | 自定义 Studio 名称，最多 6 个字符。 |
@@ -982,8 +984,12 @@ veadk studio deploy \
 | `--volcengine-access-key` | `str \| None` | 自动解析 | 部署用 Access Key，依次读取命令参数、`VOLCENGINE_ACCESS_KEY` 环境变量与 `~/.volc/credentials` 的 `[default]` 配置。 |
 | `--volcengine-secret-key` | `str \| None` | 自动解析 | 部署用 Secret Key，依次读取命令参数、`VOLCENGINE_SECRET_KEY` 环境变量与 `~/.volc/credentials` 的 `[default]` 配置。 |
 | `--volcengine-session-token` | `str \| None` | 自动解析 | STS 临时凭证的 Session Token，依次读取命令参数、`VOLCENGINE_SESSION_TOKEN` / `VOLC_SESSIONTOKEN` 环境变量与 `~/.volc/credentials` 中 `[default]` 配置的 `session_token` 字段。 |
+| `--byteplus-access-key` | `str \| None` | `BYTEPLUS_ACCESS_KEY` | BytePlus 部署凭证的 Access Key，仅在 `--provider byteplus` 时使用。 |
+| `--byteplus-secret-key` | `str \| None` | `BYTEPLUS_SECRET_KEY` | BytePlus 部署凭证的 Secret Key，仅在 `--provider byteplus` 时使用。 |
+| `--byteplus-session-token` | `str \| None` | `BYTEPLUS_SESSION_TOKEN` | BytePlus STS 临时凭证的 Session Token，仅在 `--provider byteplus` 时使用。 |
 | `--veadk-version` | `str` | 最新发布版本 | 写入 VeFaaS 依赖的 `veadk-python` 版本；仅在需要固定或复现版本时设置。 |
 | `--from-source` | `bool` 标志 | `false` | 从当前源码目录构建 wheel 后部署，包含未提交改动；用于验证未发布版本，不应与 `--veadk-version` 的发布版本工作流混用。 |
+| `--keep-failed-deploy` | `bool` 标志 | `false` | 部署失败时保留已创建的 VeFaaS Application 与 Function 资源，便于在控制台查看发布日志。 |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | 自动创建 | 内置智能体使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_CHAT_CODEX` 设置。 |
 | `--sandbox-skill-creator-tool-id`、`--skill-creator-tool-id` | `str \| None` | 自动创建 | Skill 创建使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_SKILL_CREATOR` 设置。 |
 | `--studio-update-bucket` | `str` | `veadk-studio` | 存放 Studio 不可变发布包的 TOS Bucket；部署时写入函数环境变量 `VEADK_STUDIO_UPDATE_BUCKET`。也可通过 `VEADK_STUDIO_UPDATE_BUCKET` 设置。 |
@@ -1029,8 +1035,9 @@ veadk studio update --vefaas-app-name "veadk-studio"
 
 | 选项 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
+| `--provider` | `volcengine` \| `byteplus` | `volcengine` | 已部署 Studio 的云服务商。选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证。 |
 | `--vefaas-app-name` | `str` | 必填 | 要更新的 VeFaaS Application 名称。 |
-| `--region` | `cn-beijing \| cn-shanghai` | 查询两个地域 | 将查找范围限制到一个地域。 |
+| `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | 查询两个地域 | 将查找范围限制到一个地域。BytePlus 模式下默认查询 `ap-southeast-1`。 |
 | `--project` | `str \| None` | 查询全部可见项目 | 将查找范围限制到一个项目。 |
 | `--path` | `str` | `.` | 要构建的 VeADK 源码目录。 |
 | `--site-title` | `str \| None` | 保留云上值 | 显式传入时替换 Studio 名称。 |
@@ -1039,6 +1046,10 @@ veadk studio update --vefaas-app-name "veadk-studio"
 | `--sandbox-skill-creator-tool-id`、`--skill-creator-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换 Skill 创建使用的 Tool ID。 |
 | `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | 更新操作使用的 Access Key。 |
 | `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | 更新操作使用的 Secret Key。 |
+| `--volcengine-session-token` | `str \| None` | `VOLCENGINE_SESSION_TOKEN` | STS 临时凭证的 Session Token，火山引擎模式使用。 |
+| `--byteplus-access-key` | `str \| None` | `BYTEPLUS_ACCESS_KEY` | BytePlus 更新凭证的 Access Key，仅在 `--provider byteplus` 时使用。 |
+| `--byteplus-secret-key` | `str \| None` | `BYTEPLUS_SECRET_KEY` | BytePlus 更新凭证的 Secret Key，仅在 `--provider byteplus` 时使用。 |
+| `--byteplus-session-token` | `str \| None` | `BYTEPLUS_SESSION_TOKEN` | BytePlus STS 临时凭证的 Session Token，仅在 `--provider byteplus` 时使用。 |
 
 ## Studio 角色与 Runtime 权限
 
