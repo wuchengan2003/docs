@@ -2,7 +2,7 @@
 title: "Studio agent workbench"
 ---
 
-VeADK Studio uses the same service and complete UI as VeADK Frontend. It provides chat, search, session history, the skill center, automation integrations, and agent creation, testing, deployment, and management, and opens on the chat view by default. The agent workspace renders multi-agent topologies as a canvas, surfaces deployed Runtime versions and deployment status, and supports iterating on the same Runtime.
+AgentKit Studio uses the same service and complete UI as VeADK Frontend. It provides chat, search, session history, the skill center, automation integrations, and agent creation, testing, deployment, and management, and opens on the chat view by default. The agent workspace renders multi-agent topologies as a canvas, surfaces deployed Runtime versions and deployment status, and supports iterating on the same Runtime.
 
 Custom configuration and code-package deployment are the available project-creation flows; intelligent, template, workflow, and existing-project migration entries are marked as coming soon and cannot be selected. You can preview and edit generated files, run them in a temporary test process, download a ZIP, or deploy to AgentKit. Studio also supports cloud Runtime selection, multiple skill sources, multimodal conversations, automation integrations, and centralized deployment task status and retries.
 
@@ -25,7 +25,7 @@ To use BytePlus as the cloud provider, pass `--provider byteplus` and supply cre
 
 ## Customize branding
 
-Use `--site-title` to set a system name of up to six characters and `--site-logo` to provide a local image or HTTP(S) image URL. The logo appears in the sidebar, login page, and browser favicon, while the system name becomes the browser title. Omitting `--site-title` uses the default `VeADK Studio` name.
+Use `--site-title` to set a system name of up to six characters and `--site-logo` to provide a local image or HTTP(S) image URL. The logo appears in the sidebar, login page, and browser favicon, while the system name becomes the browser title. Omitting `--site-title` uses the default `AgentKit Studio` name.
 
 ```bash
 veadk studio \
@@ -887,7 +887,7 @@ Creates a Feishu agent powered by an AgentKit Runtime directly from Studio. Afte
 | :--- | :--- | :--- | :--- |
 | `--agents-dir` | `str` | `.` | Parent directory of agent applications. Each child directory with `agent.py` exposing `root_agent` is an app. |
 | `--frontend-dir` | `str \| None` | Bundled UI, then `./frontend/dist` | Override the built Studio UI directory. |
-| `--site-title` | `str \| None` | `VEADK_SITE_TITLE`, otherwise `VeADK Studio` | Custom system name, up to six characters. |
+| `--site-title` | `str \| None` | `VEADK_SITE_TITLE`, otherwise `AgentKit Studio` | Custom system name, up to six characters. |
 | `--site-logo` | `str \| None` | `VEADK_SITE_LOGO` | Custom logo as a local image path or HTTP(S) URL. |
 | `--host` | `str` | `127.0.0.1` | Bind address. |
 | `--port` | `int` | `8000` | Bind port. |
