@@ -4,13 +4,14 @@ title: "Manage evaluators"
 
 The `eval evaluator` command group manages evaluators (the judging models that assign scores): browse built-in templates, list and show existing evaluators, derive a new evaluator from a template, and delete evaluators. An evaluator is typically a prompt with a scoring rubric backed by a large-model endpoint; it takes several input fields (such as `input`, `output`, `reference_output`) and produces a score.
 
-<Note>
-All subcommands share `-p, --project <name>` (project name, default `default`) and `--json` (output raw JSON).
-</Note>
-
 ## evaluator templates
 
 Browse the platform's built-in evaluator templates as a starting point for creating your own evaluators.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `-p, --project <name>` | Project name. | `default` |
+| `--json` | Output raw JSON. | `false` |
 
 ```bash
 agentkit eval evaluator templates
@@ -19,6 +20,11 @@ agentkit eval evaluator templates
 ## evaluator list
 
 List the evaluators in your current project.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `-p, --project <name>` | Project name. | `default` |
+| `--json` | Output raw JSON. | `false` |
 
 ```bash
 agentkit eval evaluator list
@@ -31,6 +37,8 @@ Show details of an evaluator: the rubric prompt, model configuration, and input 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `<id>` | Evaluator id or name (required) | None |
+| `-p, --project <name>` | Project name. | `default` |
+| `--json` | Output raw JSON. | `false` |
 
 ```bash
 agentkit eval evaluator show relevance
@@ -47,6 +55,8 @@ Create an evaluator. The simplest way is to clone the rubric and input schema fr
 | `--model <endpoint>` | Ark model endpoint id (`ep-…`) used as the judge | None |
 | `--prompt-file <path>` | Custom rubric text file (overrides the template prompt) | None |
 | `--description <text>` | Evaluator description | None |
+| `-p, --project <name>` | Project name. | `default` |
+| `--json` | Output raw JSON. | `false` |
 
 You must provide at least one of `--from-template` or `--prompt-file`.
 
@@ -63,9 +73,14 @@ Reference input fields in the prompt with placeholders like <code>{'{{input}}'}<
 
 Delete an evaluator. (Alias: `rm`)
 
+<Warning>
+This command deletes the evaluator. Check the target first; the CLI prompts for confirmation unless you pass `--yes`.
+</Warning>
+
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `<id>` | Evaluator id or name (required) | None |
+| `-p, --project <name>` | Project name. | `default` |
 | `-y, --yes` | Skip the confirmation prompt | `false` |
 
 ```bash

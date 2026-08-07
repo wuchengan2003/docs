@@ -1,0 +1,33 @@
+---
+title: "配置云厂商"
+---
+
+`config` 用于查看或修改当前项目的云厂商与区域，也可以管理用户级默认值。项目配置写入 `.agentkit/agentkit.yaml`；全局配置写入 `~/.agentkit/config.yaml`。
+
+## config
+
+不带 `--global` 时，命令操作当前项目。修改云厂商或区域时，CLI 会同步更新配置中已存在的运行时、消息渠道、前端、容器镜像仓库和 TOS 区域；由 CLI 生成的 Dockerfile、`.env.example` 与持续部署文件也会同步调整。
+
+<Warning>
+该命令会修改项目配置和相关生成文件。提交现有改动后再切换云厂商，并检查差异中使用的区域、镜像和凭证环境变量。
+</Warning>
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `-g, --global` | 操作用户级默认配置，而不是当前项目。 | `false` |
+| `-r, --region <region>` | 设置云区域。 | 当前云厂商的默认区域 |
+| `-s, --show` | 显示配置范围、文件路径、云厂商和区域，不修改文件。 | `false` |
+
+```bash
+# 查看当前项目
+agentkit config --show
+
+# 将当前项目切换为 BytePlus
+agentkit --provider byteplus config --region ap-southeast-1
+
+# 设置用户级默认值
+agentkit --provider byteplus config --global --region ap-southeast-1
+agentkit config --global --show
+```
+
+项目模式要求当前目录已存在 `.agentkit/agentkit.yaml`。尚未初始化项目时，先运行 `agentkit init` 或 `agentkit deploy config`；只配置用户级默认值时使用 `--global`。

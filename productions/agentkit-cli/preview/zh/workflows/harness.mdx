@@ -5,7 +5,7 @@ title: "使用 Harness"
 harness 路径适合无需自定义代码的场景：智能体的模型、工具、知识库、记忆与提示词全部写在一个 `harness.yaml` 里，由 CLI 直接构建并部署为运行时。整个闭环只围绕一个文件展开——初始化、配置、部署、调用，再回到配置持续迭代。
 
 <Note>
-  开始前请先配置凭证。`harness deploy` 属于控制面操作，需要 AK/SK；[SSO 登录](/productions/agentkit-cli/preview/zh/commands/auth)目前仅用于调用（`invoke`）已部署的运行时。凭证配置见[快速开始](/productions/agentkit-cli/preview/zh/quickstart)的「鉴权」一节。
+  开始前请先配置 AK/SK，或通过 [SSO 登录](/productions/agentkit-cli/preview/zh/commands/auth)获取短期 STS 凭证。`harness deploy` 与 `invoke` 会按统一的凭证优先级读取有效凭证。配置方法见[快速开始](/productions/agentkit-cli/preview/zh/quickstart)的「鉴权」一节。
 </Note>
 
 <Warning>
@@ -27,7 +27,7 @@ harness 路径适合无需自定义代码的场景：智能体的模型、工具
     ```bash
     agentkit harness set \
       --name my-harness \
-      --model-name doubao-seed-1-6-250615 \
+      --model-name ep-xxxxxxxx \
       --system-prompt "你是一个简洁、乐于助人的智能体。" \
       --tools web_search
     ```
@@ -44,7 +44,7 @@ harness 路径适合无需自定义代码的场景：智能体的模型、工具
     ```
   </Step>
   <Step title="调用运行时">
-    按名称调用刚部署的运行时，CLI 会自动解析端点与鉴权。调用属于数据面操作，两种凭证均可使用：AK/SK，或先经 `agentkit login` 完成 SSO 登录后得到的 STS 凭证。
+    按名称调用刚部署的运行时，CLI 会自动解析端点与鉴权，并使用已配置的 AK/SK 或当前 SSO 登录 profile 的有效 STS 凭证。
 
     ```bash
     agentkit invoke my-harness -m "你好，介绍一下你自己"

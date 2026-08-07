@@ -1,0 +1,73 @@
+---
+title: "更新日志"
+---
+
+## 未发布
+
+当前没有未发布的公开变更。
+
+## 0.51.1 - 2026-08-06
+
+- 修复独立发行包缺少 Runtime 资源的问题，确保[构建、启动与发布](/productions/agentkit-cli/preview/zh/commands/build)所需文件随 CLI 一同安装。
+
+## 0.51.0 - 2026-08-05
+
+- 新增 `config`、`build`、`launch`、`status` 与 `release` 命令，形成从[项目配置](/productions/agentkit-cli/preview/zh/commands/config)到[发布](/productions/agentkit-cli/preview/zh/commands/release)的分阶段生命周期。
+- 扩展[沙箱命令](/productions/agentkit-cli/preview/zh/commands/sandbox)的工具创建能力，增加 Dashboard 与终端管理。
+- 修复 BytePlus VikingDB [知识库操作](/productions/agentkit-cli/preview/zh/commands/knowledge)以及[迁移](/productions/agentkit-cli/preview/zh/commands/migrate)上传路径。
+
+## 0.50.9 - 2026-08-03
+
+- 新增全局 `--provider` 与顶层 [`config`](/productions/agentkit-cli/preview/zh/commands/config) 命令，并为初始化、Harness 和迁移补充区域选择。
+- 完善 BytePlus 的项目切换、MCP 服务映射、构建镜像与[迁移](/productions/agentkit-cli/preview/zh/commands/migrate)流程。
+
+## 0.50.8 - 2026-07-31
+
+- `deploy config` 新增 `--provider`，可在生成 [`agentkit.yaml`](/productions/agentkit-cli/preview/zh/agentkit-yaml) 时选择云厂商。
+- BytePlus [部署](/productions/agentkit-cli/preview/zh/commands/deploy)改用对应的基础镜像。
+
+## 0.50.7 - 2026-07-31
+
+- [前端 SSO 部署](/productions/agentkit-cli/preview/zh/workflows/frontend-sso)可跨项目查找已有 serverless 网关。
+
+## 0.50.6 - 2026-07-31
+
+- [前端 SSO 部署](/productions/agentkit-cli/preview/zh/workflows/frontend-sso)自动创建网关时会携带网络规格，避免网关网络配置不完整。
+
+## 0.50.5 - 2026-07-31
+
+- [前端 SSO 部署](/productions/agentkit-cli/preview/zh/workflows/frontend-sso)在没有可用 serverless 网关时可自动创建网关。
+- [沙箱创建](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-create)新增 `ArkClawEnv` 与 `HermesEnv` 工具类型。
+
+## 0.50.4 - 2026-07-30
+
+- 放宽[迁移](/productions/agentkit-cli/preview/zh/commands/migrate)计划的措辞检查，提高不同来源项目的兼容性。
+
+## 0.50.3 - 2026-07-30
+
+- `sandbox exec` 新增 `sandbox attach` 别名，详见[沙箱命令](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-exec)。
+- [任意来源迁移](/productions/agentkit-cli/preview/zh/commands/migrate)改用内置的 source-to-veadk 能力。
+
+## 0.50.2 - 2026-07-29
+
+- [部署配置](/productions/agentkit-cli/preview/zh/agentkit-yaml)支持按 BytePlus 路由资源，为后续完整的多云部署链路提供基础。
+
+## 0.50.1 - 2026-07-29
+
+- Runtime 默认规格调整为 2 vCPU、4 GiB 内存和 1 个最小实例，详见 [`agentkit.yaml`](/productions/agentkit-cli/preview/zh/agentkit-yaml#运行时资源)。
+- [`migrate`](/productions/agentkit-cli/preview/zh/commands/migrate) 新增 `--project`，可指定远程迁移使用的项目。
+
+## 0.50.0 - 2026-07-28
+
+- 新增 [Auth Admin](/productions/agentkit-cli/preview/zh/commands/auth) 凭据管理能力。
+- [Harness](/productions/agentkit-cli/preview/zh/commands/harness)支持 Skill Space 引用和请求级覆盖参数。
+- 发布新版[沙箱命令](/productions/agentkit-cli/preview/zh/commands/sandbox)，覆盖配置、创建、终端、文件与调用工作流。
+
+## 0.46.7 - 2026-07-22
+
+- [迁移](/productions/agentkit-cli/preview/zh/commands/migrate)支持远程 Dify 项目和任意来源项目。
+- [`agentkit.yaml`](/productions/agentkit-cli/preview/zh/agentkit-yaml)支持按资源覆盖区域和项目，并支持 Runtime 私有网络配置。
+
+## 0.46.6 - 2026-07-19
+
+- 发布 AgentKit CLI 的[命令参考](/productions/agentkit-cli/preview/zh/commands)与基于 `agentkit.yaml` 的构建部署文档。

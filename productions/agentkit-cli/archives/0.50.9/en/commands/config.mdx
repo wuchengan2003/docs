@@ -1,0 +1,33 @@
+---
+title: "Configure the cloud provider"
+---
+
+`config` shows or changes the cloud provider and region for the current project. It can also manage user-wide defaults. Project settings are stored in `.agentkit/agentkit.yaml`; global settings are stored in `~/.agentkit/config.yaml`.
+
+## config
+
+Without `--global`, the command operates on the current project. When the provider or region changes, the CLI updates existing runtime, messaging, frontend, container-registry, and TOS regions. CLI-generated Dockerfiles, `.env.example`, and continuous-deployment files are updated as applicable.
+
+<Warning>
+This command modifies project configuration and related generated files. Commit existing changes before switching providers, then review the resulting regions, images, and credential environment variables.
+</Warning>
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `-g, --global` | Operate on user-wide defaults instead of the current project. | `false` |
+| `-r, --region <region>` | Set the cloud region. | Current provider's default region |
+| `-s, --show` | Show the scope, file path, provider, and region without modifying files. | `false` |
+
+```bash
+# Show the current project
+agentkit config --show
+
+# Switch the current project to BytePlus
+agentkit --provider byteplus config --region ap-southeast-1
+
+# Set user-wide defaults
+agentkit --provider byteplus config --global --region ap-southeast-1
+agentkit config --global --show
+```
+
+Project mode requires `.agentkit/agentkit.yaml` in the current directory. Run `agentkit init` or `agentkit deploy config` first for an uninitialized project, or use `--global` when only user-wide defaults are needed.

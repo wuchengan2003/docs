@@ -5,7 +5,7 @@ title: "Using Harness"
 The harness path suits cases that need no custom code: the agent's model, tools, knowledge base, memory, and prompt all live in a single `harness.yaml`, which the CLI builds and deploys as a runtime. The whole loop revolves around that one file — initialize, configure, deploy, invoke, then return to configuration to iterate.
 
 <Note>
-  Configure credentials first. `harness deploy` is a control-plane operation and requires AK/SK; [SSO login](/productions/agentkit-cli/preview/en/commands/auth) currently only covers invoking (`invoke`) a deployed runtime. See the Authentication section of the [Quickstart](/productions/agentkit-cli/preview/en/quickstart).
+  Configure AK/SK credentials first, or obtain short-lived STS credentials through [SSO login](/productions/agentkit-cli/preview/en/commands/auth). `harness deploy` and `invoke` use the same credential precedence to resolve valid credentials. See the Authentication section of the [Quickstart](/productions/agentkit-cli/preview/en/quickstart).
 </Note>
 
 <Warning>
@@ -27,7 +27,7 @@ The harness path suits cases that need no custom code: the agent's model, tools,
     ```bash
     agentkit harness set \
       --name my-harness \
-      --model-name doubao-seed-1-6-250615 \
+      --model-name ep-xxxxxxxx \
       --system-prompt "You are a concise, helpful agent." \
       --tools web_search
     ```
@@ -44,7 +44,7 @@ The harness path suits cases that need no custom code: the agent's model, tools,
     ```
   </Step>
   <Step title="Invoke the runtime">
-    Call the runtime you just deployed by name; the CLI resolves the endpoint and auth automatically. Invocation is a data-plane operation, so either credential type works: AK/SK, or the STS credentials from an `agentkit login` SSO session.
+    Call the runtime you just deployed by name. The CLI resolves the endpoint and authentication automatically, using configured AK/SK credentials or valid STS credentials from the active SSO login profile.
 
     ```bash
     agentkit invoke my-harness -m "Hello, introduce yourself"
