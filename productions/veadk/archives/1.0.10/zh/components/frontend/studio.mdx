@@ -2,9 +2,9 @@
 title: "Studio 智能体工作台"
 ---
 
-AgentKit Studio 使用与 VeADK Frontend 相同的服务和完整界面，提供对话、搜索、历史会话、技能中心、自动化集成，以及智能体创建、测试、部署和管理功能，启动后默认进入对话页面。智能体工作台以画布形式呈现多智能体拓扑，并集中展示已部署 Runtime 的版本与部署状态，支持在同一 Runtime 上迭代更新。
+VeADK Studio 使用与 VeADK Frontend 相同的服务和完整界面，提供对话、搜索、历史会话、技能中心，以及智能体创建、测试、部署和管理功能，启动后默认进入对话页面。智能体工作台以画布形式呈现多智能体拓扑，并集中展示已部署 Runtime 的版本与部署状态，支持在同一 Runtime 上迭代更新。
 
-当前可通过自定义配置或代码包部署创建项目；智能模式、模板、工作流以及从存量项目迁移的入口显示为「敬请期待」，暂不可用。你可以预览和编辑生成的文件，启动临时测试进程，将项目下载为 ZIP，或者部署到 AgentKit。Studio 还支持选择云端 Runtime、多来源技能、多模态会话、自动化集成，以及集中查看和重试部署任务。
+当前可通过自定义配置或代码包部署创建项目；智能模式、模板和工作流入口显示为「敬请期待」，暂不可用。你可以预览和编辑生成的文件，启动临时测试进程，将项目下载为 ZIP，或者部署到 AgentKit。Studio 还支持选择云端 Runtime、多来源技能、多模态会话，以及集中查看和重试部署任务。
 
 ## 在本地启动
 
@@ -25,7 +25,7 @@ veadk studio --agents-dir ./agents --open
 
 ## 自定义品牌
 
-使用 `--site-title` 设置最多 6 个字符的系统名称，使用 `--site-logo` 指定本地图片或 HTTP(S) 图片 URL。Logo 会用于侧边栏、登录页和浏览器 favicon，系统名称也会作为浏览器页面标题；省略 `--site-title` 时使用默认名称 `AgentKit Studio`。
+使用 `--site-title` 设置最多 6 个字符的系统名称，使用 `--site-logo` 指定本地图片或 HTTP(S) 图片 URL。Logo 会用于侧边栏、登录页和浏览器 favicon，系统名称也会作为浏览器页面标题；省略 `--site-title` 时使用默认名称 `VeADK Studio`。
 
 ```bash
 veadk studio \
@@ -37,7 +37,7 @@ Logo 最大 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF 和 ICO。也可以通�
 
 ## 创建智能体
 
-1. 在「添加智能体」中选择自定义；智能模式、模板、工作流以及从存量项目迁移的入口暂不可用。
+1. 在「添加智能体」中选择自定义；智能模式、模板和工作流入口暂不可用。
 2. 配置模型、系统提示词、工具、记忆和知识库，并从 Skill Hub、本地上传或 AgentKit SkillSpace 添加技能。多智能体项目还可以配置顺序、并行、循环或 A2A 节点，并在画布中查看和编排智能体拓扑。
 3. 检查生成的项目文件，并在受限的临时进程中测试运行；需要离线使用时下载 ZIP。
 4. 选择部署到 AgentKit，在工作台中观察构建镜像、部署和发布进度。部署完成后，智能体以已发布状态出现在工作台，后续可在同一 Runtime 上更新。
@@ -56,7 +56,7 @@ Logo 最大 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF 和 ICO。也可以通�
 
 ### 配置部署参数
 
-在部署配置区选择发布区域和网络模式，并按需设置 Runtime 实例数。实例设置仅在创建新 Runtime 时出现，更新已有 Runtime 时不显示。更新已有 Runtime 时，发布区域和网络模式从现有 Runtime 读取并保持不变。
+在部署配置区选择发布区域和网络模式，并按需设置 Runtime 实例数。实例设置仅在创建新 Runtime 时出现，更新已有 Runtime 时不显示。
 
 | 配置项 | 默认值 | 说明 |
 | :--- | :--- | :--- |
@@ -64,12 +64,8 @@ Logo 最大 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF 和 ICO。也可以通�
 | 网络模式 | 公网 | 可选公网、VPC 或公网 + VPC；使用 VPC 时需填写 VPC ID。 |
 | 最小实例数 | `1` | Runtime 的最小实例数。 |
 | 最大实例数 | `5` | Runtime 的最大实例数；使用 in-memory 短期记忆时默认为 `1`。 |
-| 访问鉴权 | API Key | 创建新 Runtime 时的访问鉴权方式。可选 API Key 或 VeIdentity 用户池；更新已有 Runtime 时保留其当前鉴权方式。 |
-| 自动创建评测集 | 开启 | 部署成功后自动为该智能体创建 Good Case 和 Bad Case 评测集；关闭则跳过此步骤。创建失败时在部署结果中显示警告，不影响已部署的 Runtime。 |
 
 实例数必须为大于 0 的整数，且最小实例数不能大于最大实例数。当智能体的短期记忆后端为 `local`（in-memory）或未配置时，Studio 会将最大实例数默认设为 1，并提示多实例、进程重启或滚动发布可能导致会话丢失，建议改用基于数据库的持久化短期记忆存储。部署进度会根据实例范围显示相应阶段：当实例范围不是默认的 1～5 时，在创建 Runtime 后增加「更新实例配置」阶段。
-
-创建新 Runtime 时，访问鉴权默认为 API Key；如需改用用户身份验证，可在部署配置区选择 VeIdentity 用户池。Studio 服务端使用自身配置的火山引擎凭证加载当前账号可见的用户池列表，浏览器不接触凭证。列表中会标记当前 Studio 登录所用的用户池：选择该用户池时，Studio 会把登录后验证的 JWT 转发给 Runtime，调用方无需另行获取令牌；选择其他用户池时，调用方需使用该用户池签发的 JWT 访问 Runtime。用户池所在地域通过 `VEIDENTITY_REGION` 环境变量确定，默认为 `cn-beijing`。
 
 ### 从代码包添加和部署
 
@@ -266,38 +262,6 @@ Studio 调用 `doubao-seed-2-0-lite-260428` 模型，根据需求生成一份经
   测试运行会自动规范化生成智能体中配置的 HTTP MCP 工具端点：URL 未以 `/mcp` 结尾时会自动补全 `/mcp`，并通过 Streamable HTTP 验证工具发现。若无法连接 MCP 服务完成工具发现，测试会返回错误，提示确认 URL 是否指向实际 MCP endpoint（通常以 `/mcp` 结尾）并检查 Token；画布中保存的原始 URL 不会被修改。
 </Note>
 
-### 配置记忆
-
-为智能体启用长期记忆后，可在 Studio 中选择以下后端：
-
-| 后端 | 适用场景 |
-| :--- | :--- |
-| [本地向量库](/productions/veadk/preview/zh/components/memory/local) | 进程内向量库，适合本地调试，不持久化，需要配置向量化模型。 |
-| [OpenSearch](/productions/veadk/preview/zh/components/memory/opensearch) | 使用自建或托管的 OpenSearch 集群，并自行配置向量化模型。 |
-| [Redis](/productions/veadk/preview/zh/components/memory/redis) | 使用 Redis 向量检索，并自行配置向量化模型。 |
-| [VikingDB Memory](/productions/veadk/preview/zh/components/memory/vikingdb) | 火山 VikingDB 记忆库（支持用户画像），使用 Studio 的火山引擎凭证。 |
-| [OpenViking](/productions/veadk/preview/zh/components/memory/openviking) | OpenViking 长期记忆，按用户维度保存和检索偏好、事件与实体。 |
-| [mem0](/productions/veadk/preview/zh/components/memory/mem0) | Mem0 托管记忆服务。 |
-
-本地向量库、OpenSearch、Redis 与 mem0 后端的连接和向量化模型参数以环境变量形式写入生成项目；VikingDB Memory 与 OpenViking 使用火山引擎凭证链，由 Studio 服务端转发到调试运行和 AgentKit 运行时，无需在创建页重复填写 AK/SK。各后端的完整参数、默认值和限制见对应组件页面。
-
-选择 OpenViking 时，Studio 在创建页填写以下配置项并写入生成项目的环境变量：
-
-| Studio 配置项 | 生成项目环境变量 | 是否必填 | 默认值 / 占位 | 说明 |
-| :--- | :--- | :--- | :--- | :--- |
-| OpenViking 服务地址 | `DATABASE_OPENVIKING_URL` | 是 | `https://api.vikingdb.cn-beijing.volces.com/openviking` | OpenViking 服务地址，可在[控制台](https://console.volcengine.com/vikingdb/openviking)获取。 |
-| OpenViking API Key | `DATABASE_OPENVIKING_API_KEY` | 是 | — | OpenViking API Key，可在[控制台](https://console.volcengine.com/vikingdb/openviking)获取。 |
-| 记忆归属 ID | `DATABASE_OPENVIKING_USER_ID` | 否 | `default` | 对应 `viking://user/<此值>/peers/<请求用户>/memories` 中的 user 段，用于隔离 Agent、租户或业务场景。 |
-| 记忆策略 | `DATABASE_OPENVIKING_MEMORY_POLICY` | 否 | — | 记忆的抽取与隔离策略，JSON 格式；不填写时由 OpenViking 服务应用其官方默认策略，结构以 [OpenViking 会话接口](https://github.com/volcengine/OpenViking/blob/main/docs/zh/api/05-sessions.md)为准。 |
-
-<Note>
-  OpenViking 的记忆归属 ID（`DATABASE_OPENVIKING_USER_ID`）与运行时用户标识（`Runner.user_id`）是不同的概念：前者隔离不同应用或租户的记忆，后者作为 OpenViking 的 peer ID 隔离终端用户记忆。详见[使用 OpenViking 存储](/productions/veadk/preview/zh/components/memory/openviking)。
-</Note>
-
-<Warning>
-  启用 OpenViking 长期记忆会把会话写入外部 OpenViking 服务。使用前应确认数据处理、访问控制和保留策略符合业务要求。
-</Warning>
-
 ### 配置知识库
 
 为智能体启用知识库后，可在 Studio 中选择以下后端：
@@ -343,39 +307,6 @@ Studio 不提供 `local` 后端，因为创建页面不能为进程内向量库�
 
 <Note>
 该展示适用于本地子智能体和远程智能体。远程智能体只能作为子智能体，不能作为根智能体。
-</Note>
-
-## 对话调用链路与问题反馈
-
-在对话页面，每条助手回复旁提供调用链路查看和问题反馈入口，便于排查单轮执行问题。这些入口仅在普通智能体对话中可用，内置 Codex 智能体对话不提供。
-
-### 查看调用链路
-
-每条助手回复旁的「Tracing 火焰图」按钮打开调用链路观测面板，以 span 树和详情面板展示该会话的执行轨迹，并在打开时以该轮回复的结束时间作为查询截止点。
-
-- 本地调试会话直接读取 ADK 调试链路。
-- 连接云端 Runtime 时，Studio 服务端使用自身配置的火山引擎凭证向 APMPlus 查询该会话的链路，浏览器不接触凭证。
-
-<Note>
-  云端 Runtime 的链路观测需在火山引擎控制台为对应智能体开启 APMPlus 链路观测。通过 Studio 部署的 Runtime 默认启用 APMPlus 链路观测；未开启链路观测的 Runtime 打开链路面板时会提示「该 Agent 暂未开启链路观测，请到控制台打开后使用」，链路查询失败时会提示稍后重试。
-</Note>
-
-### 问题反馈
-
-每条助手回复旁的「问题反馈」按钮可针对该轮回复上报问题。在对话框中选择问题类型并补充描述后提交，提交内容会一并携带该轮的输入、输出、工具调用记录和链路信息，便于排查，并在上报前做凭据脱敏处理。可选问题类型如下：
-
-| 问题类型 | 说明 |
-| :--- | :--- |
-| 执行速度慢 | 回复生成或工具调用耗时过长。 |
-| 运行崩溃 | 智能体执行中断或报错。 |
-| 结果不准确 | 回复内容与预期不符或存在错误。 |
-| 工具调用失败 | 工具执行失败或返回异常。 |
-| 其他问题 | 不属于以上类别的问题。 |
-
-侧边栏底部的「问题反馈」入口（标记为 Beta）用于反馈 Studio 整体使用问题：选择所属模块、问题类型并填写描述后提交。所属模块与当前所在页面对应，可在对话、智能体、自动化、搜索或其他之间选择；平台问题类型包括页面加载慢、功能无法使用、页面显示异常、操作无响应和其他问题。
-
-<Note>
-  问题反馈数据会上报到 AgentKit 团队用于改进产品，提交成功后会显示确认信息。请在描述中避免填写密钥、Token 等敏感信息；当前会话不可用时反馈可能失败，可关闭后重试。
 </Note>
 
 ## 使用智能搜索
@@ -444,7 +375,7 @@ Studio 不会在浏览器中保存 Runtime API Key，因此管理页只显示 Ru
 </Warning>
 
 <Note>
-  MCP 工具的鉴权 Token 会转换为环境变量引用保存：生成源码仅保留 `${ENV_NAME}` 引用，Token 值写入部署环境变量；YAML 导出与浏览器草稿均保留对应的环境变量值。更新已部署的 Runtime 时会重新加载已有环境变量值，在部署表单中输入新的 Token 会覆盖原有值。
+  出于安全考虑，草稿在保存时会移除 MCP 工具的鉴权 Token 和部署配置中的环境变量值。这些内容需要重新填写，刷新页面后不会自动恢复。
 </Note>
 
 草稿保存使用浏览器本地存储空间。存储空间不足或被浏览器拒绝写入时，Studio 会提示对应原因，可删除不再需要的草稿或清理站点存储后重试。
@@ -473,10 +404,6 @@ Studio 不会在浏览器中保存 Runtime API Key，因此管理页只显示 Ru
 </Note>
 
 更新操作仍然受 Studio 角色权限约束：`admin` 可更新全部 Studio 管理的 Runtime，`developer` 只能更新自己创建的 Runtime，普通用户无权更新。
-
-<Note>
-  更新 Runtime 时，Studio 会从该 Runtime 加载已有环境变量并保留；在部署表单中显式填写的值覆盖原有值。选择 Runtime 目标进行调试测试时，该 Runtime 的环境变量会注入测试进程。
-</Note>
 
 ## 查看接入方式
 
@@ -734,7 +661,7 @@ veadk studio --agents-dir ./agents --open
 
 #### 终端与浏览器
 
-在「添加」菜单中选择「进入终端」或「查看浏览器」，可在当前 AgentKit Session 中打开交互式终端或浏览器视图。连接过程中显示加载状态，打开失败时可重试。还可以从该菜单上传图片、文档或 PDF 以及视频到当前对话；上传的图片会在对话中显示预览，点击后通过共享图片查看器打开。
+在「添加」菜单中选择「进入终端」或「查看浏览器」，可在当前 AgentKit Session 中打开交互式终端或浏览器视图。连接过程中显示加载状态，打开失败时可重试。还可以从该菜单上传图片、文档或 PDF 以及视频到当前对话。
 
 #### 状态与历史
 
@@ -758,178 +685,13 @@ VeADK 1.0.9 起，连接的 Runtime 暴露会话级能力叠加接口时，Studi
 
 列举与挂载远程技能需要火山引擎凭证；本地通过 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY` 提供，VeFaaS 部署使用绑定的 IAM Role。能力叠加接口的完整端点与参数见[部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit)。
 
-
-## 自动评测与优化反馈
-
-部署到 AgentKit 的智能体在工作台中支持自动评测和优化反馈。部署时开启「自动创建评测集」后，Studio 会为该智能体创建 Good Case 和 Bad Case 评测集；会话结束后，Studio 自动评估每轮对话的质量并归入对应评测集，再基于累计的评测案例生成优化建议。
-
-### 评测集创建
-
-部署配置区提供「自动创建评测集」开关，默认开启。部署成功后，Studio 调用 AgentKit 评测接口为该智能体幂等创建 `{agent_name}_good_case` 与 `{agent_name}_bad_case` 两个评测集。创建过程在「创建评测集」阶段执行，完成后部署流程进入结束阶段。
-
-<Note>
-  评测集创建失败不影响已部署的 Runtime。失败时部署结果中会显示警告信息，已成功部署的智能体仍可正常使用。
-</Note>
-
-### 自动评测
-
-用户在 Studio 中与已部署智能体对话时，每轮对话结束后 Studio 会等待一段静默时间（默认 300 秒），然后自动评估该轮对话的质量。评估过程如下：
-
-1. Studio 从 Runtime 读取该轮会话的最新助手回复。
-2. 调用 `doubao-seed-2-0-lite-260428` 模型，从任务完成度、事实与逻辑可靠性、工具使用合理性、清晰度和安全性等维度对回复评分。
-3. 评分范围为 0–1；评分不低于 0.6 的归入 Good Case 评测集，低于 0.6 的归入 Bad Case 评测集。
-4. 自动评测案例会写入对应的 AgentKit 评测集，并在案例列表中标记来源为「自动回流」，同时展示评分和评分理由。
-
-<Note>
-  如果用户在同一会话中发送新消息，静默计时会被重置，确保只在对话暂停后才执行评测。
-</Note>
-
-### 优化建议
-
-当自动评测积累了足够的案例后，Studio 基于该智能体已有的评测案例生成优化建议。优化建议按优先级和模块分组展示在工作台的「优化项」标签中：
-
-| 字段 | 说明 |
-| :--- | :--- |
-| 修复优先级 | 按高、中、低标注每组的修复紧迫程度。 |
-| 建议优化模块 | 标注建议改进的模块，包括智能体结构、提示词、工具、知识库、记忆、工作流等。 |
-| 优化建议和理由 | 每条建议包含具体的改进描述和对应的评分依据。 |
-
-<Note>
-  优化建议由 `doubao-seed-2-0-lite-260428` 模型根据累计评测案例和智能体配置生成，仅供参考。评测模型可通过环境变量 `VEADK_STUDIO_EVALUATION_MODEL` 覆盖。
-</Note>
-
-### 查看评测案例
-
-工作台的「评测集」标签展示该智能体的所有评测案例，支持按 Good Case / Bad Case 和自动回流 / 手动回流筛选。自动回流案例显示评分（0–100 分制）和评分理由；手动回流案例（用户通过赞/踩创建）的评分列显示为「—」。两种来源的案例均可删除。
-
-## 自动化集成
-
-Studio 侧边栏的「自动化」页面提供研发工具和消息渠道的自动化集成。自动化按分类组织，当前包括「研发」和「消息渠道」两个分类。Coding Agents 集成在本地检测并配置已安装的编程智能体客户端；GitHub 自动化通过浏览器直接调用 GitHub API 创建分支、文件和 Pull Request；飞书自动化在 Studio 中生成基础智能体并直接部署到 AgentKit Runtime。
-
-### 配置 Coding Agents
-
-将 VeADK 与 AgentKit 内置 Skills 全局安装到本机已安装的编程智能体客户端，使其在开发 VeADK 应用时具备构建、调试、部署与平台操作能力。该集成标记为「本地」，仅在启动 Studio 的本机执行检测与安装，不访问云资源。
-
-打开「自动化」页面中的「配置 Coding Agents」卡片后，Studio 会检测当前操作系统（macOS、Linux、Windows）下已安装的编程智能体客户端，并展示可全局安装的内置 Skills。
-
-支持的编程智能体客户端：
-
-| 客户端 | 检测方式 | 全局 Skills 安装路径 |
-| :--- | :--- | :--- |
-| Trae | 命令行 `trae` 或 `trae-cn`、主目录下的 `.trae` 或 `.trae-cn` 标记，或已安装的 Trae 应用（macOS 的 `/Applications`、Windows 的程序目录） | `~/.trae/skills` |
-| Claude Code | 命令行 `claude` 或主目录下的 `.claude` 标记 | `~/.claude/skills` |
-| Codex | 命令行 `codex`、主目录下的 `.codex` 或 `.agents` 标记，或已安装的 ChatGPT/Codex 应用 | `~/.agents/skills` |
-
-检测到命令行可执行文件时，Studio 还会显示其版本号；未检测到时标注为不可用。
-
-内置 Skills 为固定集合，不可自定义内容：
-
-| Skill | 说明 |
-| :--- | :--- |
-| `veadk-agent-development` | VeADK 开发技能，用于构建、调试并交付基于 VeADK 的智能体应用。 |
-| `agentkit-cli` | AgentKit 平台操作技能，使用 AgentKit CLI 管理部署、运行时与平台资源。 |
-
-选择一个或多个已检测到的客户端与一个或多个内置 Skills 后，Studio 会将所选 Skills 写入对应客户端的全局 Skills 目录（如 `~/.claude/skills/<skill_id>`）。每个 Skill 以独立子目录写入，包含 `SKILL.md` 及其附带的脚本、参考文档和资源。
-
-<Note>
-  浏览器只能从固定的客户端与 Skill 标识中选择，不接受任意的 Shell 命令、文件系统路径或 Skill 内容；Skills 来源于 Studio 内置资源，不来自浏览器上传。安装前可预览每个 Skill 包含的文件。
-</Note>
-
-安装采用原子替换：Studio 先将 Skill 文件写入临时目录，校验通过后再替换目标目录；目标目录已存在同名 Skill 时会先备份再替换，安装失败时自动回滚到原内容。
-
-<Warning>
-  安装会写入启动 Studio 的用户主目录下的全局 Skills 路径。请确认运行 Studio 的用户身份与编程智能体客户端所属用户一致，避免 Skills 安装到错误的用户目录。
-</Warning>
-
-启用角色权限控制时，配置 Coding Agents 需要 `developer` 或 `admin` 角色。
-
-### 模板项目导入
-
-在目标仓库中创建一个包含完整 Studio App Server 的最简 VeADK 智能体项目，并附带持续交付工作流。提交后 Studio 在目标仓库创建发布分支，发起包含模板文件和 GitHub Actions 工作流的 PR。
-
-模板项目包含 `app.py` 服务入口、一个带示例工具的智能体、`requirements.txt`、`Dockerfile`、`.env.example`、`.gitignore` 和 `.dockerignore`，以及持续交付工作流文件。合并 PR 后，推送到目标分支即触发 AgentKit Runtime 发布。
-
-| 参数 | 必填 | 默认值 | 说明 |
-| :--- | :--- | :--- | :--- |
-| GitHub Repo | 是 | — | 支持 `owner/repository` 或完整 GitHub URL。 |
-| 目标分支 | 否 | `main` | PR 的 base 分支。 |
-| Agent 项目目录 | 是 | `agentkit-basic-agent` | 模板文件创建的目录。 |
-| Runtime 名称 | 是 | — | 用于发布配置的 Runtime 名称，以字母开头，仅含字母、数字、下划线和连字符。 |
-| Runtime ID | 是 | — | 持续更新的目标 AgentKit Runtime ID。 |
-| 地域 | 是 | `cn-beijing` | 必须与目标 Runtime 所在地域一致。 |
-| GitHub Token | 是 | — | 需要对目标仓库的写入权限；仅用于当前请求，不持久化。 |
-
-### AgentKit Runtime 持续交付
-
-为已有仓库添加持续发布到 AgentKit Runtime 的 GitHub Actions 工作流。推送代码到目标分支时自动构建并发布 Runtime 新版本。
-
-| 参数 | 必填 | 默认值 | 说明 |
-| :--- | :--- | :--- | :--- |
-| GitHub Repo | 是 | — | 支持 `owner/repository` 或完整 GitHub URL。 |
-| 目标分支 | 否 | `main` | 工作流监听的分支，也是 PR 的 base 分支。 |
-| Agent 项目目录 | 否 | `.` | 包含 `app.py` 的项目目录；留空时使用仓库根目录。 |
-| Runtime 名称 | 是 | — | 用于发布配置的 Runtime 名称。 |
-| Runtime ID | 是 | — | 持续更新的目标 AgentKit Runtime ID。 |
-| 地域 | 是 | `cn-beijing` | 必须与目标 Runtime 所在地域一致。 |
-| GitHub Token | 是 | — | 需要对目标仓库的写入权限；仅用于当前请求，不持久化。 |
-
-<Note>
-  持续交付和模板导入工作流均需要在仓库中配置 `VOLCENGINE_ACCESS_KEY` 和 `VOLCENGINE_SECRET_KEY` GitHub Secrets；使用临时凭据时还需配置 `VOLCENGINE_SESSION_TOKEN`。这些 Secrets 在 GitHub 中管理，不经过 Studio。
-</Note>
-
-### PR 自动评审
-
-在目标仓库中添加 GitHub Actions 工作流，在隔离的 AgentKit Sandbox 中评审同仓库的非草稿 PR，并将评审结果发布为 GitHub Review。
-
-<Warning>
-  PR 评审工作流仅评审与目标仓库相同的非草稿 PR，不评审 fork 仓库的 PR，不会读取 fork PR 的仓库 Secrets。
-</Warning>
-
-| 参数 | 必填 | 默认值 | 说明 |
-| :--- | :--- | :--- | :--- |
-| GitHub Repo | 是 | — | 支持 `owner/repository` 或完整 GitHub URL。 |
-| 目标分支 | 否 | `main` | PR 的 base 分支。 |
-| Sandbox Tool ID | 是 | — | 用于运行每次评审的 AgentKit CodeEnv Tool ID。 |
-| 评审模型 | 是 | — | 注入 Sandbox 的代码评审模型名称。 |
-| 模型 API 地址 | 是 | `https://ark.cn-beijing.volces.com/api/coding/v3` | 必须使用 OpenAI 兼容的 HTTPS 地址，不能包含凭据、查询参数或锚点。 |
-| 地域 | 是 | `cn-beijing` | 必须与 Sandbox Tool 所在地域一致。 |
-| GitHub Token | 是 | — | 需要对目标仓库的写入权限；仅用于当前请求，不持久化。 |
-
-PR 评审工作流需要在仓库中配置以下 GitHub Secrets：
-
-| Secret | 说明 |
-| :--- | :--- |
-| `VOLCENGINE_ACCESS_KEY` | 火山引擎 Access Key（必填）。 |
-| `VOLCENGINE_SECRET_KEY` | 火山引擎 Secret Key（必填）。 |
-| `CODEX_MODEL_API_KEY` | 评审模型的 API Key（必填）。 |
-| `VOLCENGINE_SESSION_TOKEN` | 使用临时凭据时必填。 |
-
-### 飞书机器人
-
-<Note>
-  飞书机器人自动化当前标记为 Beta。
-</Note>
-
-在 Studio 中直接创建一个由 AgentKit Runtime 驱动的飞书智能体。填写已发布飞书应用的凭据后，Studio 生成基础智能体、创建独立 Runtime，并启用飞书消息长连接。部署按生成智能体、构建镜像、创建 Runtime 和发布服务四个阶段展示进度。部署完成后可在页面中打开 Runtime 控制台。
-
-| 参数 | 必填 | 默认值 | 说明 |
-| :--- | :--- | :--- | :--- |
-| 智能体名称 | 是 | `feishu_assistant` | 将作为新 Runtime 中的根智能体名称。 |
-| 部署地域 | 是 | `cn-beijing` | Runtime 与构建产物创建的地域，可选 `cn-beijing` 或 `cn-shanghai`。 |
-| 飞书 App ID | 是 | — | 来自飞书开放平台的应用凭证。 |
-| 飞书 App Secret | 是 | — | 仅用于本次部署，不会写入生成源码或浏览器存储。 |
-
-<Note>
-  飞书机器人的 App Secret 仅用于本次部署，不写入生成源码、工作流或日志。部署期间可取消部署，取消将停止任务并清理已创建的 Runtime。
-</Note>
-
 ## `veadk studio` 参数
 
 | 选项 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
 | `--agents-dir` | `str` | `.` | 智能体应用的父目录；每个包含 `agent.py` 并暴露 `root_agent` 的子目录作为一个应用。 |
 | `--frontend-dir` | `str \| None` | 包内置界面，回退到 `./frontend/dist` | 覆盖已构建的 Studio 界面目录。 |
-| `--site-title` | `str \| None` | `VEADK_SITE_TITLE`，否则为 `AgentKit Studio` | 自定义系统名称，最多 6 个字符。 |
+| `--site-title` | `str \| None` | `VEADK_SITE_TITLE`，否则为 `VeADK Studio` | 自定义系统名称，最多 6 个字符。 |
 | `--site-logo` | `str \| None` | `VEADK_SITE_LOGO` | 自定义 Logo，支持本地图片路径或 HTTP(S) URL。 |
 | `--host` | `str` | `127.0.0.1` | 监听地址。 |
 | `--port` | `int` | `8000` | 监听端口。 |
@@ -982,13 +744,11 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 部署者的长期 AK/SK 不会写入 VeFaaS 应用环境变量。已部署的 Studio 使用绑定 IAM Role 的临时凭证访问火山引擎服务。
 
-未指定 `--sandbox-chat-codex-tool-id` 与 `--sandbox-skill-creator-tool-id` 时，部署命令会在 `--region` 指定的地域创建所需的 AgentKit Tool，分别用于内置智能体和 Skill 创建；火山引擎部署还会额外创建一个 DevEnv Tool 用于开发沙箱。这些 Tool 创建的 Session 与 VeFaaS Function、API Gateway 保持同一地域。模型凭据只配置在各自 Tool 中，VeFaaS Function 只接收 Tool ID。若已有符合要求且地域一致的 Tool，可通过参数直接复用。
-
-沙箱 Tool 使用的模型、接入地址和候选地域按云服务商区分：火山引擎使用 `doubao-seed-2-1-pro-260628` 模型与 `https://ark.cn-beijing.volces.com/api/v3`，候选地域为 `cn-beijing` 与 `cn-shanghai`；BytePlus 使用 `seed-2-0-lite-260228` 模型与 `https://ark.ap-southeast.bytepluses.com/api/v3`，候选地域为 `ap-southeast-1`。`--sandbox-dev-tool-id` 仅支持火山引擎部署，在 BytePlus 部署中传入会报错。
+未指定 `--sandbox-chat-codex-tool-id` 与 `--sandbox-skill-creator-tool-id` 时，部署命令会在 `--region` 指定的地域创建两个独立的 AgentKit CodeEnv Tool，分别用于内置智能体和 Skill 创建；这些 Tool 创建的 Session 与 VeFaaS Function、API Gateway 保持同一地域。模型凭据只配置在各自 Tool 中，VeFaaS Function 只接收 Tool ID。若已有符合要求且地域一致的 Tool，可通过参数直接复用。
 
 ### 应用内更新
 
-Studio 固定从维护在北京地域的 `veadk-studio` TOS 发布源读取新版本，客户部署地域无需额外配置；部署完成后管理员可在导航栏中把前端与 Python 后端一起升级。使用 `--studio-update-bucket` 与 `--studio-update-prefix`（或对应的 `VEADK_STUDIO_UPDATE_BUCKET`、`VEADK_STUDIO_UPDATE_PREFIX` 环境变量）可覆盖默认发布源，发布源地域始终为 `cn-beijing`。
+`veadk studio deploy` 默认使用部署地域的 `veadk-studio` TOS Bucket 作为不可变发布渠道，部署完成后管理员可在导航栏中把前端与 Python 后端一起升级，无需额外参数。使用 `--studio-update-bucket`、`--studio-update-region` 与 `--studio-update-prefix`（或对应的 `VEADK_STUDIO_UPDATE_BUCKET`、`VEADK_STUDIO_UPDATE_REGION`、`VEADK_STUDIO_UPDATE_PREFIX` 环境变量）可覆盖默认发布渠道。
 
 Studio 每三分钟检查一次更新，列出可用版本及其变更说明。管理员确认升级后，Studio 会校验完整发布包，同时替换 Python 后端与前端资源并重新发布原 Application；Application 与 Function ID、访问 URL、SSO 客户端和服务端 Secret 保持不变。
 
@@ -998,6 +758,7 @@ veadk studio deploy \
   --allowed-client-id "your-user-pool-client-id" \
   --vefaas-app-name "veadk-studio" \
   --studio-update-bucket "custom-studio-releases" \
+  --studio-update-region "cn-shanghai" \
   --studio-update-prefix "veadk/studio/main"
 ```
 
@@ -1013,11 +774,9 @@ veadk studio deploy \
 | `--allowed-client-id` | `str` | 必填 | 用于登录的用户池客户端 UID。 |
 | `--client-secret` | `str` | `""` | 无法通过客户端 UID 读取密钥时显式提供。直接传参可能进入 shell 历史，能够读取时应省略。 |
 | `--vefaas-app-name` | `str` | 必填 | VeFaaS 应用名称，长度 4–64，只能包含字母、数字和连字符，不能包含下划线。 |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | 部署使用的云服务商。选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证，默认地域为 `ap-southeast-1`。 |
-| `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | 由 `--provider` 推导 | Studio 部署地域，同时决定 VeFaaS、API Gateway 等资源所在区域。部署时会跨北京、上海查找 VeIdentity 用户池。 |
+| `--region` | `cn-beijing \| cn-shanghai` | `cn-beijing` | Studio 部署地域，同时决定 VeFaaS、API Gateway 等资源所在区域。部署时会跨北京、上海查找 VeIdentity 用户池。 |
 | `--project` | `str` | `default` | VeFaaS 函数所属项目。 |
 | `--iam-role` | `str \| None` | `None` | 绑定到函数的既有 IAM Role TRN；省略时创建或复用默认 Role。 |
-| `--vefaas-application-template-id` | `str \| None` | 内置模板 | 覆盖 VeFaaS Application Center 的内置模板 ID。也可通过 `VEFAAS_APPLICATION_TEMPLATE_ID` 设置。 |
 | `--admin` | `str \| None` | `None` | 逗号分隔的管理员名单（用户名或 OAuth 邮箱）。省略 `--admin` 与 `--developer` 时，所有登录用户都按 `admin` 处理。也可通过 `VEADK_STUDIO_ADMINS` 设置。 |
 | `--developer` | `str \| None` | `None` | 逗号分隔的开发者名单（用户名或 OAuth 邮箱）。也可通过 `VEADK_STUDIO_DEVELOPERS` 设置。 |
 | `--site-title` | `str \| None` | `None` | 自定义 Studio 名称，最多 6 个字符。 |
@@ -1028,42 +787,13 @@ veadk studio deploy \
 | `--volcengine-access-key` | `str \| None` | 自动解析 | 部署用 Access Key，依次读取命令参数、`VOLCENGINE_ACCESS_KEY` 环境变量与 `~/.volc/credentials` 的 `[default]` 配置。 |
 | `--volcengine-secret-key` | `str \| None` | 自动解析 | 部署用 Secret Key，依次读取命令参数、`VOLCENGINE_SECRET_KEY` 环境变量与 `~/.volc/credentials` 的 `[default]` 配置。 |
 | `--volcengine-session-token` | `str \| None` | 自动解析 | STS 临时凭证的 Session Token，依次读取命令参数、`VOLCENGINE_SESSION_TOKEN` / `VOLC_SESSIONTOKEN` 环境变量与 `~/.volc/credentials` 中 `[default]` 配置的 `session_token` 字段。 |
-| `--byteplus-access-key` | `str \| None` | `BYTEPLUS_ACCESS_KEY` | BytePlus 部署凭证的 Access Key，仅在 `--provider byteplus` 时使用。 |
-| `--byteplus-secret-key` | `str \| None` | `BYTEPLUS_SECRET_KEY` | BytePlus 部署凭证的 Secret Key，仅在 `--provider byteplus` 时使用。 |
-| `--byteplus-session-token` | `str \| None` | `BYTEPLUS_SESSION_TOKEN` | BytePlus STS 临时凭证的 Session Token，仅在 `--provider byteplus` 时使用。 |
 | `--veadk-version` | `str` | 最新发布版本 | 写入 VeFaaS 依赖的 `veadk-python` 版本；仅在需要固定或复现版本时设置。 |
 | `--from-source` | `bool` 标志 | `false` | 从当前源码目录构建 wheel 后部署，包含未提交改动；用于验证未发布版本，不应与 `--veadk-version` 的发布版本工作流混用。 |
-| `--keep-failed-deploy` | `bool` 标志 | `false` | 部署失败时保留已创建的 VeFaaS Application 与 Function 资源，便于在控制台查看发布日志。 |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | 自动创建 | 内置智能体使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_CHAT_CODEX` 设置。 |
 | `--sandbox-skill-creator-tool-id`、`--skill-creator-tool-id` | `str \| None` | 自动创建 | Skill 创建使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_SKILL_CREATOR` 设置。 |
-| `--sandbox-dev-tool-id` | `str \| None` | 自动创建 | 开发沙箱使用的 AgentKit DevEnv Tool ID；仅支持火山引擎部署，也可通过 `SANDBOX_DEV` 设置。 |
 | `--studio-update-bucket` | `str` | `veadk-studio` | 存放 Studio 不可变发布包的 TOS Bucket；部署时写入函数环境变量 `VEADK_STUDIO_UPDATE_BUCKET`。也可通过 `VEADK_STUDIO_UPDATE_BUCKET` 设置。 |
+| `--studio-update-region` | `str \| None` | 部署地域 | Studio 发布 Bundle 的 TOS 地域；省略时与 `--region` 一致。也可通过 `VEADK_STUDIO_UPDATE_REGION` 设置。 |
 | `--studio-update-prefix` | `str` | `veadk/studio/main` | Studio 主发布渠道的 TOS 对象前缀。也可通过 `VEADK_STUDIO_UPDATE_PREFIX` 设置。 |
-| `--apmplus-aid` | `str` | `""` | APMPlus Client aid，用于 Studio 前端埋点。也可通过 `VEADK_STUDIO_APMPLUS_AID` 设置。 |
-| `--apmplus-token` | `str` | `""` | APMPlus Client token，用于 Studio 前端埋点。也可通过 `VEADK_STUDIO_APMPLUS_TOKEN` 设置。 |
-| `--apmplus-domain` | `str` | `apmplus.volces.com` | APMPlus 数据上报域名。也可通过 `VEADK_STUDIO_APMPLUS_DOMAIN` 设置。 |
-| `--apmplus-env` | `str` | `production` | APMPlus 环境名称。也可通过 `VEADK_STUDIO_APMPLUS_ENV` 设置。 |
-
-## 前端使用数据采集
-
-部署 Studio 时可通过 APMPlus 前端埋点统计 Studio 实例访问量、登录使用情况，以及智能体部署、沙箱创建、智能体连接、对话发送、调试测试和源码下载的结果。埋点默认关闭，仅当同时配置 APMPlus Client 的 aid 与 token 后才启用；未配置或上报失败时不影响 Studio 正常使用。
-
-`veadk studio deploy` 通过 `--apmplus-aid`、`--apmplus-token`、`--apmplus-domain` 与 `--apmplus-env` 配置埋点；部署时会自动注入部署 ID、用户池 ID、部署地域和项目等元信息供前端关联，无需手动设置。配置任一 APMPlus 选项时，`--apmplus-aid` 与 `--apmplus-token` 必须同时提供，否则部署会报错。
-
-```bash
-veadk studio deploy \
-  --user-pool-id "your-user-pool-id" \
-  --allowed-client-id "your-user-pool-client-id" \
-  --vefaas-app-name "veadk-studio" \
-  --apmplus-aid "123456" \
-  --apmplus-token "your-apmplus-client-token"
-```
-
-也可以通过环境变量 `VEADK_STUDIO_APMPLUS_AID` 与 `VEADK_STUDIO_APMPLUS_TOKEN` 提供配置；`VEADK_STUDIO_APMPLUS_DOMAIN` 与 `VEADK_STUDIO_APMPLUS_ENV` 分别覆盖上报域名（默认 `apmplus.volces.com`）和环境名称（默认 `production`）。本地启动 `veadk studio` 时同样可设置这些环境变量启用埋点。
-
-<Note>
-  埋点仅采集使用统计维度，包括部署 ID、用户 ID、角色、地域、来源、创建方式、是否使用智能生成，以及智能体部署、沙箱创建、智能体连接、对话发送、调试测试和源码下载的成功或失败结果与失败阶段。失败事件附带错误摘要时会自动脱敏密钥、令牌和密码，截取前 300 个字符后上报。埋点不采集对话内容、提示词、生成代码、环境变量值或任何密钥。应用内更新 Studio 时会保留已配置的 APMPlus 环境变量。
-</Note>
 
 ## 更新已部署的 Studio
 
@@ -1076,26 +806,20 @@ export VOLCENGINE_SECRET_KEY="your-secret-key"
 veadk studio update --vefaas-app-name "veadk-studio"
 ```
 
-省略 `--region` 和 `--project` 时，命令会在北京、上海及全部可见项目中查找同名 Application。若存在多个候选项，需要补充地域或项目缩小范围。更新保留 Application 与 Function ID、访问 URL、SSO、IAM、网关和已有环境变量；品牌和各 CodeEnv、DevEnv Tool ID 仅在显式传入相应参数时覆盖。
+省略 `--region` 和 `--project` 时，命令会在北京、上海及全部可见项目中查找同名 Application。若存在多个候选项，需要补充地域或项目缩小范围。更新保留 Application 与 Function ID、访问 URL、SSO、IAM、网关和已有环境变量；品牌和两个 CodeEnv Tool ID 仅在显式传入相应参数时覆盖。
 
 | 选项 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | 已部署 Studio 的云服务商。选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证。 |
 | `--vefaas-app-name` | `str` | 必填 | 要更新的 VeFaaS Application 名称。 |
-| `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | 查询两个地域 | 将查找范围限制到一个地域。BytePlus 模式下默认查询 `ap-southeast-1`。 |
+| `--region` | `cn-beijing \| cn-shanghai` | 查询两个地域 | 将查找范围限制到一个地域。 |
 | `--project` | `str \| None` | 查询全部可见项目 | 将查找范围限制到一个项目。 |
 | `--path` | `str` | `.` | 要构建的 VeADK 源码目录。 |
 | `--site-title` | `str \| None` | 保留云上值 | 显式传入时替换 Studio 名称。 |
 | `--site-logo` | `str \| None` | 保留云上值 | 显式传入时替换 Studio Logo。 |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换内置智能体使用的 Tool ID。 |
 | `--sandbox-skill-creator-tool-id`、`--skill-creator-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换 Skill 创建使用的 Tool ID。 |
-| `--sandbox-dev-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换开发沙箱使用的 Tool ID；仅支持火山引擎部署。 |
 | `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | 更新操作使用的 Access Key。 |
 | `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | 更新操作使用的 Secret Key。 |
-| `--volcengine-session-token` | `str \| None` | `VOLCENGINE_SESSION_TOKEN` | STS 临时凭证的 Session Token，火山引擎模式使用。 |
-| `--byteplus-access-key` | `str \| None` | `BYTEPLUS_ACCESS_KEY` | BytePlus 更新凭证的 Access Key，仅在 `--provider byteplus` 时使用。 |
-| `--byteplus-secret-key` | `str \| None` | `BYTEPLUS_SECRET_KEY` | BytePlus 更新凭证的 Secret Key，仅在 `--provider byteplus` 时使用。 |
-| `--byteplus-session-token` | `str \| None` | `BYTEPLUS_SESSION_TOKEN` | BytePlus STS 临时凭证的 Session Token，仅在 `--provider byteplus` 时使用。 |
 
 ## Studio 角色与 Runtime 权限
 
