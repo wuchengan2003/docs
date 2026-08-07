@@ -72,7 +72,7 @@ kb = KnowledgeBase(
 | `resource_id` | `str` | Read from env var `DATABASE_VIKING_RESOURCE_ID`, defaults to `""` | VikingDB knowledge base resource ID, used for request routing in multi-resource scenarios. Left empty to omit. |
 | `version` | `str` | Read from env var `DATABASE_VIKING_VERSION`, defaults to `"2"` | Collection version, either `"2"` or `"4"`. |
 | `cloud_provider` | `str` | Read from env var `CLOUD_PROVIDER`, defaults to `volces` | Cloud provider, `volces` or `byteplus`; determines the endpoint and default region. |
-| `region` | `str` | Derived from `cloud_provider` (`cn-beijing` for `volces`, `ap-southeast-1` for `byteplus`), overridable via `DATABASE_VIKING_REGION` | Service region. |
+| `region` | `str` | Derived from `cloud_provider` (`cn-beijing` for `volces`, `cn-hongkong` for `byteplus`), overridable via `DATABASE_VIKING_REGION` | Service region. In `byteplus` mode, an unset or Chinese-mainland region (`cn-beijing`, `cn-shanghai`, `cn-guangzhou`) is automatically mapped to `cn-hongkong`; other regions are used as-is. |
 | `base_url` | `str` | Derived from `region` and `cloud_provider` | Knowledge base API base URL, overridable via `DATABASE_VIKING_BASE_URL`. |
 | `host` | `str` | Derived from `region` and `cloud_provider` | Knowledge base API host. |
 | `schema` | `str` | `https` | Request scheme. |
