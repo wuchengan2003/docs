@@ -8,6 +8,8 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 沙箱 | `veadk studio deploy` 和 `veadk studio update` 新增 `--sandbox-dev-tool-id` 选项（及 `SANDBOX_DEV` 环境变量），用于指定或自动创建开发沙箱使用的 AgentKit DevEnv Tool；仅支持火山引擎部署，BytePlus 部署中传入会报错。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 沙箱 | 沙箱 Tool 的模型、接入地址和候选地域改为按云服务商区分：火山引擎使用 `doubao-seed-2-1-pro-260628` 模型与 `https://ark.cn-beijing.volces.com/api/v3`、候选地域 `cn-beijing` 与 `cn-shanghai`；BytePlus 使用 `seed-2-0-lite-260228` 模型与 `https://ark.ap-southeast.bytepluses.com/api/v3`、候选地域 `ap-southeast-1`。BytePlus 部署不再跳过沙箱 Tool 自动创建，改为与火山引擎一致地按服务商自动配置。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio Codex 会话 | Codex 智能体对话中上传的图片附件现在会在对话中正确渲染预览，点击后通过共享图片查看器打开，不再出现重复预览。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 品牌 | `veadk studio` 和 `veadk frontend` 的默认系统名称由 `VeADK Studio` 改为 `AgentKit Studio`，默认 Logo 更新为 AgentKit 品牌 Logo；未通过 `--site-title`、`--site-logo` 或对应环境变量自定义时使用新默认值。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | 更新已有 Runtime 时保留其当前网络配置（网络模式、VPC、子网和共享公网），不再丢失。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
