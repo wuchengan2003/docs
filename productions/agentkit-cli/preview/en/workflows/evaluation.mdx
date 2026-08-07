@@ -5,7 +5,7 @@ title: "Evaluation loop"
 Evaluation closes the "develop → deploy → evaluate → tune" loop: use a fixed dataset and one or more evaluators to score a deployed runtime, then iterate on the quantified results. This page walks through the full flow — from initializing a project to viewing evaluation results — using a question-answering agent as the example. For details on each command, see [Manage datasets](/productions/agentkit-cli/preview/en/commands/eval/dataset), [Manage evaluators](/productions/agentkit-cli/preview/en/commands/eval/evaluator), [Run an experiment](/productions/agentkit-cli/preview/en/commands/eval/run), and [View experiments and results](/productions/agentkit-cli/preview/en/commands/eval/experiment).
 
 <Note>
-Before you start, make sure your Volcengine access keys are configured (the `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY` environment variables). Evaluation is currently in Preview; commands are automatically routed to the region where the evaluation service lives, so `-r/--region` is not needed.
+Before you start, configure Volcengine AK/SK credentials or obtain valid short-lived STS credentials through `agentkit login`. Evaluation is currently in Preview. Commands automatically route to the region where the evaluation service is available; evaluation dataset commands also accept `-r, --region` to select a region explicitly.
 </Note>
 
 ## End-to-end flow
@@ -15,9 +15,9 @@ Before you start, make sure your Volcengine access keys are configured (the `VOL
     Create the project and deploy it to obtain a target runtime to evaluate:
 
     ```bash
-    agentkit init qa-agent --language python --template default --yes
+    agentkit init qa-agent --template basic
     cd qa-agent
-    agentkit deploy --name qa-agent
+    agentkit launch
     ```
 
     Once deployed, run `agentkit invoke qa-agent -m "hello"` to confirm the runtime responds.
@@ -94,7 +94,7 @@ Before you start, make sure your Volcengine access keys are configured (the `VOL
     Improve the agent's prompt, tools, or model based on the results, redeploy, then run the experiment again with the same dataset and evaluator. Compare the aggregate scores and per-case results of the two runs to judge whether the change is an improvement or a regression:
 
     ```bash
-    agentkit deploy --name qa-agent
+    agentkit launch
     agentkit eval run --dataset qa-set --evaluator relevance --target qa-agent
     ```
   </Step>
