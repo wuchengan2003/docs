@@ -68,7 +68,7 @@ print(profile)
 | `volcengine_access_key` | `str \| None` | See below | Access key (AK). Reads `BYTEPLUS_ACCESS_KEY` in `byteplus` mode, otherwise `VOLCENGINE_ACCESS_KEY`. Falls back to VeFaaS IAM when absent. |
 | `volcengine_secret_key` | `str \| None` | See below | Secret key (SK). Reads `BYTEPLUS_SECRET_KEY` in `byteplus` mode, otherwise `VOLCENGINE_SECRET_KEY`. Falls back to VeFaaS IAM when absent. |
 | `session_token` | `str` | See below | STS temporary-credential token. Reads `BYTEPLUS_SESSION_TOKEN` in `byteplus` mode, otherwise `VOLCENGINE_SESSION_TOKEN`. |
-| `cloud_provider` | `str` | Reads env `CLOUD_PROVIDER`, defaults to `volces` | Cloud provider, `volces` or `byteplus`; affects the service host and default region. |
+| `cloud_provider` | `str` | Reads env `CLOUD_PROVIDER`, defaults to `volces` | Cloud provider, `volces` or `byteplus`; affects the service host and region. In `byteplus` mode the region is fixed to `cn-hongkong`. |
 | `region` | `str` | See below | Region of the VikingDB memory. |
 | `volcengine_project` | `str` | Reads env `DATABASE_VIKINGMEM_PROJECT`, defaults to `default` | VikingDB memory project name. |
 | `memory_type` | `list[str]` | See below | Memory type list, used to create the collection and filter retrieval. |
@@ -79,7 +79,7 @@ The backend prefers `volcengine_access_key` and `volcengine_secret_key` from exp
 
 ### Defaults for region and memory_type
 
-- `region`: when not set explicitly, reads env `DATABASE_VIKING_REGION`; when still empty, `byteplus` defaults to `ap-southeast-1` and others default to `cn-beijing`.
+- `region`: in `byteplus` mode it is always `cn-hongkong`, ignoring the env var and any explicitly passed value; in other modes, when not set explicitly it reads env `DATABASE_VIKING_REGION` and defaults to `cn-beijing` if still empty.
 - `memory_type`: when not set explicitly, reads env `DATABASE_VIKINGMEM_MEMORY_TYPE` (a comma-separated string is parsed into a list); when still empty, defaults to `["sys_event_v1", "sys_profile_v1"]`.
 
 ## Environment variables
@@ -89,7 +89,7 @@ The backend prefers `volcengine_access_key` and `volcengine_secret_key` from exp
 | `VOLCENGINE_ACCESS_KEY` | None | Volcengine Access Key. |
 | `VOLCENGINE_SECRET_KEY` | None | Volcengine Secret Key. |
 | `CLOUD_PROVIDER` | `volces` | Cloud provider, `volces` or `byteplus`. |
-| `DATABASE_VIKING_REGION` | `cn-beijing` (`ap-southeast-1` for byteplus) | Memory region. |
+| `DATABASE_VIKING_REGION` | `cn-beijing` (ignored in `byteplus` mode, which is fixed to `cn-hongkong`) | Memory region. |
 | `DATABASE_VIKINGMEM_PROJECT` | `default` | Memory project name. |
 | `DATABASE_VIKINGMEM_MEMORY_TYPE` | `sys_event_v1,sys_profile_v1` | Memory types, comma-separated. |
 

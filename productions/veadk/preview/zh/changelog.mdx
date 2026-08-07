@@ -8,6 +8,9 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| 长期记忆 | VikingDB 记忆后端 BytePlus 模式默认区域由 `ap-southeast-1` 改为 `cn-hongkong`，且不再受 `DATABASE_VIKING_REGION` 环境变量或显式传入值影响，固定使用 `cn-hongkong` 与对应服务地址。 | [使用 VikingDB 存储](/productions/veadk/preview/zh/components/memory/vikingdb) |
+| 知识库 | VikingDB 知识库后端 BytePlus 模式默认区域由 `ap-southeast-1` 改为 `cn-hongkong`；未设置或中国大陆地域（`cn-beijing`、`cn-shanghai`、`cn-guangzhou`）自动映射为 `cn-hongkong`，其他地域保持原样。 | [使用 VikingDB 知识库存储](/productions/veadk/preview/zh/components/knowledge/viking) |
+| Studio 创建 | 使用 BytePlus 作为云服务商时，`web_search` 和 `parallel_web_search` 不出现在自定义创建和智能生成的内置工具列表中；火山引擎模式下不受影响。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 沙箱 | `veadk studio deploy` 和 `veadk studio update` 新增 `--sandbox-dev-tool-id` 选项（及 `SANDBOX_DEV` 环境变量），用于指定或自动创建开发沙箱使用的 AgentKit DevEnv Tool；仅支持火山引擎部署，BytePlus 部署中传入会报错。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 沙箱 | 沙箱 Tool 的模型、接入地址和候选地域改为按云服务商区分：火山引擎使用 `doubao-seed-2-1-pro-260628` 模型与 `https://ark.cn-beijing.volces.com/api/v3`、候选地域 `cn-beijing` 与 `cn-shanghai`；BytePlus 使用 `seed-2-0-lite-260228` 模型与 `https://ark.ap-southeast.bytepluses.com/api/v3`、候选地域 `ap-southeast-1`。BytePlus 部署不再跳过沙箱 Tool 自动创建，改为与火山引擎一致地按服务商自动配置。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio Codex 会话 | Codex 智能体对话中上传的图片附件现在会在对话中正确渲染预览，点击后通过共享图片查看器打开，不再出现重复预览。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
