@@ -974,6 +974,102 @@ Creates a Feishu agent powered by an AgentKit Runtime directly from Studio. Afte
   The Feishu bot's App Secret is used only for the current deployment and is not written to generated source, workflows, or logs. Deployment can be cancelled during the process; cancellation stops the task and cleans up the created Runtime.
 </Note>
 
+## Skill Center
+
+The "Skills" page in the sidebar provides skill space management and Dev Sandbox skill generation. Here you can create and manage skill spaces, upload and browse skills, and generate new skills or optimize existing ones from natural-language descriptions using the Dev Sandbox. Skill generation uses a dedicated AgentKit DevEnv Tool and is independent of the CodeEnv-based Skill creation mode in "Use built-in agents and Skill creation."
+
+### Prerequisites
+
+Skill space management and generation operations are performed by the Studio server using its own Volcengine credentials; the browser never touches them. For local startup, provide access through `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY`; for VeFaaS deployments, use the IAM Role bound to the function.
+
+Dev Sandbox skill generation requires an administrator to configure an AgentKit DevEnv Tool in the `Ready` state. For local startup, specify the Tool ID via the `SANDBOX_DEV` environment variable; for VeFaaS deployments, it is auto-created or reused via `--sandbox-dev-tool-id`. This Tool is supported only for Volcengine deployments. When not configured, skill space management and upload remain available, but the "Create skill" and "Optimize" actions show "Dev Sandbox not configured" and are disabled.
+
+<Note>
+  Dev Sandbox skill generation is available only to `developer` and `admin` roles. Skill space browsing is available to all signed-in users, but non-admins can only see skill spaces they created.
+</Note>
+
+### Manage skill spaces
+
+Skill spaces are loaded by region and support filtering by name. Administrators can see all skill spaces visible to the current account across all regions; non-admins see only spaces they created.
+
+| Action | Description |
+| :--- | :--- |
+| Create space | Provide a name (up to 128 characters) and an optional description (up to 1024 characters), select a region, and create. The creator is recorded in the space's tags. |
+| Edit space | Modify the space name and description. |
+| Delete space | All skills in the space must be deleted before the space can be deleted; if skills remain, a prompt appears asking to remove them first. |
+
+### Manage skills
+
+After entering a skill space, you can browse all skills within it and filter by name. Each skill supports the following actions:
+
+| Action | Description |
+| :--- | :--- |
+| View files | Displays the complete file list as a file tree; `SKILL.md` content is previewed directly in the page. |
+| Download ZIP | Downloads the skill's complete file package as a ZIP archive. |
+| Optimize | Uses the Dev Sandbox to optimize an existing skill, producing an improved version that can overwrite the original. Requires the Dev Sandbox to be configured. |
+| Delete | Requires confirmation before deletion. Deleting a skill affects all spaces that reference it. |
+| Local upload | Upload a ZIP file to the current skill space. The ZIP file must not exceed 20 MiB; file format, count, and path safety are validated before upload. |
+
+<Note>
+  When uploading a ZIP, Studio checks that the archive contains `SKILL.md` and validates file count and path safety. Full frontmatter and skill format validation is performed by ADK at load time. A validation function is available to pre-check ZIP contents before upload.
+</Note>
+
+### Generate skills with the Dev Sandbox
+
+Selecting "Create skill" on a skill space page opens the Dev Sandbox skill generation workbench. The workbench creates an independent development sandbox session via the DevEnv Tool and generates a `SKILL.md` and associated files in ADK skill format from a natural-language description.
+
+#### Generation configuration
+
+| Setting | Description |
+| :--- | :--- |
+| Goal | Describe what you want the skill to accomplish in natural language, up to 20,000 characters. |
+| Skill name | Optional. Must contain only lowercase letters, digits, and hyphens, up to 64 characters; auto-generated when left blank. |
+| Generation groups | Each group starts an independent Dev Sandbox session. Up to 3 groups can be added; each selects a model and style to generate candidate skills in parallel. |
+
+Available style presets for each group:
+
+| Style | Description |
+| :--- | :--- |
+| Concise | Generates short, directly actionable instructions. |
+| Strict | Prioritizes robust constraints, explicit validation, safe failure modes, and edge cases. |
+| Tutorial | Clear sequencing with small concrete examples. |
+| Automation | Optimized for repeatable automation, deterministic steps, and minimal manual intervention. |
+| Custom | Describe your own expression style, rigor level, or output preferences. |
+
+The model list is read from the DevEnv Tool configuration; a model ID can also be entered manually.
+
+#### Generation workflow
+
+<Steps>
+  <Step title="Enter goal and configuration">
+    In the generation workbench, enter the goal description, an optional Skill name, and select a model and style for each candidate group.
+  </Step>
+  <Step title="Generate candidates">
+    Click "Generate" to start an independent Dev Sandbox session for each group in parallel. Activity records are shown in real time during generation, including status, reasoning content, and tool calls.
+  </Step>
+  <Step title="Validation and auto-repair">
+    After generation completes, Studio validates the skill format. If validation fails due to format issues (such as missing `SKILL.md`, non-compliant frontmatter, or mismatched directory name), auto-repair runs up to 2 times; manual re-repair is available after auto-repair is exhausted.
+  </Step>
+  <Step title="Preview and refine">
+    Validated candidates display the complete file tree. You can enter follow-up adjustment instructions in the input box to iteratively refine the current candidate.
+  </Step>
+  <Step title="Download or publish">
+    After generation completes, download the skill as a ZIP or publish it directly to the current skill space. New skills are published as new skills; when optimizing an existing skill, you can choose to overwrite the original.
+  </Step>
+</Steps>
+
+<Note>
+  Dev Sandbox sessions have a 1-hour time-to-live. Leaving the workbench stops running sessions and releases resources. Refreshing or closing the page during generation does not affect already-started sessions, but keeping the page open is recommended to track progress.
+</Note>
+
+<Warning>
+  Dev Sandbox sessions run in an AgentKit development environment. Generated skill content comes from model output; review the files before publishing to ensure they do not contain sensitive information or inappropriate content.
+</Warning>
+
+#### Optimize an existing skill
+
+When browsing skills in a skill space, you can select "Optimize" for an existing skill. The optimization workflow is similar to creation but uses the existing skill as the source: enter an optimization goal, start a Dev Sandbox session, and generate an improved version. After optimization, you can choose to overwrite the original skill or publish it as a new skill.
+
 ## `veadk studio` options
 
 | Option | Type | Default | Description |
