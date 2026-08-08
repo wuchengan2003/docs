@@ -9,6 +9,8 @@ title: "更新日志"
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
 | Studio 部署 | 创建新 Runtime 部署到 AgentKit 时，支持配置镜像构建使用的云资源：TOS 存储桶、容器镜像仓库（CR）和 CodePipeline。每类资源可选自动创建（默认）、指定名称或选择已有；选择已有时由 Studio 服务端加载当前账号的可用资源列表。所选资源记录在 Runtime 标签中，更新已有 Runtime 时保留原有选择。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能中心 | 侧边栏新增「技能」页面，提供技能空间管理：按地域和名称浏览技能空间，支持新建、编辑和删除空间。管理员可见全部空间，非管理员仅可见自己创建的空间。每个空间中可上传 ZIP 技能包（至多 20 MiB）、浏览文件树、下载 ZIP 和删除技能。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能生成 | 技能中心新增 Dev Sandbox 技能生成：通过 DevEnv Tool 创建独立开发沙箱会话，从自然语言描述生成符合 ADK 格式的技能。支持至多 3 组并行候选方案、模型与风格选择、格式校验自动修复（至多 2 次）、迭代调整以及直接发布到技能空间；还支持对已有技能进行优化并覆盖发布。该能力仅对 `developer` 和 `admin` 角色开放，需要管理员配置 DevEnv Tool。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.0
 
