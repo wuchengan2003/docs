@@ -1081,7 +1081,7 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
 | `--oauth2-user-pool-client-uid` | `str \| None` | `OAUTH2_USER_POOL_CLIENT_ID` | 使用 UID 指定 VeIdentity 用户池客户端。 |
 | `--oauth2-redirect-uri` | `str \| None` | `OAUTH2_REDIRECT_URI`，否则为 `http://{host}:{port}/oauth2/callback` | OAuth2 回调地址。公网部署时必须使用外部可访问的地址。 |
 | `--oauth2-provider` | `str \| None` | `OAUTH2_PROVIDER`；配置用户池时默认为 `veidentity` | SSO provider 标识。 |
-| `--oauth2-provider-label` | `str \| None` | `OAUTH2_PROVIDER_LABEL` | 登录按钮文案。 |
+| `--oauth2-provider-label` | `str \| None` | `OAUTH2_PROVIDER_LABEL` | 登录按钮文案。未设置时，使用 VeIdentity 登录的默认文案按云服务商区分：火山引擎为「火山引擎 Identity」，BytePlus 为「BytePlus Identity」。 |
 | `--auth-mode` | `frontend \| gateway` | `frontend` | `frontend` 由 Studio 处理登录；`gateway` 信任上游网关转发的 JWT 身份。也可通过 `VEADK_FRONTEND_AUTH_MODE` 设置。 |
 | `--admin` | `str \| None` | `None` | 逗号分隔的管理员名单（用户名或 OAuth 邮箱）。省略 `--admin` 与 `--developer` 时，所有登录用户都按 `admin` 处理。也可通过 `VEADK_STUDIO_ADMINS` 设置。 |
 | `--developer` | `str \| None` | `None` | 逗号分隔的开发者名单（用户名或 OAuth 邮箱）。也可通过 `VEADK_STUDIO_DEVELOPERS` 设置。 |

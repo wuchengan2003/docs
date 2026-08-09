@@ -1081,7 +1081,7 @@ When browsing skills in a skill space, you can select "Optimize" for an existing
 | `--oauth2-user-pool-client-uid` | `str \| None` | `OAUTH2_USER_POOL_CLIENT_ID` | Select the user-pool client by UID. |
 | `--oauth2-redirect-uri` | `str \| None` | `OAUTH2_REDIRECT_URI`, otherwise `http://{host}:{port}/oauth2/callback` | OAuth2 callback. Public deployments require an externally reachable URL. |
 | `--oauth2-provider` | `str \| None` | `OAUTH2_PROVIDER`; defaults to `veidentity` with a pool | SSO provider identifier. |
-| `--oauth2-provider-label` | `str \| None` | `OAUTH2_PROVIDER_LABEL` | Login-button label. |
+| `--oauth2-provider-label` | `str \| None` | `OAUTH2_PROVIDER_LABEL` | Login-button label. When unset, the default label for VeIdentity login follows the cloud provider: "火山引擎 Identity" for volcengine and "BytePlus Identity" for byteplus. |
 | `--auth-mode` | `frontend \| gateway` | `frontend` | `frontend` handles login in Studio; `gateway` trusts JWT identity forwarded by an upstream gateway. It also reads `VEADK_FRONTEND_AUTH_MODE`. |
 | `--admin` | `str \| None` | `None` | Comma-separated admin list (usernames or OAuth emails). Omitting both `--admin` and `--developer` treats every signed-in user as an `admin`. Also reads `VEADK_STUDIO_ADMINS`. |
 | `--developer` | `str \| None` | `None` | Comma-separated developer list (usernames or OAuth emails). Also reads `VEADK_STUDIO_DEVELOPERS`. |
