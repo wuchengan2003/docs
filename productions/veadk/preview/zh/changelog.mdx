@@ -14,6 +14,7 @@ title: "更新日志"
 | Studio 技能生成 | 技能中心新增 Dev Sandbox 技能生成：通过 DevEnv Tool 创建独立开发沙箱会话，从自然语言描述生成符合 ADK 格式的技能。支持至多 3 组并行候选方案、模型与风格选择、格式校验自动修复（至多 2 次）、迭代调整以及直接发布到技能空间；还支持对已有技能进行优化并覆盖发布。该能力仅对 `developer` 和 `admin` 角色开放，需要管理员配置 DevEnv Tool。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 对话模式 | 新会话模式选择器移除「创建 Skill」模式，技能创建统一通过技能中心使用 Dev Sandbox 完成。`veadk frontend`、`veadk studio`、`veadk studio deploy` 和 `veadk studio update` 移除 `--sandbox-skill-creator-tool-id`（`--skill-creator-tool-id`）选项和 `SANDBOX_SKILL_CREATOR` 环境变量。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 系统信息 | 账号菜单中的「系统信息」从弹窗改为独立页面，除 Studio 版本外，新增沙箱信息（展示已配置的 Codex、OpenClaw、Hermes 和 Dev Sandbox Tool ID）和用户池信息（展示当前 Studio 关联的 VeIdentity 用户池名称、UID、域名和地域）。该页面仅对具有智能体管理权限的用户开放，资源标识为只读。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 登录 | 使用 BytePlus 作为云服务商并启用 VeIdentity 登录时，登录按钮默认文案改为「BytePlus Identity」；火山引擎模式下仍为「火山引擎 Identity」。显式设置 `--oauth2-provider-label`（或 `OAUTH2_PROVIDER_LABEL`）时始终优先使用自定义文案。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.0
 
