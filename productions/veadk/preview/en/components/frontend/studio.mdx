@@ -692,15 +692,12 @@ When connecting to a Runtime, Studio first probes read-only endpoints (agent lis
 
 This lets you decide whether to refresh, sign in again, inspect the Runtime's readiness, or adjust the network deployment mode without reading logs.
 
-## Use built-in agents and Skill creation
+## Use built-in agents
 
-The new-conversation view provides three modes visible to all users:
+The new-conversation view provides two modes visible to all users:
 
 - **Agent chat**: starts a normal multi-turn conversation with the selected agent. When the input is empty, starter prompts appear for quick access to common questions.
 - **Built-in agent**: uses a platform-provided agent for conversation. You can select Codex, which starts a multi-turn conversation in an independent AgentKit CodeEnv Session. Exiting deletes the cloud Session and does not add it to ordinary session history.
-- **Skill creation**: generates two Skill candidates in parallel. You can compare and preview the results, download a ZIP, or add one to AgentKit.
-
-Skill creation is available only to `developer` and `admin` users. Each candidate uses a separate Session, and Studio checks its `SKILL.md`, file count, size, and paths before packaging. Candidate Sessions expire after 30 minutes and are deleted immediately when the user starts over or leaves the task. If candidate or credential provisioning fails, Studio displays a credential-safe error that helps identify Tool-state, region, or model-credential problems.
 
 Follow-up messages in an ordinary conversation continue to use the existing message history for that session; only a new session starts with empty context. When a Runtime cannot be connected, Studio distinguishes insufficient permission, an unreachable Agent Server, a private unreachable Runtime, and authentication failure, and displays the corresponding troubleshooting direction.
 
@@ -710,11 +707,10 @@ Follow-up messages in an ordinary conversation continue to use the existing mess
 
 ### Local configuration
 
-Before using built-in agents or Skill creation locally, prepare two AgentKit CodeEnv Tools in the `Ready` state and configure their IDs:
+Before using built-in agents locally, prepare one AgentKit CodeEnv Tool in the `Ready` state and configure its ID:
 
 ```bash
 export SANDBOX_CHAT_CODEX="your-chat-code-env-tool-id"
-export SANDBOX_SKILL_CREATOR="your-skill-code-env-tool-id"
 
 veadk studio --agents-dir ./agents --open
 ```
@@ -722,14 +718,10 @@ veadk studio --agents-dir ./agents --open
 | Environment variable | Default | Description |
 | :--- | :--- | :--- |
 | `SANDBOX_CHAT_CODEX` | — | AgentKit CodeEnv Tool ID for built-in agents; required when using this mode locally. |
-| `SANDBOX_SKILL_CREATOR` | — | AgentKit CodeEnv Tool ID for Skill creation; required when using this mode locally. |
-| `AGENTKIT_SANDBOX_REGION` | `cn-beijing` | Preferred region for creating Sessions and looking up Tools for built-in agents and Skill creation; supports `cn-beijing` and `cn-shanghai`. |
-| `VEADK_SKILL_CREATOR_TOS_BUCKET` | AgentKit account default bucket | TOS bucket used for published Skill artifacts. |
-| `VEADK_SKILL_CREATOR_TOS_PREFIX` | `agentkit/skills` | TOS object-key prefix for published artifacts. |
-| `VEADK_SKILL_CREATOR_PROJECT_NAME` | — | Project name used when creating a Skill. |
+| `AGENTKIT_SANDBOX_REGION` | `cn-beijing` | Preferred region for creating Sessions and looking up Tools for built-in agents; supports `cn-beijing` and `cn-shanghai`. |
 
 <Note>
-  When creating a Session or looking up the Tool for built-in agents or Skill creation, Studio first tries the region set by `AGENTKIT_SANDBOX_REGION` (default `cn-beijing`); if that region reports the resource as not found, it automatically falls back to the other supported region (Beijing ↔ Shanghai) and continues. Other errors do not trigger fallback. When deployed to VeFaaS, this region matches `--region`.
+  When creating a Session or looking up the Tool for built-in agents, Studio first tries the region set by `AGENTKIT_SANDBOX_REGION` (default `cn-beijing`); if that region reports the resource as not found, it automatically falls back to the other supported region (Beijing ↔ Shanghai) and continues. Other errors do not trigger fallback. When deployed to VeFaaS, this region matches `--region`.
 </Note>
 
 
@@ -976,7 +968,7 @@ Creates a Feishu agent powered by an AgentKit Runtime directly from Studio. Afte
 
 ## Skill Center
 
-The "Skills" page in the sidebar provides skill space management and Dev Sandbox skill generation. Here you can create and manage skill spaces, upload and browse skills, and generate new skills or optimize existing ones from natural-language descriptions using the Dev Sandbox. Skill generation uses a dedicated AgentKit DevEnv Tool and is independent of the CodeEnv-based Skill creation mode in "Use built-in agents and Skill creation."
+The "Skills" page in the sidebar provides skill space management and Dev Sandbox skill generation. Here you can create and manage skill spaces, upload and browse skills, and generate new skills or optimize existing ones from natural-language descriptions using the Dev Sandbox. Skill generation uses a dedicated AgentKit DevEnv Tool and is independent of the CodeEnv-based built-in agent mode.
 
 ### Prerequisites
 
@@ -1129,7 +1121,7 @@ On success, the terminal prints the public URL and VeFaaS application ID. Openin
 
 The deployer's long-lived access and secret keys are not written to the VeFaaS application environment. Deployed Studio uses temporary credentials from its bound IAM role.
 
-When `--sandbox-chat-codex-tool-id` and `--sandbox-skill-creator-tool-id` are omitted, deployment creates the required AgentKit Tools in the region selected by `--region`, one for built-in agents and one for Skill creation; Volcengine deployments also create an additional DevEnv Tool for the Dev Sandbox. Sessions created by these Tools use the same region as the VeFaaS Function and API Gateway. Model credentials are configured only on the respective Tools; the VeFaaS Function receives only the Tool IDs. You can pass existing Tool IDs when suitable Tools are already available in the same region.
+When `--sandbox-chat-codex-tool-id` is omitted, deployment creates the AgentKit CodeEnv Tool for built-in agents in the region selected by `--region`; Volcengine deployments also create an additional DevEnv Tool for the Dev Sandbox. Sessions created by these Tools use the same region as the VeFaaS Function and API Gateway. Model credentials are configured only on the respective Tools; the VeFaaS Function receives only the Tool IDs. You can pass existing Tool IDs when suitable Tools are already available in the same region.
 
 The model, endpoint, and candidate regions for sandbox Tools differ by cloud provider: Volcengine uses the `doubao-seed-2-1-pro-260628` model with `https://ark.cn-beijing.volces.com/api/v3`, and candidate regions `cn-beijing` and `cn-shanghai`; BytePlus uses the `seed-2-0-lite-260228` model with `https://ark.ap-southeast.bytepluses.com/api/v3`, and candidate region `ap-southeast-1`. `--sandbox-dev-tool-id` is supported only for Volcengine deployments and raises an error when passed during a BytePlus deployment.
 
@@ -1182,7 +1174,6 @@ veadk studio deploy \
 | `--from-source` | Boolean flag | `false` | Build and deploy a wheel from the current checkout, including uncommitted changes. Use it for unreleased validation, not together with a pinned release workflow. |
 | `--keep-failed-deploy` | Boolean flag | `false` | Keep created VeFaaS Application and Function resources when deployment fails, so release logs can be inspected in the console. |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for built-in agents; also read from `SANDBOX_CHAT_CODEX`. |
-| `--sandbox-skill-creator-tool-id`, `--skill-creator-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for Skill creation; also read from `SANDBOX_SKILL_CREATOR`. |
 | `--sandbox-dev-tool-id` | `str \| None` | Auto-create | AgentKit DevEnv Tool ID for the Dev Sandbox; supported only for Volcengine deployments, also read from `SANDBOX_DEV`. |
 | `--studio-update-bucket` | `str` | `veadk-studio` | TOS bucket holding immutable Studio release bundles; written to the function env as `VEADK_STUDIO_UPDATE_BUCKET`. Also read from `VEADK_STUDIO_UPDATE_BUCKET`. |
 | `--studio-update-prefix` | `str` | `veadk/studio/main` | TOS object prefix for the Studio main release channel. Also read from `VEADK_STUDIO_UPDATE_PREFIX`. |
@@ -1235,7 +1226,6 @@ When `--region` and `--project` are omitted, the command searches Beijing, Shang
 | `--site-title` | `str \| None` | Preserve deployed value | Replace the Studio name only when supplied. |
 | `--site-logo` | `str \| None` | Preserve deployed value | Replace the Studio logo only when supplied. |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | Preserve deployed value | Replace the built-in-agent Tool ID only when supplied. |
-| `--sandbox-skill-creator-tool-id`, `--skill-creator-tool-id` | `str \| None` | Preserve deployed value | Replace the Skill-creation Tool ID only when supplied. |
 | `--sandbox-dev-tool-id` | `str \| None` | Preserve deployed value | Replace the Dev Sandbox Tool ID only when supplied; supported only for Volcengine deployments. |
 | `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | Access key used for the update. |
 | `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | Secret key used for the update. |
@@ -1280,8 +1270,18 @@ Studio restricts Runtime visibility according to the signed-in account. Existing
 </Warning>
 
 
-## View the system version
+## View system information
 
-After signing in, the account menu at the bottom of the sidebar offers a "System info" entry. Selecting it opens a dialog showing the Studio "Current version".
+After signing in, the account menu at the bottom of the sidebar offers a "System info" entry. Selecting it opens the system information page, which displays the Studio version, sandbox information, and user pools. This page is available only to users with agent-management access, and all resource identifiers are read-only.
 
-When Studio is started locally or built and deployed from source, the version is the installed VeADK version. When Studio is switched to a cloud Frontend release, the corresponding release version is shown. If no version is available, "—" is displayed.
+### General
+
+Displays the Studio "Current version". When Studio is started locally or built and deployed from source, the version is the installed VeADK version. When Studio is switched to a cloud Frontend release, the corresponding release version is shown. If no version is available, "—" is displayed.
+
+### Sandbox information
+
+Lists the sandbox Tools configured in Studio and their IDs, including Codex Sandbox (`SANDBOX_CHAT_CODEX`), OpenClaw Sandbox (`SANDBOX_CHAT_OPENCLAW`), Hermes Sandbox (`SANDBOX_CHAT_HERMES`), and Dev Sandbox (`SANDBOX_DEV`). Tools without a configured ID show "Not configured".
+
+### User pools
+
+Lists the VeIdentity user pools associated with the current Studio, showing name, UID, domain, and region. When running locally without Volcengine credentials configured, no user pools are displayed.

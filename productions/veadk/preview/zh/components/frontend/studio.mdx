@@ -692,15 +692,12 @@ print(response.json())
 
 这样无需查看日志即可判断应刷新、重新登录，检查 Runtime 就绪状态，还是调整网络部署模式。
 
-## 使用内置智能体和 Skill 创建
+## 使用内置智能体
 
-新会话支持三种模式，模式选择器对所有用户可见：
+新会话支持两种模式，模式选择器对所有用户可见：
 
 - **智能体对话**：与当前选中的智能体进行普通多轮对话。空输入时显示快捷提示，可点击快速填入常用提问。
 - **内置智能体**：使用平台提供的智能体进行对话。当前可选 Codex 智能体，在独立的 AgentKit CodeEnv Session 中进行多轮对话；退出后删除云端 Session，内容不写入普通历史会话。
-- **Skill 创建**：并行生成两个 Skill 候选方案，完成后可对比、预览、下载 ZIP 或添加到 AgentKit。
-
-Skill 创建仅对 `developer` 和 `admin` 开放。每个候选使用独立 Session，生成结果在打包前会检查 `SKILL.md`、文件数量、大小和路径安全。候选 Session 的有效期为 30 分钟；重新创建或离开任务时会立即清理。创建或凭据准备失败时，Studio 会展示不包含凭据的错误信息，便于定位 Tool 状态、区域或模型凭据问题。
 
 普通对话在同一会话中发送后续消息时会继续使用已有消息历史；只有新建会话才会从空上下文开始。若 Runtime 无法连接，Studio 会区分权限不足、Agent Server 不可达、私网 Runtime 不可达和鉴权失败，并显示对应的排查方向。
 
@@ -710,11 +707,10 @@ Skill 创建仅对 `developer` 和 `admin` 开放。每个候选使用独立 Ses
 
 ### 本地配置
 
-本地使用内置智能体和 Skill 创建前，分别准备两个处于 `Ready` 状态的 AgentKit CodeEnv Tool，并配置其 ID：
+本地使用内置智能体前，准备一个处于 `Ready` 状态的 AgentKit CodeEnv Tool，并配置其 ID：
 
 ```bash
 export SANDBOX_CHAT_CODEX="your-chat-code-env-tool-id"
-export SANDBOX_SKILL_CREATOR="your-skill-code-env-tool-id"
 
 veadk studio --agents-dir ./agents --open
 ```
@@ -722,14 +718,10 @@ veadk studio --agents-dir ./agents --open
 | 环境变量 | 默认值 | 说明 |
 | :--- | :--- | :--- |
 | `SANDBOX_CHAT_CODEX` | — | 内置智能体使用的 AgentKit CodeEnv Tool ID；本地使用该模式时必填。 |
-| `SANDBOX_SKILL_CREATOR` | — | Skill 创建使用的 AgentKit CodeEnv Tool ID；本地使用该模式时必填。 |
-| `AGENTKIT_SANDBOX_REGION` | `cn-beijing` | 内置智能体和 Skill 创建在创建 Session、查找 Tool 时优先使用的地域，支持 `cn-beijing` 与 `cn-shanghai`。 |
-| `VEADK_SKILL_CREATOR_TOS_BUCKET` | AgentKit 账户默认 Bucket | 发布 Skill 产物使用的 TOS Bucket。 |
-| `VEADK_SKILL_CREATOR_TOS_PREFIX` | `agentkit/skills` | 发布产物的 TOS 对象 Key 前缀。 |
-| `VEADK_SKILL_CREATOR_PROJECT_NAME` | — | 创建 Skill 时使用的项目名称。 |
+| `AGENTKIT_SANDBOX_REGION` | `cn-beijing` | 内置智能体在创建 Session、查找 Tool 时优先使用的地域，支持 `cn-beijing` 与 `cn-shanghai`。 |
 
 <Note>
-  创建内置智能体或 Skill 的 Session、查找对应 Tool 时，Studio 会优先使用 `AGENTKIT_SANDBOX_REGION` 指定的地域（默认 `cn-beijing`）；若该地域返回资源不存在，会自动回退到另一个支持地域（北京 ↔ 上海）继续操作，其他错误不会触发回退。部署到 VeFaaS 时该地域与 `--region` 一致。
+  创建内置智能体的 Session、查找对应 Tool 时，Studio 会优先使用 `AGENTKIT_SANDBOX_REGION` 指定的地域（默认 `cn-beijing`）；若该地域返回资源不存在，会自动回退到另一个支持地域（北京 ↔ 上海）继续操作，其他错误不会触发回退。部署到 VeFaaS 时该地域与 `--region` 一致。
 </Note>
 
 
@@ -976,7 +968,7 @@ PR 评审工作流需要在仓库中配置以下 GitHub Secrets：
 
 ## 技能中心
 
-侧边栏的「技能」页面提供技能空间管理和 Dev Sandbox 技能生成。在此页面可以创建和管理技能空间、上传和浏览技能、以及通过 Dev Sandbox 从自然语言描述生成新技能或优化已有技能。生成技能使用独立的 AgentKit DevEnv Tool，与「使用内置智能体和 Skill 创建」中的 CodeEnv 模式互不影响。
+侧边栏的「技能」页面提供技能空间管理和 Dev Sandbox 技能生成。在此页面可以创建和管理技能空间、上传和浏览技能、以及通过 Dev Sandbox 从自然语言描述生成新技能或优化已有技能。生成技能使用独立的 AgentKit DevEnv Tool，与内置智能体的 CodeEnv 模式互不影响。
 
 ### 前提条件
 
@@ -1129,7 +1121,7 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 部署者的长期 AK/SK 不会写入 VeFaaS 应用环境变量。已部署的 Studio 使用绑定 IAM Role 的临时凭证访问火山引擎服务。
 
-未指定 `--sandbox-chat-codex-tool-id` 与 `--sandbox-skill-creator-tool-id` 时，部署命令会在 `--region` 指定的地域创建所需的 AgentKit Tool，分别用于内置智能体和 Skill 创建；火山引擎部署还会额外创建一个 DevEnv Tool 用于开发沙箱。这些 Tool 创建的 Session 与 VeFaaS Function、API Gateway 保持同一地域。模型凭据只配置在各自 Tool 中，VeFaaS Function 只接收 Tool ID。若已有符合要求且地域一致的 Tool，可通过参数直接复用。
+未指定 `--sandbox-chat-codex-tool-id` 时，部署命令会在 `--region` 指定的地域创建内置智能体使用的 AgentKit CodeEnv Tool；火山引擎部署还会额外创建一个 DevEnv Tool 用于开发沙箱。这些 Tool 创建的 Session 与 VeFaaS Function、API Gateway 保持同一地域。模型凭据只配置在各自 Tool 中，VeFaaS Function 只接收 Tool ID。若已有符合要求且地域一致的 Tool，可通过参数直接复用。
 
 沙箱 Tool 使用的模型、接入地址和候选地域按云服务商区分：火山引擎使用 `doubao-seed-2-1-pro-260628` 模型与 `https://ark.cn-beijing.volces.com/api/v3`，候选地域为 `cn-beijing` 与 `cn-shanghai`；BytePlus 使用 `seed-2-0-lite-260228` 模型与 `https://ark.ap-southeast.bytepluses.com/api/v3`，候选地域为 `ap-southeast-1`。`--sandbox-dev-tool-id` 仅支持火山引擎部署，在 BytePlus 部署中传入会报错。
 
@@ -1182,7 +1174,6 @@ veadk studio deploy \
 | `--from-source` | `bool` 标志 | `false` | 从当前源码目录构建 wheel 后部署，包含未提交改动；用于验证未发布版本，不应与 `--veadk-version` 的发布版本工作流混用。 |
 | `--keep-failed-deploy` | `bool` 标志 | `false` | 部署失败时保留已创建的 VeFaaS Application 与 Function 资源，便于在控制台查看发布日志。 |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | 自动创建 | 内置智能体使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_CHAT_CODEX` 设置。 |
-| `--sandbox-skill-creator-tool-id`、`--skill-creator-tool-id` | `str \| None` | 自动创建 | Skill 创建使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_SKILL_CREATOR` 设置。 |
 | `--sandbox-dev-tool-id` | `str \| None` | 自动创建 | 开发沙箱使用的 AgentKit DevEnv Tool ID；仅支持火山引擎部署，也可通过 `SANDBOX_DEV` 设置。 |
 | `--studio-update-bucket` | `str` | `veadk-studio` | 存放 Studio 不可变发布包的 TOS Bucket；部署时写入函数环境变量 `VEADK_STUDIO_UPDATE_BUCKET`。也可通过 `VEADK_STUDIO_UPDATE_BUCKET` 设置。 |
 | `--studio-update-prefix` | `str` | `veadk/studio/main` | Studio 主发布渠道的 TOS 对象前缀。也可通过 `VEADK_STUDIO_UPDATE_PREFIX` 设置。 |
@@ -1235,7 +1226,6 @@ veadk studio update --vefaas-app-name "veadk-studio"
 | `--site-title` | `str \| None` | 保留云上值 | 显式传入时替换 Studio 名称。 |
 | `--site-logo` | `str \| None` | 保留云上值 | 显式传入时替换 Studio Logo。 |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换内置智能体使用的 Tool ID。 |
-| `--sandbox-skill-creator-tool-id`、`--skill-creator-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换 Skill 创建使用的 Tool ID。 |
 | `--sandbox-dev-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换开发沙箱使用的 Tool ID；仅支持火山引擎部署。 |
 | `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | 更新操作使用的 Access Key。 |
 | `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | 更新操作使用的 Secret Key。 |
@@ -1280,8 +1270,18 @@ Studio 根据登录账号限制 Runtime 的可见范围；没有创建者记录�
 </Warning>
 
 
-## 查看系统版本
+## 查看系统信息
 
-登录后，侧边栏底部的账号菜单提供「系统信息」入口，选择后弹出对话框展示 Studio 的「当前版本」。
+登录后，侧边栏底部的账号菜单提供「系统信息」入口，选择后进入系统信息页面，展示 Studio 的版本、沙箱信息和用户池。该页面仅对具有智能体管理权限的用户开放，所有资源标识均为只读。
 
-本地启动或从源码构建部署时，版本号取自已安装的 VeADK 版本。当 Studio 切换到云端 Frontend 发布版本时，显示对应的发布版本号；未取到版本信息时显示「—」。
+### 通用
+
+显示 Studio 的「当前版本」。本地启动或从源码构建部署时，版本号取自已安装的 VeADK 版本。当 Studio 切换到云端 Frontend 发布版本时，显示对应的发布版本号；未取到版本信息时显示「—」。
+
+### 沙箱信息
+
+列出 Studio 已配置的沙箱 Tool 及其 ID，包括 Codex Sandbox（`SANDBOX_CHAT_CODEX`）、OpenClaw Sandbox（`SANDBOX_CHAT_OPENCLAW`）、Hermes Sandbox（`SANDBOX_CHAT_HERMES`）和 Dev Sandbox（`SANDBOX_DEV`）。未配置的 Tool 显示「未配置」。
+
+### 用户池
+
+列出当前 Studio 所在的 VeIdentity 用户池，显示名称、UID、域名和地域。本地启动且未配置火山引擎凭证时不显示用户池。
