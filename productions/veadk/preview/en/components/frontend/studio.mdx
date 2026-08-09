@@ -49,6 +49,9 @@ The logo can be up to 5 MB in PNG, JPEG, GIF, WebP, AVIF, or ICO format. The equ
 <Note>
   When deployment enters the build-image stage, Studio streams build logs in real time within the deployment progress card. Logs are redacted and length-bounded on the server before being sent to the browser. The panel shows the sync status (syncing, synced, or read failed) and line count, and can be expanded, collapsed, and copied; on a build failure the failure detail is appended to the log. Log syncing depends on the Volcengine credentials used for deployment; if logs cannot be read, the panel shows a failed status without interrupting the deployment. Both custom creation and code-package deployment support this.
 </Note>
+<Note>
+  While a deployment is in progress, the workspace detail page focuses on the deployment progress: it keeps the agent heading and a scrollable deployment panel visible and hides the other detail tabs and content; the normal detail tabs return after the deployment ends. Custom creation, code-package deployment, and updating a deployed agent all follow this behavior.
+</Note>
 
 <Note>
   When deploying to AgentKit, the root agent description is automatically normalized to a Runtime-compliant single-line description (at most 255 bytes, with line breaks, control characters, and unsafe symbols removed); the full description is kept in the project and is only used to produce the Runtime description. If the normalized description is rejected by Runtime, Studio retries creation without the description, leaving other configuration unaffected.
