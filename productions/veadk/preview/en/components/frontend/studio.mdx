@@ -856,6 +856,10 @@ The "Automation" page in the Studio sidebar provides automation integrations for
 
 Globally installs the bundled VeADK and AgentKit Skills to locally installed coding-agent clients so they can build, debug, deploy, and operate the platform while developing VeADK applications. This integration is badged "Local": detection and installation run only on the machine hosting Studio and do not access cloud resources.
 
+<Note>
+The "Configure Coding Agents" card is enabled only when Studio is accessed at `http://127.0.0.1`. When accessed through any other hostname (including `localhost` or a deployed VeFaaS public URL), the card appears disabled with a "仅本地部署可用" tooltip.
+</Note>
+
 Open the "Configure Coding Agents" card on the Automation page to detect installed coding-agent clients on the current operating system (macOS, Linux, Windows) and list the bundled Skills available for global installation.
 
 Supported coding-agent clients:
