@@ -17,6 +17,10 @@ title: "更新日志"
 | Studio 登录 | 使用 BytePlus 作为云服务商并启用 VeIdentity 登录时，登录按钮默认文案改为「BytePlus Identity」；火山引擎模式下仍为「火山引擎 Identity」。显式设置 `--oauth2-provider-label`（或 `OAUTH2_PROVIDER_LABEL`）时始终优先使用自定义文案。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | 部署进行期间，工作台详情页聚焦于部署进度：保留智能体标题并展示可滚动的部署进度面板，隐藏其余详情标签与内容；部署结束后恢复显示常规详情标签。自定义创建、代码包部署与更新已部署智能体均遵循该行为。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 自动化 | 「配置 Coding Agents」卡片改为仅在通过 `http://127.0.0.1` 访问 Studio 时启用；通过其他主机名（包括 `localhost` 或已部署的 VeFaaS 公网地址）访问时，卡片显示为禁用状态并提示「仅本地部署可用」。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 部署成功后，Studio 在自动连接 Runtime 时最多等待 60 秒重试探测端点，减少「部署完成，暂未连接」状态的出现频率。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 部署失败或取消后，进度卡片新增「返回编辑」按钮，可直接回到草稿调整配置后重新发起部署。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能生成 | 技能生成工作台改进界面布局：新增「基本信息」分区，「目标」字段标记为必填；「生成配置」改为「生成方案」（优化时为「优化方案」），各方案中的模型与风格标记为必填项。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能中心 | 技能中心创建入口由「Dev Sandbox 创建」改为「自动创建」，空状态提示同步更新。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.0
 

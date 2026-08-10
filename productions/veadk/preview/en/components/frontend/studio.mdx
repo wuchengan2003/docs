@@ -458,7 +458,7 @@ When you select VPC or Public + VPC, you must provide the VPC ID and subnet ID.
 A private VPC runtime does not return a public data-plane address after deployment. Studio reaches it through the server-side runtime proxy, and the data-plane API key stays server-side and is never delivered to the browser. This is the same server-side runtime proxy described in "Select a cloud Runtime".
 
 <Note>
-  After a deployment completes, Studio automatically connects to the newly created runtime. If the runtime deployed successfully but Studio cannot reach it yet (the gateway domain may still be propagating, or the current network or DNS cannot access the runtime), the deployment task is marked "Deployed, not yet connected" and the progress card with its message stays visible. You can retry the connection from Manage Agents.
+  After a deployment completes, Studio automatically connects to the newly created runtime. Studio retries probing the runtime endpoint for up to 60 seconds before timing out. If the runtime deployed successfully but Studio still cannot reach it after the timeout (the gateway domain may still be propagating, or the current network or DNS cannot access the runtime), the deployment task is marked "Deployed, not yet connected" and the progress card with its message stays visible. You can retry the connection from Manage Agents.
 </Note>
 
 ## Manage agents
@@ -486,7 +486,7 @@ The management page can display runtime environment-variable values. Restrict St
 The agent workspace unifies deployed Runtimes and local drafts. Each deployed agent shows its current version number and a deployment status: deploying, update pending, not yet published, failed, or cancelled. A deployed agent can be edited directly in the workspace and updated on the same Runtime without creating a new deployment.
 
 <Note>
-  When a build or deployment stage fails, Studio shows the complete error message returned by the service, expanded by default and copyable, so you can locate the problem directly. Deployment and update failures can also be retried from the error panel.
+  When a build or deployment stage fails, Studio shows the complete error message returned by the service, expanded by default and copyable, so you can locate the problem directly. Deployment and update failures can also be retried from the error panel. When a deployment fails or is cancelled, the progress card provides a "Return to edit" button that takes you back to the draft so you can adjust the configuration and start a new deployment.
 </Note>
 
 ### Manage drafts
@@ -1017,13 +1017,13 @@ After entering a skill space, you can browse all skills within it and filter by 
 
 Selecting "Create skill" on a skill space page opens the Dev Sandbox skill generation workbench. The workbench creates an independent development sandbox session via the DevEnv Tool and generates a `SKILL.md` and associated files in ADK skill format from a natural-language description.
 
-#### Generation configuration
+#### Generation plan
 
 | Setting | Description |
 | :--- | :--- |
-| Goal | Describe what you want the skill to accomplish in natural language, up to 20,000 characters. |
+| Goal | Required. Describe what you want the skill to accomplish in natural language, up to 20,000 characters. |
 | Skill name | Optional. Must contain only lowercase letters, digits, and hyphens, up to 64 characters; auto-generated when left blank. |
-| Generation groups | Each group starts an independent Dev Sandbox session. Up to 3 groups can be added; each selects a model and style to generate candidate skills in parallel. |
+| Generation plan | Each group starts an independent Dev Sandbox session. Up to 3 groups can be added; each selects a model and style to generate candidate skills in parallel. |
 
 Available style presets for each group:
 
