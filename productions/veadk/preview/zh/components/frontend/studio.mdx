@@ -981,7 +981,7 @@ PR 评审工作流需要在仓库中配置以下 GitHub Secrets：
 
 技能中心的管理和生成操作由 Studio 服务端使用自身配置的火山引擎凭证完成，浏览器不接触凭证。本地启动时通过 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY` 提供访问权限；部署到 VeFaaS 时使用绑定 IAM Role 的临时凭证。
 
-Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit DevEnv Tool。本地启动时通过 `SANDBOX_DEV` 环境变量指定 Tool ID；部署到 VeFaaS 时通过 `--sandbox-dev-tool-id` 自动创建或复用。该 Tool 仅支持火山引擎部署。未配置时，技能空间的管理和上传功能不受影响，但「创建技能」和「优化」入口会显示「管理员未配置 Dev Sandbox」并禁用。
+Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit DevEnv Tool。本地启动时通过 `SANDBOX_DEV` 环境变量指定 Tool ID；部署到 VeFaaS 时通过 `--sandbox-dev-tool-id` 自动创建或复用。未配置时，技能空间的管理和上传功能不受影响，但「创建技能」和「优化」入口会显示「管理员未配置 Dev Sandbox」并禁用。
 
 <Note>
   Dev Sandbox 技能生成仅对 `developer` 和 `admin` 角色开放。技能空间的浏览对所有已登录用户开放，但非管理员仅能看到自己创建的技能空间。
@@ -1128,9 +1128,9 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 部署者的长期 AK/SK 不会写入 VeFaaS 应用环境变量。已部署的 Studio 使用绑定 IAM Role 的临时凭证访问火山引擎服务。
 
-未指定 `--sandbox-chat-codex-tool-id` 时，部署命令会在 `--region` 指定的地域创建内置智能体使用的 AgentKit CodeEnv Tool；火山引擎部署还会额外创建一个 DevEnv Tool 用于开发沙箱。这些 Tool 创建的 Session 与 VeFaaS Function、API Gateway 保持同一地域。模型凭据只配置在各自 Tool 中，VeFaaS Function 只接收 Tool ID。若已有符合要求且地域一致的 Tool，可通过参数直接复用。
+未指定 `--sandbox-chat-codex-tool-id` 时，部署命令会在 `--region` 指定的地域创建内置智能体使用的 AgentKit CodeEnv Tool；同时还会额外创建一个 DevEnv Tool 用于开发沙箱。这些 Tool 创建的 Session 与 VeFaaS Function、API Gateway 保持同一地域。模型凭据只配置在各自 Tool 中，VeFaaS Function 只接收 Tool ID。若已有符合要求且地域一致的 Tool，可通过参数直接复用。
 
-沙箱 Tool 使用的模型、接入地址和候选地域按云服务商区分：火山引擎使用 `doubao-seed-2-1-pro-260628` 模型与 `https://ark.cn-beijing.volces.com/api/v3`，候选地域为 `cn-beijing` 与 `cn-shanghai`；BytePlus 使用 `seed-2-0-lite-260228` 模型与 `https://ark.ap-southeast.bytepluses.com/api/v3`，候选地域为 `ap-southeast-1`。`--sandbox-dev-tool-id` 仅支持火山引擎部署，在 BytePlus 部署中传入会报错。
+沙箱 Tool 使用的模型、接入地址和候选地域按云服务商区分：火山引擎使用 `doubao-seed-2-1-pro-260628` 模型与 `https://ark.cn-beijing.volces.com/api/v3`，候选地域为 `cn-beijing` 与 `cn-shanghai`；BytePlus 使用 `seed-2-0-lite-260228` 模型与 `https://ark.ap-southeast.bytepluses.com/api/v3`，候选地域为 `ap-southeast-1`。
 
 ### 应用内更新
 
@@ -1179,7 +1179,7 @@ veadk studio deploy \
 | `--from-source` | `bool` 标志 | `false` | 从当前源码目录构建 wheel 后部署，包含未提交改动；用于验证未发布版本，不应与 `--veadk-version` 的发布版本工作流混用。 |
 | `--keep-failed-deploy` | `bool` 标志 | `false` | 部署失败时保留已创建的 VeFaaS Application 与 Function 资源，便于在控制台查看发布日志。 |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | 自动创建 | 内置智能体使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_CHAT_CODEX` 设置。 |
-| `--sandbox-dev-tool-id` | `str \| None` | 自动创建 | 开发沙箱使用的 AgentKit DevEnv Tool ID；仅支持火山引擎部署，也可通过 `SANDBOX_DEV` 设置。 |
+| `--sandbox-dev-tool-id` | `str \| None` | 自动创建 | 开发沙箱使用的 AgentKit DevEnv Tool ID；也可通过 `SANDBOX_DEV` 设置。 |
 | `--studio-update-bucket` | `str` | `veadk-studio` | 存放 Studio 不可变发布包的 TOS Bucket；部署时写入函数环境变量 `VEADK_STUDIO_UPDATE_BUCKET`。也可通过 `VEADK_STUDIO_UPDATE_BUCKET` 设置。 |
 | `--studio-update-prefix` | `str` | `veadk/studio/main` | Studio 主发布渠道的 TOS 对象前缀。也可通过 `VEADK_STUDIO_UPDATE_PREFIX` 设置。 |
 | `--apmplus-aid` | `str` | `""` | APMPlus Client aid，用于 Studio 前端埋点。也可通过 `VEADK_STUDIO_APMPLUS_AID` 设置。 |
@@ -1229,7 +1229,7 @@ veadk studio update --vefaas-app-name "veadk-studio"
 | `--site-title` | `str \| None` | 保留云上值 | 显式传入时替换 Studio 名称。 |
 | `--site-logo` | `str \| None` | 保留云上值 | 显式传入时替换 Studio Logo。 |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换内置智能体使用的 Tool ID。 |
-| `--sandbox-dev-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换开发沙箱使用的 Tool ID；仅支持火山引擎部署。 |
+| `--sandbox-dev-tool-id` | `str \| None` | 保留云上值 | 显式传入时替换开发沙箱使用的 Tool ID。 |
 | `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | 更新操作使用的 Access Key。 |
 | `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | 更新操作使用的 Secret Key。 |
 | `--volcengine-session-token` | `str \| None` | `VOLCENGINE_SESSION_TOKEN` | STS 临时凭证的 Session Token，火山引擎模式使用。 |

@@ -981,7 +981,7 @@ The "Skills" page in the sidebar provides skill space management and Dev Sandbox
 
 Skill space management and generation operations are performed by the Studio server using its own Volcengine credentials; the browser never touches them. For local startup, provide access through `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY`; for VeFaaS deployments, use the IAM Role bound to the function.
 
-Dev Sandbox skill generation requires an administrator to configure an AgentKit DevEnv Tool in the `Ready` state. For local startup, specify the Tool ID via the `SANDBOX_DEV` environment variable; for VeFaaS deployments, it is auto-created or reused via `--sandbox-dev-tool-id`. This Tool is supported only for Volcengine deployments. When not configured, skill space management and upload remain available, but the "Create skill" and "Optimize" actions show "Dev Sandbox not configured" and are disabled.
+Dev Sandbox skill generation requires an administrator to configure an AgentKit DevEnv Tool in the `Ready` state. For local startup, specify the Tool ID via the `SANDBOX_DEV` environment variable; for VeFaaS deployments, it is auto-created or reused via `--sandbox-dev-tool-id`. When not configured, skill space management and upload remain available, but the "Create skill" and "Optimize" actions show "Dev Sandbox not configured" and are disabled.
 
 <Note>
   Dev Sandbox skill generation is available only to `developer` and `admin` roles. Skill space browsing is available to all signed-in users, but non-admins can only see skill spaces they created.
@@ -1128,9 +1128,9 @@ On success, the terminal prints the public URL, VeFaaS application ID, Identity 
 
 The deployer's long-lived access and secret keys are not written to the VeFaaS application environment. Deployed Studio uses temporary credentials from its bound IAM role.
 
-When `--sandbox-chat-codex-tool-id` is omitted, deployment creates the AgentKit CodeEnv Tool for built-in agents in the region selected by `--region`; Volcengine deployments also create an additional DevEnv Tool for the Dev Sandbox. Sessions created by these Tools use the same region as the VeFaaS Function and API Gateway. Model credentials are configured only on the respective Tools; the VeFaaS Function receives only the Tool IDs. You can pass existing Tool IDs when suitable Tools are already available in the same region.
+When `--sandbox-chat-codex-tool-id` is omitted, deployment creates the AgentKit CodeEnv Tool for built-in agents in the region selected by `--region`; the deploy command also creates an additional DevEnv Tool for the Dev Sandbox. Sessions created by these Tools use the same region as the VeFaaS Function and API Gateway. Model credentials are configured only on the respective Tools; the VeFaaS Function receives only the Tool IDs. You can pass existing Tool IDs when suitable Tools are already available in the same region.
 
-The model, endpoint, and candidate regions for sandbox Tools differ by cloud provider: Volcengine uses the `doubao-seed-2-1-pro-260628` model with `https://ark.cn-beijing.volces.com/api/v3`, and candidate regions `cn-beijing` and `cn-shanghai`; BytePlus uses the `seed-2-0-lite-260228` model with `https://ark.ap-southeast.bytepluses.com/api/v3`, and candidate region `ap-southeast-1`. `--sandbox-dev-tool-id` is supported only for Volcengine deployments and raises an error when passed during a BytePlus deployment.
+The model, endpoint, and candidate regions for sandbox Tools differ by cloud provider: Volcengine uses the `doubao-seed-2-1-pro-260628` model with `https://ark.cn-beijing.volces.com/api/v3`, and candidate regions `cn-beijing` and `cn-shanghai`; BytePlus uses the `seed-2-0-lite-260228` model with `https://ark.ap-southeast.bytepluses.com/api/v3`, and candidate region `ap-southeast-1`.
 
 ### In-app updates
 
@@ -1179,7 +1179,7 @@ veadk studio deploy \
 | `--from-source` | Boolean flag | `false` | Build and deploy a wheel from the current checkout, including uncommitted changes. Use it for unreleased validation, not together with a pinned release workflow. |
 | `--keep-failed-deploy` | Boolean flag | `false` | Keep created VeFaaS Application and Function resources when deployment fails, so release logs can be inspected in the console. |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for built-in agents; also read from `SANDBOX_CHAT_CODEX`. |
-| `--sandbox-dev-tool-id` | `str \| None` | Auto-create | AgentKit DevEnv Tool ID for the Dev Sandbox; supported only for Volcengine deployments, also read from `SANDBOX_DEV`. |
+| `--sandbox-dev-tool-id` | `str \| None` | Auto-create | AgentKit DevEnv Tool ID for the Dev Sandbox; also read from `SANDBOX_DEV`. |
 | `--studio-update-bucket` | `str` | `veadk-studio` | TOS bucket holding immutable Studio release bundles; written to the function env as `VEADK_STUDIO_UPDATE_BUCKET`. Also read from `VEADK_STUDIO_UPDATE_BUCKET`. |
 | `--studio-update-prefix` | `str` | `veadk/studio/main` | TOS object prefix for the Studio main release channel. Also read from `VEADK_STUDIO_UPDATE_PREFIX`. |
 | `--apmplus-aid` | `str` | `""` | APMPlus Client aid for Studio frontend telemetry. Also read from `VEADK_STUDIO_APMPLUS_AID`. |
@@ -1229,7 +1229,7 @@ When `--region` and `--project` are omitted, the command searches Beijing, Shang
 | `--site-title` | `str \| None` | Preserve deployed value | Replace the Studio name only when supplied. |
 | `--site-logo` | `str \| None` | Preserve deployed value | Replace the Studio logo only when supplied. |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | Preserve deployed value | Replace the built-in-agent Tool ID only when supplied. |
-| `--sandbox-dev-tool-id` | `str \| None` | Preserve deployed value | Replace the Dev Sandbox Tool ID only when supplied; supported only for Volcengine deployments. |
+| `--sandbox-dev-tool-id` | `str \| None` | Preserve deployed value | Replace the Dev Sandbox Tool ID only when supplied. |
 | `--volcengine-access-key` | `str \| None` | `VOLCENGINE_ACCESS_KEY` | Access key used for the update. |
 | `--volcengine-secret-key` | `str \| None` | `VOLCENGINE_SECRET_KEY` | Secret key used for the update. |
 | `--volcengine-session-token` | `str \| None` | `VOLCENGINE_SESSION_TOKEN` | STS temporary-credential session token, used in Volcengine mode. |
