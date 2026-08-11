@@ -1276,9 +1276,13 @@ The model, endpoint, and candidate regions for sandbox Tools differ by cloud pro
 
 ### In-app updates
 
-Studio reads new releases from the centrally maintained `veadk-studio` TOS source in `cn-beijing`, regardless of the deployment region, so administrators can update the frontend and Python backend together from the navbar without extra options. Use `--studio-update-bucket` and `--studio-update-prefix` (or the matching `VEADK_STUDIO_UPDATE_BUCKET` and `VEADK_STUDIO_UPDATE_PREFIX` environment variables) to override the default release source; the release source region is always `cn-beijing`.
+Studio reads new releases from the centrally maintained `veadk-studio` TOS source in `cn-beijing`, regardless of the deployment region, so administrators can update the frontend and Python backend together from the navbar without extra options. Use `--studio-update-bucket` and `--studio-update-prefix` (or the matching `VEADK_STUDIO_UPDATE_BUCKET` and `VEADK_STUDIO_UPDATE_PREFIX` environment variables) to override the default release source; the release source region is always `cn-beijing`. The release bundle is not tied to a cloud provider — Volcengine and BytePlus deployments share the same source. During the update, the cloud-provider entry point is selected automatically based on the `CLOUD_PROVIDER` (or `AGENTKIT_CLOUD_PROVIDER`) environment variable in the deployment; BytePlus deployments also have `BYTEPLUS_REGION` written during the update.
 
 Studio checks for updates every three minutes and lists available versions with their change notes. After an administrator confirms an update, Studio verifies the complete release bundle, replaces the Python backend and frontend assets together, and re-releases the existing Application. The Application and Function IDs, public URL, SSO client, and server-side secrets are preserved.
+
+During the update, Studio checks the current VeFaaS Function for missing cloud resources and provisions them automatically: if persistent storage (`VEADK_STUDIO_TOS_BUCKET` and `VEADK_STUDIO_TOS_REGION`) is not configured, a TOS bucket is created or reused in the deployment region; if sandbox snapshot Tools (`SANDBOX_CHAT_CODEX_SNAPSHOT`, `SANDBOX_CHAT_OPENCLAW_SNAPSHOT`, `SANDBOX_CHAT_HERMES_SNAPSHOT`) are missing, they are created for the current cloud provider. The provisioned resources are written as environment variables into the Function configuration so that older Studio versions gain the new persistent-storage and sandbox capabilities after upgrading. The update progress panel shows a "Checking and provisioning Studio cloud resources" stage.
+
+The VeFaaS Function console link in the update status is provider-specific: Volcengine deployments point to `console.volcengine.com`, and BytePlus deployments point to `console.byteplus.com`.
 
 ```bash
 veadk studio deploy \
@@ -1288,7 +1292,7 @@ veadk studio deploy \
 ```
 
 <Note>
-  In-app updates are available only to signed-in users with the `admin` role. They update Studio's own VeFaaS Function and do not affect deployed AgentKit Runtimes.
+  In-app updates are available only to signed-in users with the `admin` role. They update Studio's own VeFaaS Function and do not affect deployed AgentKit Runtimes. Cloud-resource provisioning during the update uses the deployer's configured Volcengine or BytePlus credentials.
 </Note>
 
 ### Deployment options
