@@ -17,7 +17,11 @@ skill = load_skill_from_dir("/abs/path/to/skills/kb-skill")
 agent = Agent(tools=[SkillToolset(skills=[skill])])
 ```
 
-技能加载、提示词注入与工具暴露均由 ADK 处理，模型可见的工具包括 `list_skills`、`load_skill`、`load_skill_resource` 和 `run_skill_script`。若技能依赖 `scripts/` 中的脚本执行，需在 `SkillToolset` 或智能体上显式配置合适的 `code_executor`，VeADK 不会默认创建本地代码执行器。
+技能加载、提示词注入与工具暴露均由 ADK 处理，模型可见的工具包括 `list_skills`、`load_skill`、`load_skill_resource` 和 `run_skill_script`。如果技能依赖 `scripts/` 中的脚本执行，直接使用 ADK 的 `SkillToolset` 构造工具集时需要在 `SkillToolset` 或智能体上显式配置合适的 `code_executor`。
+
+<Note>
+通过 Harness、CLI 生成的智能体代码或 AgentKit 会话能力服务加载技能时，VeADK 会自动为 `SkillToolset` 配置本地代码执行器，技能中的脚本可直接运行，无需额外配置。
+</Note>
 
 ## 云端技能空间
 
