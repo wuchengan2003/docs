@@ -26,7 +26,7 @@ To use BytePlus as the cloud provider, pass `--provider byteplus` and supply cre
 
 ## Studio persistent storage
 
-Studio capabilities such as video creation and automatic evaluation require persistent object storage to save reference assets, generated results, and optimization snapshots. Studio uses TOS as the persistent storage backend.
+Studio capabilities such as video creation and automatic evaluation require persistent object storage to save reference assets, generated results, and optimization snapshots. Studio uses TOS as the persistent storage backend. When no dedicated publish storage is configured, skill publishing also reuses the persistent storage bucket; see [Skill publish storage](#skill-publish-storage).
 
 ### Cloud deployment
 
@@ -1125,6 +1125,23 @@ Dev Sandbox skill generation requires an administrator to configure an AgentKit 
 
 <Note>
   Dev Sandbox skill generation is available only to `developer` and `admin` roles. Skill space browsing is available to all signed-in users, but non-admins can only see skill spaces they created.
+</Note>
+
+### Skill publish storage
+
+When publishing a skill to a skill space, Studio uploads the skill package to a TOS bucket. The bucket is selected by the following priority:
+
+| Priority | Source | Description |
+| :--- | :--- | :--- |
+| 1 | `VEADK_SKILL_CREATOR_TOS_BUCKET` | A TOS bucket explicitly designated for skill publishing. |
+| 2 | Studio persistent storage bucket | Configured via `VEADK_STUDIO_TOS_BUCKET` and `VEADK_STUDIO_TOS_REGION`. When used, the bucket region is validated against the skill publish region; publishing fails if they do not match. |
+| 3 | Bucket from the AgentKit global configuration | The bucket set through the AgentKit CLI global configuration. |
+| 4 | Auto-generated | The system generates a bucket name and creates it automatically. |
+
+The object prefix within the bucket is specified by the `VEADK_SKILL_CREATOR_TOS_PREFIX` environment variable, defaulting to `agentkit/skills`.
+
+<Note>
+  When Studio persistent storage is configured, skill publishing automatically reuses that bucket with no additional configuration. To use a separate bucket for skill publishing, set the `VEADK_SKILL_CREATOR_TOS_BUCKET` environment variable.
 </Note>
 
 ### Manage skill spaces
