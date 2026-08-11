@@ -22,6 +22,10 @@ title: "更新日志"
 | Studio 技能生成 | 技能生成工作台改进界面布局：新增「基本信息」分区，「目标」字段标记为必填；「生成配置」改为「生成方案」（优化时为「优化方案」），各方案中的模型与风格标记为必填项。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 技能中心 | 技能中心创建入口由「Dev Sandbox 创建」改为「自动创建」，空状态提示同步更新。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 沙箱 | `--sandbox-dev-tool-id` 和 `SANDBOX_DEV` 环境变量不再限于火山引擎部署，BytePlus 部署和更新现在同样支持 Dev Sandbox：部署时自动创建 DevEnv Tool，更新时检测缺失并自动修复。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 视频创作 | 新会话页面新增「视频创作」工作区模式：根据文本提示和可选的参考素材生成视频，支持文生视频、参考素材生视频、视频编辑、视频续写和首尾帧生成等任务模式，可配置画面比例、分辨率和时长；生成过程分为提示词优化和视频生成两个阶段，完成后可预览和下载。火山引擎使用 `doubao-seedance-2-5-260628` 生成模型与 `doubao-seed-2-1-pro-260628` 增强模型，BytePlus 使用 `dreamina-seedance-2-5-260628` 与 `dola-seed-2-1-turbo-260628`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能定制 | 新会话页面新增「技能定制」工作区模式，提供技能生成和技能优化的快捷入口，复用技能中心 Dev Sandbox 技能生成能力。该模式仅对 `developer` 和 `admin` 角色开放，且仅在管理员配置可用 Dev Sandbox 后显示。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 持久化存储 | 视频创作等能力新增 Studio 持久化存储：`veadk studio deploy` 部署时自动创建或复用名为 `veadk-studio-<账号 ID>` 的私有 TOS 存储桶；本地启动通过 `VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION` 环境变量配置。参考素材上传和生成结果保存依赖该存储。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 系统信息 | 系统信息页面访问权限由「智能体管理权限」收紧为仅 `admin` 角色可访问，并新增「存储」分区展示 Studio 持久化存储的 TOS 地址。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.0
 
