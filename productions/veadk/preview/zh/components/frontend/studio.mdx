@@ -26,7 +26,7 @@ veadk studio --agents-dir ./agents --open
 
 ## Studio 持久化存储
 
-视频创作等 Studio 能力需要持久化对象存储来保存参考素材和生成结果。Studio 使用 TOS 作为持久化存储后端。
+视频创作、自动评测优化等 Studio 能力需要持久化对象存储来保存参考素材、生成结果和优化项快照。Studio 使用 TOS 作为持久化存储后端。
 
 ### 云端部署
 
@@ -54,6 +54,8 @@ veadk studio --agents-dir ./agents --open
 </Note>
 
 Studio 对象使用用户优先的版本化布局，路径格式为 `veadk-studio/v1/users/<编码用户 ID>/<命名空间>/<范围>/<资源 ID>/`。视频参考素材使用 `video/<素材角色>/<素材 ID>/` 命名空间，存储在该路径下的文件内容及 `metadata.json`。
+
+自动评测生成的优化项快照存储在 `veadk-studio/v1/evaluation-optimizations/<Runtime ID>/<应用名>.json` 路径下，每个 Runtime 应用保留最新一份快照。
 
 ## 自定义品牌
 
@@ -956,6 +958,10 @@ VeADK 1.0.9 起，连接的 Runtime 暴露会话级能力叠加接口时，Studi
 
 <Note>
   优化建议由 `doubao-seed-2-0-lite-260428` 模型根据累计评测案例和智能体配置生成，仅供参考。评测模型可通过环境变量 `VEADK_STUDIO_EVALUATION_MODEL` 覆盖。
+</Note>
+
+<Note>
+  配置 Studio 持久化存储时，优化项快照保存在 TOS 中，进程重启后仍然可见，并在多个实例间共享；未配置持久化存储时，优化项快照仅保留在进程内存中，重启后丢失。持久化存储的配置方式见 <a href="#studio-持久化存储">Studio 持久化存储</a>。
 </Note>
 
 ### 查看评测案例
