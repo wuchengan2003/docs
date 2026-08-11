@@ -25,7 +25,14 @@ Skill loading, prompt injection, and tool exposure are all handled by ADK; the
 tools visible to the model include `list_skills`, `load_skill`,
 `load_skill_resource`, and `run_skill_script`. If a skill runs scripts from
 `scripts/`, configure a suitable `code_executor` on the `SkillToolset` or the
-agent — VeADK does not create a local code executor by default.
+agent when constructing `SkillToolset` directly through the ADK API.
+
+<Note>
+When skills are loaded through Harness, CLI-generated agent code, or the
+AgentKit session capability service, VeADK automatically configures a local
+code executor for `SkillToolset`, so skill scripts run without additional
+configuration.
+</Note>
 
 ## Cloud skill spaces
 

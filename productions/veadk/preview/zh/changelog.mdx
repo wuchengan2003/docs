@@ -8,6 +8,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| 技能 | 通过 Harness、CLI 生成的智能体代码或 AgentKit 会话能力服务加载技能时，VeADK 自动为 `SkillToolset` 配置本地代码执行器，技能中的脚本可直接运行，无需额外配置。 | [技能](/productions/veadk/preview/zh/components/agent/skills) |
 | Studio 评测 | 自动评测生成的优化项快照改为持久化到 Studio 持久化存储：配置 `VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION`（部署时自动创建存储桶）时，优化项快照保存在 TOS 中，进程重启后仍然可见并在多个实例间共享；未配置持久化存储时，快照仅保留在进程内存中，重启后丢失。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | `veadk studio deploy` 在自动创建 Identity 用户池、TOS 存储桶或沙箱 Tool 时，部署成功后额外输出已配置的云资源清单，包括每个沙箱 Tool 的类型与 ID、私有 TOS 存储地址、用户池 ID、客户端 ID 和对应云服务商的 Identity 控制台链接，并提示密码登录默认关闭、需先配置 SSO 身份提供者。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | `veadk studio deploy` 的 `--user-pool-id` 和 `--allowed-client-id` 改为可选。省略时，部署命令会在 `--region` 指定的地域自动创建或复用同名 VeIdentity 用户池（`veadk-studio-{vefaas-app-name}`）和 Web 客户端（`veadk-studio-{vefaas-app-name}-web`），并在部署完成后回显 Identity 地域、用户池 ID、用户池域名和客户端 ID。同时传入两个参数时仍使用已有资源并按原逻辑跨地域查找。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
