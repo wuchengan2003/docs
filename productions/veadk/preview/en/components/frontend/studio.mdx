@@ -395,12 +395,32 @@ After enabling a knowledge base for an agent, select one of these backends in St
 | [VikingDB Knowledge](/productions/veadk/preview/en/components/knowledge/viking) | The default. Uses the managed Volcengine knowledge base service for server-side splitting, embedding, and retrieval, without local embedding configuration. |
 | [OpenSearch](/productions/veadk/preview/en/components/knowledge/opensearch) | Uses a self-managed or managed OpenSearch cluster with your embedding configuration. |
 | [Context Search](/productions/veadk/preview/en/components/knowledge/context-search) | Uses the Volcengine Context Search service for retrieval. |
+| [OpenViking Knowledge](/productions/veadk/preview/en/components/knowledge/openviking) | Uses the OpenViking resource-tree knowledge base with server-side resource processing and retrieval, without local embedding configuration. |
 
 Studio does not offer the `local` backend because its creation flow cannot add documents to the in-process vector store. For local development, use the VeADK SDK to [configure a local knowledge base](/productions/veadk/preview/en/components/knowledge/local).
 
 When you select VikingDB Knowledge, Studio lists collections visible to the current account in the `default` project in Beijing. Selecting an existing collection uses its name as the knowledge base index. If you do not select an existing collection, the index name defaults to `<agent_name>_kb`. Use the refresh button to reload the list.
 
 For a local Studio, provide access through `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY`. A VeFaaS deployment uses temporary credentials from its bound IAM role. Credentials remain on the server and are never delivered to the browser.
+
+When you select OpenViking Knowledge, Studio collects the following settings on the creation page and writes them to the generated project's environment variables:
+
+| Studio setting | Generated env var | Required | Default / placeholder | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| OpenViking service URL | `DATABASE_OPENVIKING_URL` | Yes | `https://api.vikingdb.cn-beijing.volces.com/openviking` | OpenViking service URL, available in the [console](https://console.volcengine.com/vikingdb/openviking). |
+| OpenViking API key | `DATABASE_OPENVIKING_API_KEY` | Yes | — | OpenViking API key, available in the [console](https://console.volcengine.com/vikingdb/openviking). |
+| Knowledge owner ID | `DATABASE_OPENVIKING_USER_ID` | No | `default` | OpenViking owner/context used to build the default resource URI `viking://user/<this value>/resources/<resource index>/`. |
+| Knowledge resource URI | `DATABASE_OPENVIKING_TARGET_URI` | No | — | Resource URI used for ingestion and retrieval; when left blank it is auto-generated from the knowledge owner ID and resource index. When set, this URI is used directly with the highest priority. |
+
+Studio also provides a "Resource index" field that sets the `KnowledgeBase` `index`. When left blank, the generated project auto-generates the index from the agent name (e.g., `my_agent_kb`). When `DATABASE_OPENVIKING_TARGET_URI` is not configured, the resource URI is built as `viking://user/<knowledge owner ID, or "default" if not set>/resources/<resource index>/`; once `DATABASE_OPENVIKING_TARGET_URI` is set, that full URI is used directly.
+
+<Note>
+  The OpenViking knowledge owner ID (`DATABASE_OPENVIKING_USER_ID`) and the runtime user identifier (`Runner.user_id`) are distinct concepts: the former isolates resource trees per application or tenant, while the latter identifies the end user. See [Store knowledge in OpenViking](/productions/veadk/preview/en/components/knowledge/openviking).
+</Note>
+
+<Warning>
+  Enabling the OpenViking knowledge base sends imported documents to an external OpenViking service. Confirm that data processing, access control, and retention meet your requirements before enabling it.
+</Warning>
 
 | Symptom | Check |
 | :--- | :--- |

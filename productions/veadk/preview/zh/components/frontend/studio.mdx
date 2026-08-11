@@ -395,12 +395,32 @@ Studio 调用 `doubao-seed-2-0-lite-260428` 模型，根据需求生成一份经
 | [VikingDB Knowledge](/productions/veadk/preview/zh/components/knowledge/viking) | 默认选项。使用火山引擎托管知识库，由服务端完成切分、向量化和检索，无需配置本地 embedding。 |
 | [OpenSearch](/productions/veadk/preview/zh/components/knowledge/opensearch) | 使用自建或托管的 OpenSearch 集群，并自行配置 embedding。 |
 | [Context Search](/productions/veadk/preview/zh/components/knowledge/context-search) | 使用火山引擎 Context Search 服务完成检索。 |
+| [OpenViking Knowledge](/productions/veadk/preview/zh/components/knowledge/openviking) | 使用 OpenViking 资源目录知识库，由服务端完成资源解析与检索，无需配置本地 embedding。 |
 
 Studio 不提供 `local` 后端，因为创建页面不能为进程内向量库存入文档。如需本地调试，可使用 VeADK SDK [配置本地知识库](/productions/veadk/preview/zh/components/knowledge/local)。
 
 选择 VikingDB Knowledge 时，Studio 会列出北京地域 `default` 项目中当前账号可见的知识库集合。选择已有集合后，其名称将作为知识库索引；未选择已有集合时，索引名称默认为 `<智能体名称>_kb`。需要重新获取列表时，可使用刷新按钮。
 
 本地启动时，通过 `VOLCENGINE_ACCESS_KEY` 和 `VOLCENGINE_SECRET_KEY` 提供查询权限；部署到 VeFaaS 后，使用绑定 IAM Role 的临时凭证。凭证只在服务端使用，不会下发到浏览器。
+
+选择 OpenViking Knowledge 时，Studio 在创建页填写以下配置项并写入生成项目的环境变量：
+
+| Studio 配置项 | 生成项目环境变量 | 是否必填 | 默认值 / 占位 | 说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| OpenViking 服务地址 | `DATABASE_OPENVIKING_URL` | 是 | `https://api.vikingdb.cn-beijing.volces.com/openviking` | OpenViking 服务地址，可在[控制台](https://console.volcengine.com/vikingdb/openviking)获取。 |
+| OpenViking API Key | `DATABASE_OPENVIKING_API_KEY` | 是 | — | OpenViking API Key，可在[控制台](https://console.volcengine.com/vikingdb/openviking)获取。 |
+| 知识库归属 ID | `DATABASE_OPENVIKING_USER_ID` | 否 | `default` | OpenViking owner/context 标识，用于构建默认资源目录 `viking://user/<此值>/resources/<资源索引>/`。 |
+| 知识库资源目录 | `DATABASE_OPENVIKING_TARGET_URI` | 否 | — | 导入与检索使用的资源目录；留空时由知识库归属 ID 与资源索引自动生成。填写后直接使用该 URI，优先级最高。 |
+
+此外，Studio 提供「资源索引」字段，用于指定 `KnowledgeBase` 的 `index`。留空时生成项目使用智能体名称自动生成索引（如 `my_agent_kb`）。未配置 `DATABASE_OPENVIKING_TARGET_URI` 时，资源目录自动拼接为 `viking://user/<知识库归属 ID，未填则 default>/resources/<资源索引>/`；填写 `DATABASE_OPENVIKING_TARGET_URI` 后直接使用该完整 URI。
+
+<Note>
+  OpenViking 的知识库归属 ID（`DATABASE_OPENVIKING_USER_ID`）与运行时用户标识（`Runner.user_id`）是不同的概念：前者隔离不同应用或租户的资源目录，后者标识终端用户。详见[使用 OpenViking 存储](/productions/veadk/preview/zh/components/knowledge/openviking)。
+</Note>
+
+<Warning>
+  启用 OpenViking 知识库会把导入的文档发送到外部 OpenViking 服务。使用前应确认数据处理、访问控制和保留策略符合业务要求。
+</Warning>
 
 | 现象 | 检查方法 |
 | :--- | :--- |
