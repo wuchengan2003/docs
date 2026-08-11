@@ -1168,6 +1168,8 @@ After entering a skill space, you can browse all skills within it and filter by 
 
 <Note>
   When uploading a ZIP, Studio checks that the archive contains `SKILL.md` and validates file count and path safety. Full frontmatter and skill format validation is performed by ADK at load time. A validation function is available to pre-check ZIP contents before upload.
+
+  The skill name must be unique within the target skill space. If a skill with the same name already exists in the target space, the upload is rejected; rename the skill and re-upload, or use the optimize function to overwrite the existing skill.
 </Note>
 
 ### Generate skills with the Dev Sandbox
@@ -1210,7 +1212,7 @@ The model list is read from the DevEnv Tool configuration; a model ID can also b
     Validated candidates display the complete file tree. You can enter follow-up adjustment instructions in the input box to iteratively refine the current candidate.
   </Step>
   <Step title="Download or publish">
-    After generation completes, download the skill as a ZIP or publish it directly to the current skill space. New skills are published as new skills; when optimizing an existing skill, you can choose to overwrite the original.
+    After generation completes, download the skill as a ZIP or publish it directly to the current skill space. The skill name must be unique within the target skill space; if a skill with the same name already exists, publishing is rejected — rename and publish again, or use the optimize function to overwrite. When optimizing an existing skill, you can choose to overwrite the original.
   </Step>
 </Steps>
 
