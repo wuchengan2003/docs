@@ -2,7 +2,7 @@
 title: "Studio agent workbench"
 ---
 
-AgentKit Studio uses the same service and complete UI as VeADK Frontend. It provides chat, search, session history, the skill center, automation integrations, and agent creation, testing, deployment, and management, and opens on the chat view by default. The agent workspace renders multi-agent topologies as a canvas, surfaces deployed Runtime versions and deployment status, and supports iterating on the same Runtime.
+AgentKit Studio uses the same service and complete UI as VeADK Frontend. It provides chat, search, session history, the skill center, skill customization, video creation, automation integrations, and agent creation, testing, deployment, and management, and opens on the chat view by default. The agent workspace renders multi-agent topologies as a canvas, surfaces deployed Runtime versions and deployment status, and supports iterating on the same Runtime.
 
 Custom configuration and code-package deployment are the available project-creation flows; intelligent, template, workflow, and existing-project migration entries are marked as coming soon and cannot be selected. You can preview and edit generated files, run them in a temporary test process, download a ZIP, or deploy to AgentKit. Studio also supports cloud Runtime selection, multiple skill sources, multimodal conversations, automation integrations, and centralized deployment task status and retries.
 
@@ -22,6 +22,38 @@ veadk studio --agents-dir ./agents --open
 Volcengine credentials are used for models, cloud-resource queries, and AgentKit deployment from the workbench. In production, provide them through environment variables or a secret manager rather than project files.
 
 To use BytePlus as the cloud provider, pass `--provider byteplus` and supply credentials via `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN` environment variables. Runtime listings default to the region in `BYTEPLUS_REGION` or `ap-southeast-1`. Without an explicit `--provider`, the local CLI always uses Volcengine.
+
+
+## Studio persistent storage
+
+Studio capabilities such as video creation require persistent object storage to save reference assets and generated results. Studio uses TOS as the persistent storage backend.
+
+### Cloud deployment
+
+During `veadk studio deploy`, a private TOS bucket named `veadk-studio-<account ID>` is automatically created or reused in the deployment region. The bucket name is derived from the cloud account ID, making repeated deployments idempotent. Administrators can also specify an existing bucket name with the `VEADK_STUDIO_TOS_BUCKET` environment variable; when specified, the bucket must already exist in the deployment region, otherwise the deployment fails.
+
+A bucket created in one region cannot be recreated under the same name in another region. When switching deployment regions, Studio reuses the bucket if it already exists in the target region; otherwise you must explicitly specify a bucket available in that region.
+
+<Warning>
+  The TOS bucket is created using the deployer's Volcengine credentials. The deployed Studio accesses the bucket using temporary credentials from the bound IAM Role and never sends TOS credentials to the browser.
+</Warning>
+
+### Local startup
+
+When starting locally, configure persistent storage with the following environment variables:
+
+| Environment variable | Default | Description |
+| :--- | :--- | :--- |
+| `VEADK_STUDIO_TOS_BUCKET` | — | TOS bucket name used by Studio. |
+| `VEADK_STUDIO_TOS_REGION` | — | Region of the storage bucket. |
+
+Both variables must be set for Studio to enable persistent storage. When not configured, features that depend on persistent storage (such as video reference asset upload) are disabled and the corresponding UI shows "管理员未配置持久化存储"; text-only features are unaffected. Local Studio uses the configured Volcengine or BytePlus AK/SK to access the bucket.
+
+<Note>
+  The older `VEADK_VIDEO_TOS_*` and `DATABASE_TOS_*` environment variables remain as a temporary compatibility fallback: when both `VEADK_STUDIO_TOS_BUCKET` and `VEADK_STUDIO_TOS_REGION` are unset, Studio attempts to read the bucket, region, and endpoint from the legacy variables. New deployments only need the two `VEADK_STUDIO_TOS_*` variables.
+</Note>
+
+Studio objects use a user-first, versioned key layout with the path format `veadk-studio/v1/users/<encoded-user-ID>/<namespace>/<scope>/<resource-ID>/`. Video reference assets use the `video/<asset-role>/<asset-ID>/` namespace and store file content and `metadata.json` below it.
 
 ## Customize branding
 
@@ -695,9 +727,17 @@ When connecting to a Runtime, Studio first probes read-only endpoints (agent lis
 
 This lets you decide whether to refresh, sign in again, inspect the Runtime's readiness, or adjust the network deployment mode without reading logs.
 
-## Use built-in agents
+## New-conversation workspace
 
-The new-conversation view provides two modes visible to all users:
+When starting a new conversation, Studio offers three workspace modes at the top of the conversation page. The mode selector is visible to all signed-in users:
+
+- **Agent**: chat with the selected agent or start a temporary session with a built-in agent.
+- **Skill customization**: generate a new skill from a natural-language description or optimize an existing skill. This mode appears only when an administrator has configured a usable Dev Sandbox.
+- **Video creation**: generate a video from a text prompt and optional reference assets.
+
+### Agent chat and built-in agents
+
+The Agent workspace supports two modes:
 
 - **Agent chat**: starts a normal multi-turn conversation with the selected agent. When the input is empty, starter prompts appear for quick access to common questions.
 - **Built-in agent**: uses a platform-provided agent for conversation. You can select Codex, which starts a multi-turn conversation in an independent AgentKit CodeEnv Session. Exiting deletes the cloud Session and does not add it to ordinary session history.
@@ -789,6 +829,80 @@ From the Add menu, choose Enter terminal or View browser to open an interactive 
 <Note>
   The "Created by" field in the sandbox session list shows the signed-in user's display name (OAuth email or local username), making it easier to distinguish session ownership in multi-user deployments. When no display name is available, the internal user identifier is used instead.
 </Note>
+
+
+## Skill customization
+
+The Skill customization workspace provides a quick entry point for generating and optimizing skills from the new-conversation page, reusing the Skill Center's Dev Sandbox skill generation. This mode is available only to `developer` and `admin` roles, and appears in the workspace selector only when an administrator has configured a usable Dev Sandbox and its model credentials; when not configured, the mode is hidden rather than exposing an action that must fail.
+
+### Skill generation
+
+Describe the target skill in natural language in the input box, for example "generate a skill that analyzes CSV files and outputs summary statistics". After submitting, Studio navigates to the Skill Center Dev Sandbox skill generation workspace and pre-fills the description as the initial intent.
+
+### Skill optimization
+
+Switch to "Optimize", select the skill space and skill to optimize from AgentKit SkillSpace, then describe the optimization goal in the input box, for example "improve compatibility with Chinese column names". After submitting, Studio navigates to the Skill Center workspace to optimize the selected skill and optionally overwrite-publish it to the original skill space.
+
+<Note>
+  Skill customization shares the same generation and optimization flow, Dev Sandbox session management, candidate comparison, and publishing flow as the [Skill Center](#skill-center). The workspace acts only as a quick entry point. Browsing AgentKit SkillSpace is performed by the Studio server using its own configured Volcengine credentials; the browser never sees credentials.
+</Note>
+
+## Video creation
+
+The Video creation workspace generates videos from text prompts and optional reference assets, suitable for content creation, asset preview, and similar scenarios. This mode is available to all signed-in users. Uploading reference assets requires an administrator-configured persistent storage; when not configured, reference asset upload is disabled, but text-to-video remains available.
+
+### How to use
+
+1. Select the "Video creation" workspace on the new-conversation page.
+2. Choose a video task mode and, as needed, upload reference assets and set the aspect ratio, resolution, and duration.
+3. Enter a video description in the input box. After submitting, Studio first enhances the prompt, then creates a video generation task.
+4. Track progress in the video task dialog. When generation completes, preview and download the resulting video.
+
+### Video task modes
+
+| Mode | Description | Reference assets |
+| :--- | :--- | :--- |
+| Auto | Automatically determines which of the following modes to use based on the prompt and uploaded assets. | Per selected mode |
+| Text to video | Generates a video from a text prompt only, without reference assets. | None |
+| Reference to video | Generates a new video from a reference image or reference video. | Reference image or reference video |
+| Video editing | Edits an existing video according to the prompt. | Video to edit |
+| Video extension | Appends new content at the end of an existing video. | Base video |
+| First/last frame | Generates a video from a first frame and an optional last frame image. | First frame image (required), last frame image (optional) |
+
+### Generation parameters
+
+| Parameter | Options | Default | Description |
+| :--- | :--- | :--- | :--- |
+| Aspect ratio | `21:9`, `16:9`, `4:3`, `1:1`, `3:4`, `9:16` | `16:9` | Width-to-height ratio of the generated video. |
+| Resolution | `480p`, `720p` | `720p` | Clarity of the generated video. |
+| Duration | 4–30 seconds | 8 seconds | Length of the generated video. Video editing uses the original video length. |
+
+### Generation flow
+
+Video generation has two stages, both performed on the Studio server:
+
+1. **Prompt enhancement**: the enhancer model expands and normalizes the input prompt and resolves the final task mode.
+2. **Video generation**: the generation model creates a video task using the enhanced prompt and parameters. When the task completes, a preview URL and download link are returned.
+
+The models used differ by cloud provider:
+
+| Cloud provider | Generation model | Enhancer model |
+| :--- | :--- | :--- |
+| Volcengine | `doubao-seedance-2-5-260628` | `doubao-seed-2-1-pro-260628` |
+| BytePlus | `dreamina-seedance-2-5-260628` | `dola-seed-2-1-turbo-260628` |
+
+<Note>
+  Video generation runs asynchronously. The dialog shows the real-time status of both the enhancement and generation stages. When a stage fails, you can retry from the failed stage without re-entering the prompt.
+</Note>
+
+### Reference assets and persistent storage
+
+Reference asset upload and result storage depend on Studio persistent storage. When persistent storage is not configured, the reference asset upload controls are disabled and the corresponding UI shows "管理员未配置持久化存储"; text-only features such as text-to-video remain available. For storage configuration, see [Studio persistent storage](#studio-persistent-storage).
+
+<Warning>
+  Reference assets and generated results are stored in the TOS bucket configured for Studio, isolated by signed-in user. Do not upload assets that contain sensitive information.
+</Warning>
+
 
 
 ## Manage session capabilities
@@ -1273,11 +1387,15 @@ Studio restricts Runtime visibility according to the signed-in account. Existing
 
 ## View system information
 
-After signing in, the account menu at the bottom of the sidebar offers a "System info" entry. Selecting it opens the system information page, which displays the Studio version, sandbox information, and user pools. This page is available only to users with agent-management access, and all resource identifiers are read-only.
+After signing in, the account menu at the bottom of the sidebar offers a "System info" entry. Selecting it opens the system information page, which displays the Studio version, storage, sandbox information, and user pools. This page is available only to the `admin` role, and all resource identifiers are read-only.
 
 ### General
 
 Displays the Studio "Current version". When Studio is started locally or built and deployed from source, the version is the installed VeADK version. When Studio is switched to a cloud Frontend release, the corresponding release version is shown. If no version is available, "—" is displayed.
+
+### Storage
+
+Displays the TOS address used by Studio persistent storage. When `VEADK_STUDIO_TOS_BUCKET` and `VEADK_STUDIO_TOS_REGION` are configured, the bucket access address is shown, for example `veadk-studio-<account ID>.tos-cn-beijing.volces.com`. When not configured, "Not configured" is displayed.
 
 ### Sandbox information
 
