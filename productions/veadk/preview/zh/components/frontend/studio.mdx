@@ -26,7 +26,7 @@ veadk studio --agents-dir ./agents --open
 
 ## Studio 持久化存储
 
-视频创作、自动评测优化等 Studio 能力需要持久化对象存储来保存参考素材、生成结果和优化项快照。Studio 使用 TOS 作为持久化存储后端。
+视频创作、自动评测优化等 Studio 能力需要持久化对象存储来保存参考素材、生成结果和优化项快照。Studio 使用 TOS 作为持久化存储后端。未单独配置发布存储时，技能发布也会复用持久化存储桶，详见[技能发布存储](#技能发布存储)。
 
 ### 云端部署
 
@@ -1125,6 +1125,23 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
 
 <Note>
   Dev Sandbox 技能生成仅对 `developer` 和 `admin` 角色开放。技能空间的浏览对所有已登录用户开放，但非管理员仅能看到自己创建的技能空间。
+</Note>
+
+### 技能发布存储
+
+发布技能到技能空间时，Studio 会将技能包上传到 TOS 存储桶。存储桶按以下优先级选择：
+
+| 优先级 | 来源 | 说明 |
+| :--- | :--- | :--- |
+| 1 | `VEADK_SKILL_CREATOR_TOS_BUCKET` | 为技能发布显式指定的 TOS 存储桶。 |
+| 2 | Studio 持久化存储桶 | 由 `VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION` 配置。使用时会校验存储桶地域与技能发布地域是否一致，不一致则发布失败。 |
+| 3 | AgentKit 全局配置中的存储桶 | 通过 AgentKit CLI 全局配置设定的存储桶。 |
+| 4 | 自动生成 | 由系统自动生成存储桶名称并创建。 |
+
+存储桶内对象前缀通过 `VEADK_SKILL_CREATOR_TOS_PREFIX` 环境变量指定，默认为 `agentkit/skills`。
+
+<Note>
+  已配置 Studio 持久化存储时，技能发布会自动复用该存储桶，无需额外配置。如需为技能发布使用独立存储桶，设置 `VEADK_SKILL_CREATOR_TOS_BUCKET` 环境变量即可。
 </Note>
 
 ### 管理技能空间
