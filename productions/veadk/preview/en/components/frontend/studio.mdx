@@ -442,7 +442,7 @@ On the conversation page, each assistant reply provides trace and issue-feedback
 The “Tracing flame graph” button next to an assistant reply opens the call-trace observation panel, which renders the session's execution trace as a span tree with a detail panel and uses the reply's end time as the query cutoff when opened.
 
 - Local debug sessions read the ADK debug trace directly.
-- For a connected cloud Runtime, the Studio server queries APMPlus for the session trace using its own Volcengine credentials; the browser never touches the credentials.
+- For a connected cloud Runtime, the Studio server queries APMPlus for the session trace using its own cloud-provider credentials; the browser never touches the credentials. The APMPlus OpenAPI endpoint follows the configured cloud provider: `open.volcengineapi.com` for Volcengine and `open.byteplusapi.com` for BytePlus.
 
 <Note>
   Trace observation for a cloud Runtime requires enabling APMPlus tracing for the corresponding agent in the Volcengine console. Runtimes deployed through Studio have APMPlus tracing enabled by default. Opening the trace panel for a Runtime without tracing enabled prompts you to enable APMPlus tracing in the console first, and a failed trace query prompts you to retry later.
