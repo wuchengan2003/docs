@@ -8,6 +8,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| 前端对话 | 每条助手回复旁新增「分享为图片」按钮，可将截至该轮回复的全部输入与输出导出为一张 PNG 图片：图片在浏览器本地生成，包含从会话开始到当前回复的所有消息并在底部附加导出说明，支持下载 PNG 或复制到剪贴板。该能力在 `veadk frontend` 与 `veadk studio` 的对话页面均生效。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
 | Studio 应用内更新 | 新会话页面「本次更新」提示改为显示当前构建版本的实际变更说明，而非固定内容；版本更新对话框中的变更说明以要点形式按条目分行展示。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 沙箱 | 管理员在沙箱会话列表中可查看并恢复可唤醒的智能体快照：内置智能体会话结束后留下的可恢复快照以「可唤醒」状态出现在列表中，支持唤醒恢复为就绪会话或删除快照，详情页展示快照状态、原因、Snapshot ID 和来源 Session ID。该能力仅对 `admin` 角色开放，需要已配置沙箱快照 Tool。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 埋点 | Studio 前端产品行为埋点从 APMPlus Web SDK 迁移至 TEA：运行 `veadk studio`（含本地启动与 `veadk studio deploy` 部署实例）时自动启用，不再需要配置。`veadk studio deploy` 移除 `--apmplus-aid`、`--apmplus-token`、`--apmplus-domain` 和 `--apmplus-env` 选项及对应的 `VEADK_STUDIO_APMPLUS_AID`、`VEADK_STUDIO_APMPLUS_TOKEN`、`VEADK_STUDIO_APMPLUS_DOMAIN` 和 `VEADK_STUDIO_APMPLUS_ENV` 环境变量。埋点仅采集使用统计维度，失败事件仅保留错误类别与错误码。VeADK 运行时的 APMPlus 链路观测不受影响。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
