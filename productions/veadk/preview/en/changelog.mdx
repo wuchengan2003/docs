@@ -8,6 +8,7 @@ This changelog cumulatively lists all public user-facing changes from VeADK 1.0.
 
 | Module | Change details | Link |
 | --- | --- | --- |
+| Frontend chat | While an agent is replying, the composer's send button becomes a stop button; clicking it cancels only the active response, preserves any content already received, and immediately enables the next turn in the same session. This applies to both the `veadk frontend` and `veadk studio` conversation pages, including sandbox conversations. | [VeADK Frontend](/productions/veadk/preview/en/components/frontend/veadk-frontend) |
 | Code sandbox | `execute_skills` removes the `invocation_mode` parameter and the `AGENTKIT_SKILL_INVOCATION_MODE` environment variable; skill workflows now run exclusively through the A2A protocol. | [Code sandbox](/productions/veadk/preview/en/components/tools/code-sandbox) |
 | Code sandbox | `execute_skills` adds a `timeout` parameter to control the maximum execution time, defaulting to 1800 seconds (30 minutes) with a valid range of 1–1800 seconds. | [Code sandbox](/productions/veadk/preview/en/components/tools/code-sandbox) |
 | Code sandbox | `execute_skills` no longer supports the `env_vars` parameter; passing a non-`None` value raises an error. | [Code sandbox](/productions/veadk/preview/en/components/tools/code-sandbox) |
