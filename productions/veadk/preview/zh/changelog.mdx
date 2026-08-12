@@ -8,6 +8,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 沙箱 | 管理员在沙箱会话列表中可查看并恢复可唤醒的智能体快照：内置智能体会话结束后留下的可恢复快照以「可唤醒」状态出现在列表中，支持唤醒恢复为就绪会话或删除快照，详情页展示快照状态、原因、Snapshot ID 和来源 Session ID。该能力仅对 `admin` 角色开放，需要已配置沙箱快照 Tool。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 埋点 | Studio 前端产品行为埋点从 APMPlus Web SDK 迁移至 TEA：运行 `veadk studio`（含本地启动与 `veadk studio deploy` 部署实例）时自动启用，不再需要配置。`veadk studio deploy` 移除 `--apmplus-aid`、`--apmplus-token`、`--apmplus-domain` 和 `--apmplus-env` 选项及对应的 `VEADK_STUDIO_APMPLUS_AID`、`VEADK_STUDIO_APMPLUS_TOKEN`、`VEADK_STUDIO_APMPLUS_DOMAIN` 和 `VEADK_STUDIO_APMPLUS_ENV` 环境变量。埋点仅采集使用统计维度，失败事件仅保留错误类别与错误码。VeADK 运行时的 APMPlus 链路观测不受影响。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | 前端对话 | 智能体回复过程中，输入框的发送按钮变为停止按钮，点击后中断当前回复：已接收的内容保留在对话中，停止后可立即在同一会话中发送下一条消息。该能力在 `veadk frontend` 与 `veadk studio` 的对话页面（含沙箱会话）均生效。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
 | 前端对话 | 输入框发送按钮旁新增上下文用量指示器：显示当前模型的上下文窗口用量构成，悬停或聚焦时展开 100 格用量图，将占用分为系统与工具（估算）、输入与历史、输出与思考、剩余容量。系统与工具占用为估算值，因为模型使用量统计未单独报告该部分。上下文窗口大小按云服务商和模型名称确定。该能力在 `veadk frontend` 与 `veadk studio` 的智能体对话页面均生效。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
