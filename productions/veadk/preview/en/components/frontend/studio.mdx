@@ -1347,28 +1347,19 @@ veadk studio deploy \
 | `--sandbox-dev-tool-id` | `str \| None` | Auto-create | AgentKit DevEnv Tool ID for the Dev Sandbox; also read from `SANDBOX_DEV`. |
 | `--studio-update-bucket` | `str` | `veadk-studio` | TOS bucket holding immutable Studio release bundles; written to the function env as `VEADK_STUDIO_UPDATE_BUCKET`. Also read from `VEADK_STUDIO_UPDATE_BUCKET`. |
 | `--studio-update-prefix` | `str` | `veadk/studio/main` | TOS object prefix for the Studio main release channel. Also read from `VEADK_STUDIO_UPDATE_PREFIX`. |
-| `--apmplus-aid` | `str` | `""` | APMPlus Client aid for Studio frontend telemetry. Also read from `VEADK_STUDIO_APMPLUS_AID`. |
-| `--apmplus-token` | `str` | `""` | APMPlus Client token for Studio frontend telemetry. Also read from `VEADK_STUDIO_APMPLUS_TOKEN`. |
-| `--apmplus-domain` | `str` | `apmplus.volces.com` | APMPlus reporting domain. Also read from `VEADK_STUDIO_APMPLUS_DOMAIN`. |
-| `--apmplus-env` | `str` | `production` | APMPlus environment name. Also read from `VEADK_STUDIO_APMPLUS_ENV`. |
 
 ## Frontend usage telemetry
 
-When deploying Studio, APMPlus frontend telemetry can collect Studio instance visits, sign-in usage, and the outcomes of agent deployment, sandbox creation, agent connection, message sending, debug test runs, and source code downloads. Telemetry is disabled by default and is enabled only when both the APMPlus Client aid and token are configured; if it is unconfigured or reporting fails, Studio continues to work normally.
+Studio frontend product-behavior data is reported through TEA to track instance visits, sign-in usage, and the outcomes of agent deployment, sandbox creation, agent connection, message sending, debug test runs, and source code downloads. Telemetry is automatically enabled when running `veadk studio` (both local startup and `veadk studio deploy` instances) and requires no configuration; `veadk frontend` does not enable it. Reporting failures do not affect normal Studio usage.
 
-`veadk studio deploy` configures telemetry with `--apmplus-aid`, `--apmplus-token`, `--apmplus-domain`, and `--apmplus-env`. During deployment it automatically injects the deploy ID, user-pool ID, deployment region, and project so the frontend can correlate events; no manual setup is required. If any APMPlus option is set, both `--apmplus-aid` and `--apmplus-token` must be provided, otherwise deployment fails with an error.
-
-```bash
-veadk studio deploy \
-  --vefaas-app-name "veadk-studio" \
-  --apmplus-aid "123456" \
-  --apmplus-token "your-apmplus-client-token"
-```
-
-You can also supply configuration through the `VEADK_STUDIO_APMPLUS_AID` and `VEADK_STUDIO_APMPLUS_TOKEN` environment variables; `VEADK_STUDIO_APMPLUS_DOMAIN` and `VEADK_STUDIO_APMPLUS_ENV` override the reporting domain (default `apmplus.volces.com`) and environment name (default `production`) respectively. Setting these environment variables when running `veadk studio` locally also enables telemetry.
+During deployment, Studio automatically provides the deploy ID, user-pool ID, application ID, function ID, deployment region, and project context to the frontend through the `/web/ui-config` endpoint for event correlation; no manual setup is required.
 
 <Note>
-  Telemetry collects only usage dimensions, including deploy ID, user ID, role, region, source, creation mode, whether AI-assisted generation was used, and the success or failure outcomes and failure phases of agent deployment, sandbox creation, agent connection, message sending, debug test runs, and source code downloads. Error summaries attached to failure events are automatically redacted for secrets, tokens, and passwords, and truncated to 300 characters before reporting. Telemetry does not collect conversation content, prompts, generated code, environment variable values, or any secrets. In-app updates of Studio preserve the configured APMPlus environment variables.
+  Telemetry collects only usage dimensions, including deploy ID, user ID, role, region, source, creation mode, whether AI-assisted generation was used, and the success or failure outcomes and failure phases of agent deployment, sandbox creation, agent connection, message sending, debug test runs, and source code downloads. Failure events retain only a stable error kind and optional error code; error stacks, error text, and free-form text are never collected. Telemetry does not collect conversation content, prompts, generated code, environment variable values, or any secrets.
+</Note>
+
+<Note>
+  This change affects only Studio frontend product-behavior telemetry. VeADK runtime APMPlus OpenTelemetry tracing and the APMPlus query capability in issue feedback are unaffected and continue to work.
 </Note>
 
 ## Update a deployed Studio

@@ -1347,28 +1347,19 @@ veadk studio deploy \
 | `--sandbox-dev-tool-id` | `str \| None` | 自动创建 | 开发沙箱使用的 AgentKit DevEnv Tool ID；也可通过 `SANDBOX_DEV` 设置。 |
 | `--studio-update-bucket` | `str` | `veadk-studio` | 存放 Studio 不可变发布包的 TOS Bucket；部署时写入函数环境变量 `VEADK_STUDIO_UPDATE_BUCKET`。也可通过 `VEADK_STUDIO_UPDATE_BUCKET` 设置。 |
 | `--studio-update-prefix` | `str` | `veadk/studio/main` | Studio 主发布渠道的 TOS 对象前缀。也可通过 `VEADK_STUDIO_UPDATE_PREFIX` 设置。 |
-| `--apmplus-aid` | `str` | `""` | APMPlus Client aid，用于 Studio 前端埋点。也可通过 `VEADK_STUDIO_APMPLUS_AID` 设置。 |
-| `--apmplus-token` | `str` | `""` | APMPlus Client token，用于 Studio 前端埋点。也可通过 `VEADK_STUDIO_APMPLUS_TOKEN` 设置。 |
-| `--apmplus-domain` | `str` | `apmplus.volces.com` | APMPlus 数据上报域名。也可通过 `VEADK_STUDIO_APMPLUS_DOMAIN` 设置。 |
-| `--apmplus-env` | `str` | `production` | APMPlus 环境名称。也可通过 `VEADK_STUDIO_APMPLUS_ENV` 设置。 |
 
 ## 前端使用数据采集
 
-部署 Studio 时可通过 APMPlus 前端埋点统计 Studio 实例访问量、登录使用情况，以及智能体部署、沙箱创建、智能体连接、对话发送、调试测试和源码下载的结果。埋点默认关闭，仅当同时配置 APMPlus Client 的 aid 与 token 后才启用；未配置或上报失败时不影响 Studio 正常使用。
+Studio 前端的产品行为数据通过 TEA 上报，用于统计 Studio 实例访问量、登录使用情况，以及智能体部署、沙箱创建、智能体连接、对话发送、调试测试和源码下载的结果。运行 `veadk studio`（包括本地启动和 `veadk studio deploy` 部署的实例）时自动启用，无需任何配置；`veadk frontend` 不启用。上报失败时不影响 Studio 正常使用。
 
-`veadk studio deploy` 通过 `--apmplus-aid`、`--apmplus-token`、`--apmplus-domain` 与 `--apmplus-env` 配置埋点；部署时会自动注入部署 ID、用户池 ID、部署地域和项目等元信息供前端关联，无需手动设置。配置任一 APMPlus 选项时，`--apmplus-aid` 与 `--apmplus-token` 必须同时提供，否则部署会报错。
-
-```bash
-veadk studio deploy \
-  --vefaas-app-name "veadk-studio" \
-  --apmplus-aid "123456" \
-  --apmplus-token "your-apmplus-client-token"
-```
-
-也可以通过环境变量 `VEADK_STUDIO_APMPLUS_AID` 与 `VEADK_STUDIO_APMPLUS_TOKEN` 提供配置；`VEADK_STUDIO_APMPLUS_DOMAIN` 与 `VEADK_STUDIO_APMPLUS_ENV` 分别覆盖上报域名（默认 `apmplus.volces.com`）和环境名称（默认 `production`）。本地启动 `veadk studio` 时同样可设置这些环境变量启用埋点。
+部署时 Studio 会自动通过 `/web/ui-config` 接口下发部署 ID、用户池 ID、应用 ID、函数 ID、部署地域和项目等上下文供前端关联事件，无需手动设置。
 
 <Note>
-  埋点仅采集使用统计维度，包括部署 ID、用户 ID、角色、地域、来源、创建方式、是否使用智能生成，以及智能体部署、沙箱创建、智能体连接、对话发送、调试测试和源码下载的成功或失败结果与失败阶段。失败事件附带错误摘要时会自动脱敏密钥、令牌和密码，截取前 300 个字符后上报。埋点不采集对话内容、提示词、生成代码、环境变量值或任何密钥。应用内更新 Studio 时会保留已配置的 APMPlus 环境变量。
+  埋点仅采集使用统计维度，包括部署 ID、用户 ID、角色、地域、来源、创建方式、是否使用智能生成，以及智能体部署、沙箱创建、智能体连接、对话发送、调试测试和源码下载的成功或失败结果与失败阶段。失败事件仅保留稳定的错误类别和错误码，不采集错误堆栈、错误正文或自由文本。埋点不采集对话内容、提示词、生成代码、环境变量值或任何密钥。
+</Note>
+
+<Note>
+  此变更仅影响 Studio 前端的产品行为埋点。VeADK 运行时的 APMPlus OpenTelemetry 链路观测和问题反馈中的 APMPlus 查询能力不受影响，继续保留。
 </Note>
 
 ## 更新已部署的 Studio
