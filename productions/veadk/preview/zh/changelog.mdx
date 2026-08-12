@@ -8,6 +8,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| 前端对话 | 智能体回复过程中，输入框的发送按钮变为停止按钮，点击后中断当前回复：已接收的内容保留在对话中，停止后可立即在同一会话中发送下一条消息。该能力在 `veadk frontend` 与 `veadk studio` 的对话页面（含沙箱会话）均生效。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
 | 代码沙箱 | `execute_skills` 移除 `invocation_mode` 参数和 `AGENTKIT_SKILL_INVOCATION_MODE` 环境变量，统一通过 A2A 协议执行技能工作流。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
 | 代码沙箱 | `execute_skills` 新增 `timeout` 参数控制最大执行时间，默认 1800 秒（30 分钟），取值范围 1–1800 秒。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
 | 代码沙箱 | `execute_skills` 不再支持 `env_vars` 参数，传入非 `None` 值会报错。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
