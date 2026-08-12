@@ -10,6 +10,7 @@ title: "更新日志"
 | --- | --- | --- |
 | Studio 埋点 | Studio 前端产品行为埋点从 APMPlus Web SDK 迁移至 TEA：运行 `veadk studio`（含本地启动与 `veadk studio deploy` 部署实例）时自动启用，不再需要配置。`veadk studio deploy` 移除 `--apmplus-aid`、`--apmplus-token`、`--apmplus-domain` 和 `--apmplus-env` 选项及对应的 `VEADK_STUDIO_APMPLUS_AID`、`VEADK_STUDIO_APMPLUS_TOKEN`、`VEADK_STUDIO_APMPLUS_DOMAIN` 和 `VEADK_STUDIO_APMPLUS_ENV` 环境变量。埋点仅采集使用统计维度，失败事件仅保留错误类别与错误码。VeADK 运行时的 APMPlus 链路观测不受影响。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | 前端对话 | 智能体回复过程中，输入框的发送按钮变为停止按钮，点击后中断当前回复：已接收的内容保留在对话中，停止后可立即在同一会话中发送下一条消息。该能力在 `veadk frontend` 与 `veadk studio` 的对话页面（含沙箱会话）均生效。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| 前端对话 | 输入框发送按钮旁新增上下文用量指示器：显示当前模型的上下文窗口用量构成，悬停或聚焦时展开 100 格用量图，将占用分为系统与工具（估算）、输入与历史、输出与思考、剩余容量。系统与工具占用为估算值，因为模型使用量统计未单独报告该部分。上下文窗口大小按云服务商和模型名称确定。该能力在 `veadk frontend` 与 `veadk studio` 的智能体对话页面均生效。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
 | 代码沙箱 | `execute_skills` 移除 `invocation_mode` 参数和 `AGENTKIT_SKILL_INVOCATION_MODE` 环境变量，统一通过 A2A 协议执行技能工作流。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
 | 代码沙箱 | `execute_skills` 新增 `timeout` 参数控制最大执行时间，默认 1800 秒（30 分钟），取值范围 1–1800 秒。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
 | 代码沙箱 | `execute_skills` 不再支持 `env_vars` 参数，传入非 `None` 值会报错。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
