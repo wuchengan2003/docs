@@ -486,6 +486,21 @@ The “Issue feedback” entry in the sidebar footer (labeled Beta) reports gene
   Issue feedback is sent to the AgentKit team to improve the product; a confirmation appears after a successful submission. Avoid entering keys, tokens, or other sensitive information in the description. Feedback may fail when the current session is unavailable; close and retry in that case.
 </Note>
 
+## Share a conversation as an image
+
+The “Share as image” button next to an assistant reply exports all inputs and outputs up to that turn as a single PNG image. The image is generated locally in the browser without any network request. The export includes every user message and assistant reply from the start of the session through the current turn, and appends a note reading “上述会话由 AgentKit Studio 导出，仅供参考” at the bottom.
+
+Once generation finishes, the image can be previewed in the dialog. The following actions are available:
+
+| Action | Description |
+| :--- | :--- |
+| Download PNG | Saves the image locally; the file name includes an export timestamp. |
+| Copy image | Copies the image to the system clipboard for pasting into other applications. This relies on the browser's clipboard write capability; when unsupported, the dialog prompts you to use Download instead. |
+
+<Note>
+  The button is available in both normal agent conversations and built-in Codex agent conversations, and appears only after a reply is complete (not while streaming or awaiting OAuth authorization). When the conversation is too long and the resulting image would exceed the browser's canvas limit, generation fails with a message indicating the conversation is too long; you can retry after shortening the conversation.
+</Note>
+
 ## Use smart search
 
 Smart search provides four retrieval sources:
