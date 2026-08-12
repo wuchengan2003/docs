@@ -41,7 +41,6 @@ VeADK 提供一组在 [AgentKit 沙箱](https://console.volcengine.com/agentkit)
 - `AGENTKIT_TOOL_HOST`：调用 AgentKit Tools 的 Endpoint
 - `AGENTKIT_TOOL_SERVICE_CODE`：调用 AgentKit Tools 的 ServiceCode
 - `AGENTKIT_TOOL_REGION`：调用 AgentKit Tools 的地域，默认 `cn-beijing`
-- `AGENTKIT_SKILL_INVOCATION_MODE`：`execute_skills` 调用模式，未指定时默认 `execute`
 
 `config.yaml` 配置项：
 
@@ -119,7 +118,7 @@ def run_code(
     code: str,
     language: str,
     tool_context: ToolContext,
-    timeout: int = 30,
+    timeout: int = 300,
     exec_dir: str = "/tmp",
     env: dict[str, str] | None = None,
     hard_timeout: int = 300,
@@ -133,10 +132,10 @@ def run_code(
 | `code` | `str` | — | 要执行的代码或 Shell 命令。 |
 | `language` | `str` | — | 执行语言。执行代码时取 `python3`；执行 Shell 命令时取 `bash` 或 `shell`。 |
 | `tool_context` | `ToolContext` | — | 工具运行时上下文，由 VeADK 自动注入。 |
-| `timeout` | `int` | `30` | 命令执行的超时时间，单位为秒。 |
+| `timeout` | `int` | `300` | 命令执行的超时时间，单位为秒。取值范围为 1–300。 |
 | `exec_dir` | `str` | `/tmp` | Shell 执行的工作目录。 |
 | `env` | `dict[str, str] \| None` | `None` | Shell 执行使用的环境变量。 |
-| `hard_timeout` | `int` | `300` | Shell 执行的硬超时时间，单位为秒。 |
+| `hard_timeout` | `int` | `300` | Shell 执行的硬超时时间，单位为秒。取值范围为 1–300。 |
 | `max_output_length` | `int` | `30000` | Shell 输出的最大长度。 |
 
 `exec_dir`、`env`、`hard_timeout` 和 `max_output_length` 仅在执行 Shell 命令（`language` 为 `bash` 或 `shell`）时生效；执行代码时由沙箱运行时管理，不适用这些参数。
@@ -185,15 +184,16 @@ if __name__ == "__main__":
 
 ## 为沙箱执行注入环境变量
 
-`execute_skills` 和 `run_sandbox_agent` 支持向本次沙箱执行注入自定义环境变量，用于向技能或沙箱内的工作流传入运行时参数（如配置项、凭证引用、特性开关等）。注入的环境变量仅在本次执行生效，不会持久化到沙箱基础环境。
+`run_sandbox_agent` 支持通过 `extra_env_vars` 参数向本次沙箱执行注入自定义环境变量，用于向沙箱内的工作流传入运行时参数（如配置项、凭证引用、特性开关等）。注入的环境变量仅在本次执行生效，不会持久化到沙箱基础环境。
 
-`execute_skills` 通过 `env_vars` 参数注入；`run_sandbox_agent` 通过 `extra_env_vars` 参数注入。两者共享同一套校验与合并规则。
+<Note>
+  `execute_skills` 已不再支持注入环境变量。传入 `env_vars` 参数会报错。
+</Note>
 
 ### 参数
 
 | 参数 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `env_vars` | `Optional[dict[str, str]]` | `None` | `execute_skills` 注入的环境变量，键值均为字符串，仅在本次执行生效。 |
 | `extra_env_vars` | `Optional[dict[str, str]]` | `None` | `run_sandbox_agent` 注入的环境变量，键值均为字符串，仅在本次执行生效。 |
 
 ### 校验规则
@@ -208,7 +208,7 @@ if __name__ == "__main__":
 
 ### 使用示例
 
-下面的示例将两种调用封装为函数工具。`Runner` 调用函数工具时会注入 `tool_context`，应用只需在封装函数中设置本次执行需要的环境变量：
+下面的示例将调用封装为函数工具。`Runner` 调用函数工具时会注入 `tool_context`，应用只需在封装函数中设置本次执行需要的环境变量：
 
 ```python title="sandbox_env.py"
 import asyncio
@@ -216,20 +216,7 @@ import asyncio
 from google.adk.tools import ToolContext
 from veadk import Agent, Runner
 from veadk.memory.short_term_memory import ShortTermMemory
-from veadk.tools.builtin_tools.execute_skills import execute_skills
 from veadk.tools.builtin_tools.run_sandbox_agent import run_sandbox_agent
-
-
-def run_skill_workflow(workflow_prompt: str, tool_context: ToolContext) -> str:
-    """在技能沙箱中运行工作流。"""
-    return execute_skills(
-        workflow_prompt=workflow_prompt,
-        tool_context=tool_context,
-        env_vars={
-            "SKILL_CONFIG_PATH": "/tmp/skill_config.yaml",
-            "MAX_RESULTS": "20",
-        },
-    )
 
 
 def run_custom_workflow(workflow_prompt: str, tool_context: ToolContext) -> str:
@@ -247,7 +234,7 @@ agent = Agent(
     instruction="根据用户要求调用合适的沙箱工作流。",
     skills=["space:your-skill-space-id"],
     skills_mode="skills_sandbox",
-    tools=[run_skill_workflow, run_custom_workflow],
+    tools=[run_custom_workflow],
 )
 runner = Runner(agent=agent, short_term_memory=ShortTermMemory())
 
@@ -262,34 +249,41 @@ if __name__ == "__main__":
 ```
 
 <Warning>
-  `env_vars` 和 `extra_env_vars` 的值会传入远端沙箱进程。不要在代码中写入长期凭证；需要凭证时，使用沙箱支持的凭据托管方式。
+  `extra_env_vars` 的值会传入远端沙箱进程。不要在代码中写入长期凭证；需要凭证时，使用沙箱支持的凭据托管方式。
 </Warning>
 
-## 技能沙箱调用模式
+## 技能沙箱执行
 
-`execute_skills` 支持通过 `invocation_mode` 参数选择技能沙箱的调用后端，适配不同版本的 Skill 沙箱镜像。也可以通过环境变量 `AGENTKIT_SKILL_INVOCATION_MODE` 全局设置；参数优先级高于环境变量。
-
-| 调用模式 | 说明 |
-| :--- | :--- |
-| `execute` | 默认模式。通过 Skill HTTP API 的 `/v1/skills/execute` 接口同步执行技能工作流。 |
-| `run_sse` | 通过 ADK Runtime 的 `/run_sse` 接口以 SSE 方式执行，适配只暴露 ADK Runtime 接口的 Skill 沙箱。 |
-| `a2a` | 通过 A2A 协议的 `message/send` 方法同步等待执行结果，适配使用 A2A 协议的 Skill 沙箱。 |
-| `python_agent` | 旧版 RunCode 路径，在沙箱内执行 `agent.py`。传入 `env_vars` 时始终使用此模式。 |
-| `skill_api` | `execute` 的别名，行为与 `execute` 一致。 |
-
-<Note>
-传入 `env_vars` 参数时，无论 `invocation_mode` 取值如何，`execute_skills` 始终使用 `python_agent` 模式，因为自定义环境变量注入依赖进程级环境变量。
-</Note>
+`execute_skills` 通过 A2A 协议在技能沙箱中执行工作流。调用时发送非阻塞的 `message/send` 请求，随后按指数递增的间隔轮询任务状态，直到任务达到终态或超时。支持的最长执行时间为 1800 秒（30 分钟）。
 
 ### 参数
 
+`execute_skills` 的完整签名如下：
+
+```python
+def execute_skills(
+    workflow_prompt: str,
+    tool_context: ToolContext,
+    env_vars: Optional[dict[str, str]] = None,
+    timeout: int = 1800,
+) -> str:
+    ...
+```
+
 | 参数 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `invocation_mode` | `Optional[str]` | `None` | 技能沙箱调用模式。未指定时读取 `AGENTKIT_SKILL_INVOCATION_MODE` 环境变量，均未设置时使用 `execute`。 |
+| `workflow_prompt` | `str` | — | 技能工作流指令。 |
+| `tool_context` | `ToolContext` | — | 工具运行时上下文，由 VeADK 自动注入。 |
+| `env_vars` | `Optional[dict[str, str]]` | `None` | 不再支持。传入非 `None` 值会报错。 |
+| `timeout` | `int` | `1800` | 最大执行时间，单位为秒。取值范围为 1–1800。 |
+
+<Note>
+  `execute_skills` 已移除 `invocation_mode` 参数和 `AGENTKIT_SKILL_INVOCATION_MODE` 环境变量，统一使用 A2A 协议执行。
+</Note>
 
 ### 使用示例
 
-```python title="skill_invocation_mode.py"
+```python title="execute_skills_timeout.py"
 import asyncio
 
 from google.adk.tools import ToolContext
@@ -299,11 +293,11 @@ from veadk.tools.builtin_tools.execute_skills import execute_skills
 
 
 def run_skill_workflow(workflow_prompt: str, tool_context: ToolContext) -> str:
-    """在技能沙箱中运行工作流，使用 A2A 调用模式。"""
+    """在技能沙箱中运行工作流，设置 600 秒超时。"""
     return execute_skills(
         workflow_prompt=workflow_prompt,
         tool_context=tool_context,
-        invocation_mode="a2a",
+        timeout=600,
     )
 
 

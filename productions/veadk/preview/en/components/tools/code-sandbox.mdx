@@ -41,7 +41,6 @@ Environment variables:
 - `AGENTKIT_TOOL_HOST`: endpoint for calling AgentKit Tools
 - `AGENTKIT_TOOL_SERVICE_CODE`: service code for calling AgentKit Tools
 - `AGENTKIT_TOOL_REGION`: region for calling AgentKit Tools; defaults to `cn-beijing`
-- `AGENTKIT_SKILL_INVOCATION_MODE`: invocation mode for `execute_skills`; defaults to `execute`
 
 `config.yaml` keys:
 
@@ -120,7 +119,7 @@ def run_code(
     code: str,
     language: str,
     tool_context: ToolContext,
-    timeout: int = 30,
+    timeout: int = 300,
     exec_dir: str = "/tmp",
     env: dict[str, str] | None = None,
     hard_timeout: int = 300,
@@ -134,10 +133,10 @@ def run_code(
 | `code` | `str` | — | The code or shell command to run. |
 | `language` | `str` | — | Execution language. Use `python3` for code, or `bash` / `shell` for shell commands. |
 | `tool_context` | `ToolContext` | — | Tool runtime context, injected automatically by VeADK. |
-| `timeout` | `int` | `30` | Execution timeout in seconds. |
+| `timeout` | `int` | `300` | Execution timeout in seconds. Must be between 1 and 300. |
 | `exec_dir` | `str` | `/tmp` | Working directory for shell execution. |
 | `env` | `dict[str, str] \| None` | `None` | Environment variables for shell execution. |
-| `hard_timeout` | `int` | `300` | Hard timeout for shell execution, in seconds. |
+| `hard_timeout` | `int` | `300` | Hard timeout for shell execution, in seconds. Must be between 1 and 300. |
 | `max_output_length` | `int` | `30000` | Maximum length of shell output. |
 
 `exec_dir`, `env`, `hard_timeout`, and `max_output_length` apply only when running shell commands (`language` set to `bash` or `shell`); they are managed by the sandbox runtime and do not apply when running code.
@@ -186,15 +185,16 @@ if __name__ == "__main__":
 
 ## Injecting environment variables into sandbox executions
 
-`execute_skills` and `run_sandbox_agent` accept custom environment variables that are injected into a single sandbox execution. Use them to pass runtime parameters (configuration values, credential references, feature flags, and so on) to a skill or an in-sandbox workflow. Injected variables are scoped to the current execution only and are not persisted to the sandbox base environment.
+`run_sandbox_agent` accepts custom environment variables through the `extra_env_vars` parameter that are injected into a single sandbox execution. Use them to pass runtime parameters (configuration values, credential references, feature flags, and so on) to an in-sandbox workflow. Injected variables are scoped to the current execution only and are not persisted to the sandbox base environment.
 
-`execute_skills` injects variables through the `env_vars` parameter; `run_sandbox_agent` injects them through `extra_env_vars`. Both share the same validation and merge rules.
+<Note>
+  `execute_skills` no longer supports injecting environment variables. Passing a non-`None` `env_vars` value raises an error.
+</Note>
 
 ### Parameters
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `env_vars` | `Optional[dict[str, str]]` | `None` | Environment variables injected by `execute_skills`; keys and values are strings, scoped to the current execution. |
 | `extra_env_vars` | `Optional[dict[str, str]]` | `None` | Environment variables injected by `run_sandbox_agent`; keys and values are strings, scoped to the current execution. |
 
 ### Validation rules
@@ -209,7 +209,7 @@ Injected variables are merged with the framework-managed variables that VeADK se
 
 ### Examples
 
-The following example wraps both calls as function tools. `Runner` injects `tool_context` when it invokes a function tool, while the application sets the environment variables for each execution in the wrapper:
+The following example wraps the call as a function tool. `Runner` injects `tool_context` when it invokes a function tool, while the application sets the environment variables for each execution in the wrapper:
 
 ```python title="sandbox_env.py"
 import asyncio
@@ -217,20 +217,7 @@ import asyncio
 from google.adk.tools import ToolContext
 from veadk import Agent, Runner
 from veadk.memory.short_term_memory import ShortTermMemory
-from veadk.tools.builtin_tools.execute_skills import execute_skills
 from veadk.tools.builtin_tools.run_sandbox_agent import run_sandbox_agent
-
-
-def run_skill_workflow(workflow_prompt: str, tool_context: ToolContext) -> str:
-    """Run a workflow in the skills sandbox."""
-    return execute_skills(
-        workflow_prompt=workflow_prompt,
-        tool_context=tool_context,
-        env_vars={
-            "SKILL_CONFIG_PATH": "/tmp/skill_config.yaml",
-            "MAX_RESULTS": "20",
-        },
-    )
 
 
 def run_custom_workflow(workflow_prompt: str, tool_context: ToolContext) -> str:
@@ -248,7 +235,7 @@ agent = Agent(
     instruction="Call the appropriate sandbox workflow for the user's request.",
     skills=["space:your-skill-space-id"],
     skills_mode="skills_sandbox",
-    tools=[run_skill_workflow, run_custom_workflow],
+    tools=[run_custom_workflow],
 )
 runner = Runner(agent=agent, short_term_memory=ShortTermMemory())
 
@@ -263,34 +250,41 @@ if __name__ == "__main__":
 ```
 
 <Warning>
-  Values in `env_vars` and `extra_env_vars` are passed to the remote sandbox process. Do not put long-lived credentials in source code; use the sandbox's supported credential-hosting mechanism when credentials are required.
+  Values in `extra_env_vars` are passed to the remote sandbox process. Do not put long-lived credentials in source code; use the sandbox's supported credential-hosting mechanism when credentials are required.
 </Warning>
 
-## Skill sandbox invocation modes
+## Skill sandbox execution
 
-`execute_skills` accepts an `invocation_mode` parameter to select the skill sandbox invocation backend, adapting to different Skill sandbox image versions. The mode can also be set globally with the `AGENTKIT_SKILL_INVOCATION_MODE` environment variable; the parameter takes precedence over the environment variable.
-
-| Mode | Description |
-| :--- | :--- |
-| `execute` | Default mode. Runs the skill workflow synchronously through the Skill HTTP API `/v1/skills/execute` endpoint. |
-| `run_sse` | Runs via the ADK Runtime `/run_sse` endpoint using SSE, for skill sandboxes that only expose the ADK Runtime interface. |
-| `a2a` | Sends a `message/send` request via the A2A protocol and waits synchronously for the result, for skill sandboxes that use the A2A protocol. |
-| `python_agent` | Legacy RunCode path that runs `agent.py` inside the sandbox. Always used when `env_vars` is provided. |
-| `skill_api` | Alias for `execute`; behaves identically. |
-
-<Note>
-When `env_vars` is provided, `execute_skills` always uses `python_agent` mode regardless of `invocation_mode`, because custom environment variable injection relies on process-level environment variables.
-</Note>
+`execute_skills` runs a workflow in the skills sandbox through the A2A protocol. It sends a non-blocking `message/send` request and then polls the task status at exponentially increasing intervals until the task reaches a terminal state or the timeout expires. The maximum execution time is 1800 seconds (30 minutes).
 
 ### Parameters
 
+The full signature of `execute_skills`:
+
+```python
+def execute_skills(
+    workflow_prompt: str,
+    tool_context: ToolContext,
+    env_vars: Optional[dict[str, str]] = None,
+    timeout: int = 1800,
+) -> str:
+    ...
+```
+
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `invocation_mode` | `Optional[str]` | `None` | Skill sandbox invocation mode. When not specified, the `AGENTKIT_SKILL_INVOCATION_MODE` environment variable is read; if both are unset, `execute` is used. |
+| `workflow_prompt` | `str` | — | The skill workflow instruction. |
+| `tool_context` | `ToolContext` | — | Tool runtime context, injected automatically by VeADK. |
+| `env_vars` | `Optional[dict[str, str]]` | `None` | Unsupported. Passing a non-`None` value raises an error. |
+| `timeout` | `int` | `1800` | Maximum execution time in seconds. Must be between 1 and 1800. |
+
+<Note>
+  `execute_skills` has removed the `invocation_mode` parameter and the `AGENTKIT_SKILL_INVOCATION_MODE` environment variable. Execution now uses the A2A protocol exclusively.
+</Note>
 
 ### Example
 
-```python title="skill_invocation_mode.py"
+```python title="execute_skills_timeout.py"
 import asyncio
 
 from google.adk.tools import ToolContext
@@ -300,11 +294,11 @@ from veadk.tools.builtin_tools.execute_skills import execute_skills
 
 
 def run_skill_workflow(workflow_prompt: str, tool_context: ToolContext) -> str:
-    """Run a workflow in the skills sandbox using A2A mode."""
+    """Run a workflow in the skills sandbox with a 600-second timeout."""
     return execute_skills(
         workflow_prompt=workflow_prompt,
         tool_context=tool_context,
-        invocation_mode="a2a",
+        timeout=600,
     )
 
 
