@@ -1312,6 +1312,23 @@ When `--sandbox-chat-codex-tool-id` is omitted, deployment creates the AgentKit 
 
 The model, endpoint, and candidate regions for sandbox Tools differ by cloud provider: Volcengine uses the `doubao-seed-2-1-pro-260628` model with `https://ark.cn-beijing.volces.com/api/v3`, and candidate regions `cn-beijing` and `cn-shanghai`; BytePlus uses the `seed-2-0-lite-260228` model with `https://ark.ap-southeast.bytepluses.com/api/v3`, and candidate region `ap-southeast-1`.
 
+### IAM permission pre-check
+
+`veadk studio deploy` automatically runs a read-only IAM permission pre-check before creating any cloud resources. The pre-check reads the caller's attached IAM policies and evaluates each required IAM Action for the deployment. The required permission scope depends on the deployment configuration: when existing identity resources are not specified via `--user-pool-id` and `--allowed-client-id`, permissions for creating user pools are required; when `--iam-role` is not provided, role management permissions are required; when no existing bucket is specified via `VEADK_STUDIO_TOS_BUCKET`, bucket creation permissions are required; when sandbox Tool IDs are not specified, Tool creation permissions are required; when `--gateway-name` is not provided, gateway management permissions are required; when `--keep-failed-deploy` is not enabled, permissions for cleaning up failed resources are also required.
+
+After the pre-check completes, the terminal prints a permission table listing each IAM Action, its purpose, and whether it is satisfied. If any permission is missing, the deployment stops before creating cloud resources; the terminal also prints the IAM configuration URL for the corresponding cloud provider to help you add the missing permissions. The Volcengine URL is `https://console.volcengine.com/iam/policymanage` and the BytePlus URL is `https://console.byteplus.com/iam/policymanage`.
+
+Use `--precheck-only` to run only the permission pre-check without creating any cloud resources, which is useful for verifying credential permissions before a formal deployment:
+
+```bash
+veadk studio deploy \
+  --vefaas-app-name "veadk-studio" \
+  --region "cn-beijing" \
+  --precheck-only
+```
+
+The pre-check uses the deployment credentials to query IAM policies in a read-only manner and does not modify any resources.
+
 ### In-app updates
 
 Studio reads new releases from the centrally maintained `veadk-studio` TOS source in `cn-beijing`, regardless of the deployment region, so administrators can update the frontend and Python backend together from the navbar without extra options. Use `--studio-update-bucket` and `--studio-update-prefix` (or the matching `VEADK_STUDIO_UPDATE_BUCKET` and `VEADK_STUDIO_UPDATE_PREFIX` environment variables) to override the default release source; the release source region is always `cn-beijing`. The release bundle is not tied to a cloud provider — Volcengine and BytePlus deployments share the same source. During the update, the cloud-provider entry point is selected automatically based on the `CLOUD_PROVIDER` (or `AGENTKIT_CLOUD_PROVIDER`) environment variable in the deployment; BytePlus deployments also have `BYTEPLUS_REGION` written during the update.
@@ -1362,6 +1379,7 @@ veadk studio deploy \
 | `--veadk-version` | `str` | Latest release | `veadk-python` version installed in VeFaaS; set it only when pinning or reproducing a release. |
 | `--from-source` | Boolean flag | `false` | Build and deploy a wheel from the current checkout, including uncommitted changes. Use it for unreleased validation, not together with a pinned release workflow. |
 | `--keep-failed-deploy` | Boolean flag | `false` | Keep created VeFaaS Application and Function resources when deployment fails, so release logs can be inspected in the console. |
+| `--precheck-only` | Boolean flag | `false` | Run the read-only IAM permission pre-check and exit without creating cloud resources. |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | Auto-create | AgentKit CodeEnv Tool ID for built-in agents; also read from `SANDBOX_CHAT_CODEX`. |
 | `--sandbox-dev-tool-id` | `str \| None` | Auto-create | AgentKit DevEnv Tool ID for the Dev Sandbox; also read from `SANDBOX_DEV`. |
 | `--studio-update-bucket` | `str` | `veadk-studio` | TOS bucket holding immutable Studio release bundles; written to the function env as `VEADK_STUDIO_UPDATE_BUCKET`. Also read from `VEADK_STUDIO_UPDATE_BUCKET`. |
