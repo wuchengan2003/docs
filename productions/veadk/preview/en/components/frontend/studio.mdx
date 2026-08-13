@@ -1312,6 +1312,10 @@ When `--sandbox-chat-codex-tool-id` is omitted, deployment creates the AgentKit 
 
 The model, endpoint, and candidate regions for sandbox Tools differ by cloud provider: Volcengine uses the `doubao-seed-2-1-pro-260628` model with `https://ark.cn-beijing.volces.com/api/v3`, and candidate regions `cn-beijing` and `cn-shanghai`; BytePlus uses the `seed-2-0-lite-260228` model with `https://ark.ap-southeast.bytepluses.com/api/v3`, and candidate region `ap-southeast-1`.
 
+<Note>
+  When creating sandbox Tools during deployment and updates, the CLI automatically retries transient errors such as rate limits, network failures, and temporary server errors. Concurrent Tool creations are staggered to avoid triggering rate limits. Each creation request carries an idempotency token so that retries do not create duplicate Tools. When Tool provisioning fails, error messages include the Tool ID and cloud service error details (error code, status code, and request ID) to help with troubleshooting.
+</Note>
+
 ### IAM permission pre-check
 
 `veadk studio deploy` automatically runs a read-only IAM permission pre-check before creating any cloud resources. The pre-check reads the caller's attached IAM policies and evaluates each required IAM Action for the deployment. The required permission scope depends on the deployment configuration: when existing identity resources are not specified via `--user-pool-id` and `--allowed-client-id`, permissions for creating user pools are required; when `--iam-role` is not provided, role management permissions are required; when no existing bucket is specified via `VEADK_STUDIO_TOS_BUCKET`, bucket creation permissions are required; when sandbox Tool IDs are not specified, Tool creation permissions are required; when `--gateway-name` is not provided, gateway management permissions are required; when `--keep-failed-deploy` is not enabled, permissions for cleaning up failed resources are also required.
