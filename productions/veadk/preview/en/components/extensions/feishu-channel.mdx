@@ -39,6 +39,8 @@ Environment variables:
 - `TOOL_FEISHU_CHANNEL_TRANSPORT`: defaults to `ws`
 - `TOOL_FEISHU_CHANNEL_STREAMING`: whether to enable streaming output, defaults to `false`
 - `TOOL_FEISHU_CHANNEL_REACTIONS`: whether to reply with a "received" reaction on incoming messages, defaults to `false`
+- `TOOL_FEISHU_CHANNEL_RECONNECT_INTERVAL`: seconds to wait before reconnecting after the WebSocket disconnects, defaults to `3`
+- `TOOL_FEISHU_CHANNEL_DRAIN_TIMEOUT`: maximum seconds to wait for already-received messages to finish during a graceful shutdown, defaults to `300`
 
 Or configure in `config.yaml`:
 
@@ -87,6 +89,66 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
+
+## Graceful shutdown
+
+`FeishuChannelExtension` exposes dedicated lifecycle methods to manage the WebSocket connection from ASGI application (FastAPI, Starlette) startup and shutdown hooks, so that rolling updates or process exits do not drop in-flight Feishu messages.
+
+Shutdown runs in two steps: first the WebSocket is closed so no new messages are accepted (Feishu re-routes new events to another instance that still holds a connection), then already-received messages are allowed to finish replying. Replies are sent over the Feishu OpenAPI HTTP client, which does not depend on the WebSocket, so messages received before shutdown still reply normally.
+
+<Note>
+Long-connection scripts that only call `connect()` directly do not need `start()` / `shutdown()`; this is fine for simple scripts where draining messages on exit is unnecessary. Use `start()` and `shutdown()` only when hosting the channel inside an ASGI service that needs graceful shutdown.
+</Note>
+
+### Usage example
+
+Call `start()` and `shutdown()` from the ASGI app's startup and shutdown hooks:
+
+```python title="examples/channel/feishu_asgi.py"
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+from veadk.extensions import FeishuChannelExtension
+from feishu_bot import runner  # reuse the runner defined above
+
+channel = FeishuChannelExtension(
+    runner=runner,
+    channel_kwargs={"transport": "ws"},
+)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    channel.start()  # call inside the running event loop
+    try:
+        yield
+    finally:
+        await channel.shutdown()  # close the connection and drain in-flight messages
+
+
+app = FastAPI(lifespan=lifespan)
+```
+
+### Methods
+
+| Method | Type | Description |
+| :--- | :--- | :--- |
+| `start(loop)` | sync | Call from within the running app event loop. Captures that loop and starts a background reconnect loop. Idempotent: calling again while already running does not start a second loop. When `loop` is omitted, the currently running loop is used. |
+| `await shutdown(*, drain_timeout)` | async | Closes the WebSocket and waits for already-received messages to finish. Intended as an ASGI shutdown hook. Safe to call multiple times; only the first call performs the teardown. When `drain_timeout` is omitted, `TOOL_FEISHU_CHANNEL_DRAIN_TIMEOUT` is used. |
+| `await drain(timeout)` | async | Waits for all in-flight message tasks to finish; cancels unfinished tasks after `timeout` seconds. Defaults to `300.0`. |
+| `is_draining` | property | Boolean indicating whether a graceful shutdown has begun. The reconnect loop checks it and stops reconnecting. |
+
+<Warning>
+`shutdown()` waits for in-flight messages to finish. If message processing takes longer than `drain_timeout`, unfinished tasks are cancelled. In production, tune `TOOL_FEISHU_CHANNEL_DRAIN_TIMEOUT` to your agent's average response time so that normal replies are not interrupted.
+</Warning>
+
+### Environment variables
+
+| Environment variable | Default | Description |
+| :--- | :--- | :--- |
+| `TOOL_FEISHU_CHANNEL_RECONNECT_INTERVAL` | `3` | Seconds to wait before reconnecting after the WebSocket disconnects. |
+| `TOOL_FEISHU_CHANNEL_DRAIN_TIMEOUT` | `300` | Maximum seconds to wait for already-received messages to finish during a graceful shutdown. |
 
 ## Parameters
 
@@ -157,3 +219,4 @@ channel = FeishuChannelExtension(
 - Replies are sent as replies to the original message by default, keeping VeADK output attached to the current Feishu message thread.
 - Override the default identity mapping via `session_id_factory` and `user_id_factory`.
 - `connect()` and `disconnect()` support both async clients and synchronous Channel SDK clients exposing `start()` / `stop()`.
+- When streaming output is enabled, reply content is concatenated directly from delta chunks and is no longer corrupted or truncated by the dedup heuristic.
