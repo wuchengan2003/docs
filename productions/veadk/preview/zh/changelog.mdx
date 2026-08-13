@@ -8,6 +8,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 模型凭据 | Studio 将模型凭据绑定到可信端点：模型 API 地址留空或使用当前云的官方 Ark 地址时，Studio 自动提供 Ark API Key 用于调试运行和部署；使用自定义模型地址时，Studio 不提供凭据，调试运行不支持自定义地址，发布页要求为每个使用自定义地址的智能体填写 API Key（仅用于本次发布），生成的项目代码通过 `CUSTOM_MODEL_<智能体名称>_API_KEY` 环境变量读取。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 评测 | 在与已部署智能体的对话中，可在助手回复中选中一段文字并添加批注，将该轮回复保存为 Bad Case 评测案例：选中片段与批注说明组合保存为案例备注，标注案例在评测集中显示评分与批注理由。该能力仅在连接已部署火山引擎 Runtime 且回复生成结束后可用，BytePlus 部署和本地调试会话不支持。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | `veadk studio deploy` 和 `veadk studio update` 在创建沙箱 Tool 时增强可靠性：自动重试限流、网络错误和服务端临时故障，并发创建时错开请求以避免限流，每次创建携带幂等令牌防止重复创建。Tool 创建失败时的错误信息新增 Tool ID 和云服务错误码、状态码、请求 ID。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | `veadk studio deploy` 在创建云资源前自动执行只读 IAM 权限预检：读取当前调用者已绑定的 IAM 策略，逐一评估部署所需 IAM Action 是否满足，并在终端输出权限表格。存在缺失权限时部署在创建资源前终止，同时输出对应云服务商的 IAM 配置入口链接。新增 `--precheck-only` 选项，可仅执行预检而不创建任何资源。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
