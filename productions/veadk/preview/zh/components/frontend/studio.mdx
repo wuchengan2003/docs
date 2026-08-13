@@ -1312,6 +1312,10 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 沙箱 Tool 使用的模型、接入地址和候选地域按云服务商区分：火山引擎使用 `doubao-seed-2-1-pro-260628` 模型与 `https://ark.cn-beijing.volces.com/api/v3`，候选地域为 `cn-beijing` 与 `cn-shanghai`；BytePlus 使用 `seed-2-0-lite-260228` 模型与 `https://ark.ap-southeast.bytepluses.com/api/v3`，候选地域为 `ap-southeast-1`。
 
+<Note>
+  部署和更新过程中创建沙箱 Tool 时，CLI 会自动对限流、网络错误和服务端临时故障进行重试，并在并发创建多个 Tool 时错开请求以避免触发限流。每次创建请求携带幂等令牌，确保重试不会产生重复 Tool。Tool 创建失败时，错误信息会包含 Tool ID 和云服务返回的错误码、状态码与请求 ID，便于排查。
+</Note>
+
 ### IAM 权限预检
 
 `veadk studio deploy` 在创建任何云资源前，自动执行只读 IAM 权限预检。预检读取当前调用者已绑定的 IAM 策略，逐一评估部署所需 IAM Action 是否满足。所需权限范围取决于部署配置：当未通过 `--user-pool-id` 与 `--allowed-client-id` 指定已有身份资源时，需要创建用户池相关权限；未指定 `--iam-role` 时需要角色管理权限；未通过 `VEADK_STUDIO_TOS_BUCKET` 指定已有存储桶时需要存储桶创建权限；未指定沙箱 Tool ID 时需要 Tool 创建权限；未指定 `--gateway-name` 时需要网关管理权限；未启用 `--keep-failed-deploy` 时还需要清理失败资源的删除权限。
