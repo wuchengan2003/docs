@@ -1312,6 +1312,23 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 沙箱 Tool 使用的模型、接入地址和候选地域按云服务商区分：火山引擎使用 `doubao-seed-2-1-pro-260628` 模型与 `https://ark.cn-beijing.volces.com/api/v3`，候选地域为 `cn-beijing` 与 `cn-shanghai`；BytePlus 使用 `seed-2-0-lite-260228` 模型与 `https://ark.ap-southeast.bytepluses.com/api/v3`，候选地域为 `ap-southeast-1`。
 
+### IAM 权限预检
+
+`veadk studio deploy` 在创建任何云资源前，自动执行只读 IAM 权限预检。预检读取当前调用者已绑定的 IAM 策略，逐一评估部署所需 IAM Action 是否满足。所需权限范围取决于部署配置：当未通过 `--user-pool-id` 与 `--allowed-client-id` 指定已有身份资源时，需要创建用户池相关权限；未指定 `--iam-role` 时需要角色管理权限；未通过 `VEADK_STUDIO_TOS_BUCKET` 指定已有存储桶时需要存储桶创建权限；未指定沙箱 Tool ID 时需要 Tool 创建权限；未指定 `--gateway-name` 时需要网关管理权限；未启用 `--keep-failed-deploy` 时还需要清理失败资源的删除权限。
+
+预检完成后，终端输出一张权限表格，列出每项 IAM Action 的作用及是否满足。若存在缺失权限，部署在创建云资源前终止；终端同时输出对应云服务商的 IAM 配置入口链接，便于前往补充权限。火山引擎入口为 `https://console.volcengine.com/iam/policymanage`，BytePlus 入口为 `https://console.byteplus.com/iam/policymanage`。
+
+使用 `--precheck-only` 可仅执行权限预检而不创建任何云资源，用于在正式部署前确认凭证权限是否完备：
+
+```bash
+veadk studio deploy \
+  --vefaas-app-name "veadk-studio" \
+  --region "cn-beijing" \
+  --precheck-only
+```
+
+预检使用部署凭证以只读方式查询 IAM 策略，不修改任何资源。
+
 ### 应用内更新
 
 Studio 固定从维护在北京地域的 `veadk-studio` TOS 发布源读取新版本，客户部署地域无需额外配置；部署完成后管理员可在导航栏中把前端与 Python 后端一起升级。使用 `--studio-update-bucket` 与 `--studio-update-prefix`（或对应的 `VEADK_STUDIO_UPDATE_BUCKET`、`VEADK_STUDIO_UPDATE_PREFIX` 环境变量）可覆盖默认发布源，发布源地域始终为 `cn-beijing`。发布包不绑定云服务商，火山引擎与 BytePlus 部署共用同一发布源；更新时根据部署环境中的 `CLOUD_PROVIDER`（或 `AGENTKIT_CLOUD_PROVIDER`）自动选择对应的云服务商入口，BytePlus 部署在更新过程中同步写入 `BYTEPLUS_REGION`。
@@ -1362,6 +1379,7 @@ veadk studio deploy \
 | `--veadk-version` | `str` | 最新发布版本 | 写入 VeFaaS 依赖的 `veadk-python` 版本；仅在需要固定或复现版本时设置。 |
 | `--from-source` | `bool` 标志 | `false` | 从当前源码目录构建 wheel 后部署，包含未提交改动；用于验证未发布版本，不应与 `--veadk-version` 的发布版本工作流混用。 |
 | `--keep-failed-deploy` | `bool` 标志 | `false` | 部署失败时保留已创建的 VeFaaS Application 与 Function 资源，便于在控制台查看发布日志。 |
+| `--precheck-only` | `bool` 标志 | `false` | 仅执行只读 IAM 权限预检，不创建任何云资源。 |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | 自动创建 | 内置智能体使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_CHAT_CODEX` 设置。 |
 | `--sandbox-dev-tool-id` | `str \| None` | 自动创建 | 开发沙箱使用的 AgentKit DevEnv Tool ID；也可通过 `SANDBOX_DEV` 设置。 |
 | `--studio-update-bucket` | `str` | `veadk-studio` | 存放 Studio 不可变发布包的 TOS Bucket；部署时写入函数环境变量 `VEADK_STUDIO_UPDATE_BUCKET`。也可通过 `VEADK_STUDIO_UPDATE_BUCKET` 设置。 |
