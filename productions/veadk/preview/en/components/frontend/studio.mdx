@@ -1003,9 +1003,30 @@ Once enough cases have been accumulated through automatic evaluation, Studio gen
   When Studio persistent storage is configured, optimization snapshots are stored in TOS, survive process restarts, and are shared across instances. When persistent storage is not configured, snapshots are kept in process memory only and are lost on restart. For storage configuration, see <a href="#studio-persistent-storage">Studio persistent storage</a>.
 </Note>
 
+### Annotate a reply as a Bad Case
+
+When conversing with a deployed agent, you can select a text fragment directly within an assistant reply and add an inline annotation to save that turn as a Bad Case evaluation sample in the corresponding Bad Case evaluation set. The annotation preserves the selected fragment and your note, making it easier to trace the issue back to a specific passage.
+
+This capability is available only when all of the following conditions are met:
+
+- Connected to a deployed Volcengine Runtime (BytePlus deployments and local debug sessions are not supported);
+- The reply has finished generating (not available while streaming is in progress or while authorization is pending).
+
+Usage:
+
+1. Select a text fragment inside the assistant reply bubble. After releasing the mouse, an annotation popover appears near the selection and shows the selected excerpt.
+2. In the "Note" field, describe the problem or the expected correction.
+3. Click "Add to Bad Case". Studio combines the selected fragment and the note into the evaluation case's comment and writes the turn to the Bad Case evaluation set. On success the popover shows a confirmation message.
+
+The selected text is capped at 700 characters, the note at 1,200 characters, and the combined comment at 2,000 characters; excess content is truncated. If the save fails, the annotation popover stays open with an error message so you can retry after correcting the issue.
+
+<Note>
+  Bad Case samples saved through annotation are marked as "manual" source in the case list, with a score of 0 and the annotation as the evaluation reason. Manual cases created through thumbs-up/thumbs-down without an annotation still show "—" as the score.
+</Note>
+
 ### View evaluation cases
 
-The workspace's "Evaluation sets" tab shows all evaluation cases for the agent, filterable by Good Case / Bad Case and auto / manual source. Auto-evaluated cases display a score (on a 0–100 scale) and an evaluation reason; manually created cases (created via thumbs-up/thumbs-down) show "—" in the score column. Cases from both sources can be deleted.
+The workspace's "Evaluation sets" tab shows all evaluation cases for the agent, filterable by Good Case / Bad Case and auto / manual source. Auto-evaluated cases display a score (on a 0–100 scale) and an evaluation reason; manual cases created through thumbs-up/thumbs-down without an annotation show "—" in the score column, while manual cases created through annotation display a score and the annotation reason. Cases from both sources can be deleted.
 
 ## Automation integrations
 
