@@ -91,21 +91,30 @@ The logo can be up to 5 MB in PNG, JPEG, GIF, WebP, AVIF, or ICO format. The equ
   When deploying to AgentKit, the root agent description is automatically normalized to a Runtime-compliant single-line description (at most 255 bytes, with line breaks, control characters, and unsafe symbols removed); the full description is kept in the project and is only used to produce the Runtime description. If the normalized description is rejected by Runtime, Studio retries creation without the description, leaving other configuration unaffected.
 </Note>
 
-### Model credentials and custom model endpoints
+### Model selection
 
-When configuring an LLM agent, you can optionally provide a model API base URL. Studio applies different credential strategies depending on whether the URL is the official Ark endpoint for the current cloud provider:
+When configuring an LLM agent, you can browse the Ark models activated under the current account in the model selector and choose a target model. The model list is fetched by the Studio server from Ark and includes only LLM and VLM models that support agent calls, showing the model name, display name, vendor, and activation status. Deactivated models are excluded. The list is cached server-side; use the refresh button to retrieve the latest status.
 
-| Model API base URL | Credential provided by Studio | Debug run | Deployment |
+The model source falls into one of the following categories, determined automatically by whether the model API base URL is the official Ark endpoint for the current cloud provider:
+
+| Model source | Credential provided by Studio | Debug run | Deployment |
 | :--- | :--- | :--- | :--- |
-| Blank | Official Ark endpoint with a Studio-managed Ark API Key | Supported | No additional input required |
-| Official Ark endpoint for the current cloud | That endpoint with a Studio-managed Ark API Key | Supported | No additional input required |
-| Custom endpoint (non-official Ark) | No credential | Not supported | You must provide the agent's API Key on the publish page |
+| Ark (blank or using the official Ark endpoint for the current cloud) | Official Ark endpoint with a Studio-managed Ark API Key | Supported | No additional input required |
+| Custom (non-official Ark endpoint) | No credential | Not supported | You must provide the agent's API Key on the publish page |
 
 <Warning>
   Debug runs do not support custom model endpoints. Agents using a non-official Ark endpoint will fail at debug time. Use the official Ark endpoint for the current cloud, or deploy first and test through the Runtime.
 </Warning>
 
-When using a custom model endpoint, the publish page displays a "Custom model credentials" group in the environment-variables area, providing a required API Key input for each agent that uses a custom endpoint. The credential is used only for that publish and is not saved in the draft. Generated project code reads the credential from the `CUSTOM_MODEL_<agent_name>_API_KEY` environment variable, and `.env.example` lists it as a placeholder.
+When using Ark models, the Studio server selects an Ark API Key from the current account's key list for debug runs and deployment. The default selection matches `MODEL_AGENT_API_KEY_NAME`; if no match is found, the first key in the list is used. You can also manually select a specific Ark API Key in the deployment configuration area: the selected key's raw value is resolved by the Studio server and injected into the runtime environment without ever being sent to the browser. When the list is empty, create an API Key in the Ark console first.
+
+When using a custom model endpoint, the publish page displays a "Custom model credentials" group in the environment-variables area, providing a required API Key input for each agent that uses a custom endpoint; model provider and model API base URL are also available as optional inputs. The credentials are used only for that publish and are not saved in the draft. Generated project code reads the configuration from the following environment variables, and `.env.example` lists them as placeholders:
+
+| Environment variable | Description |
+| :--- | :--- |
+| `CUSTOM_MODEL_<agent_name>_PROVIDER` | Model provider (e.g. `openai`); generated only when provided. |
+| `CUSTOM_MODEL_<agent_name>_API_BASE` | Model API base URL; generated only when provided. |
+| `CUSTOM_MODEL_<agent_name>_API_KEY` | Model API Key; required. |
 
 ### Configure deployment settings
 
@@ -121,6 +130,8 @@ In the deployment configuration area, select the region and network mode, and op
 | Auto-create evaluation sets | Enabled | Automatically creates Good Case and Bad Case evaluation sets for the agent after deployment succeeds. Disabling skips this step. If creation fails, a warning is shown in the deployment result without affecting the deployed Runtime. |
 
 Instance counts must be positive integers, and the minimum cannot exceed the maximum. When the agent's short-term memory backend is `local` (in-memory) or unconfigured, Studio defaults the maximum instance count to 1 and warns that multiple instances, process restarts, or rolling updates can cause session loss; a database-backed short-term memory store is recommended. The deployment progress shows a corresponding stage: when the instance range differs from the default 1–5, an "Update instance configuration" stage is added after Runtime creation.
+
+When creating a new Runtime, Studio auto-generates a Runtime name from the root agent name (composed of letters, digits, underscores, and hyphens, 4–64 characters), keeping agent and Runtime naming consistent and predictable. The deployment result returns both the agent name and the Runtime name.
 
 When creating a new Runtime, access authentication defaults to API Key. To use user identity verification instead, select a VeIdentity user pool in the deployment configuration area. The Studio server loads the user pools visible to the current account with its own Volcengine credentials, so the browser never receives them. The picker marks the user pool used for the current Studio login: selecting it lets Studio forward the validated login JWT to the Runtime, so callers do not need to obtain a token separately; selecting another user pool means callers must use a JWT issued by that pool to access the Runtime. The user-pool region is determined by the `VEIDENTITY_REGION` environment variable and defaults to `cn-beijing`.
 
