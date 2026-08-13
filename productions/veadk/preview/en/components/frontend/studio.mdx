@@ -91,6 +91,22 @@ The logo can be up to 5 MB in PNG, JPEG, GIF, WebP, AVIF, or ICO format. The equ
   When deploying to AgentKit, the root agent description is automatically normalized to a Runtime-compliant single-line description (at most 255 bytes, with line breaks, control characters, and unsafe symbols removed); the full description is kept in the project and is only used to produce the Runtime description. If the normalized description is rejected by Runtime, Studio retries creation without the description, leaving other configuration unaffected.
 </Note>
 
+### Model credentials and custom model endpoints
+
+When configuring an LLM agent, you can optionally provide a model API base URL. Studio applies different credential strategies depending on whether the URL is the official Ark endpoint for the current cloud provider:
+
+| Model API base URL | Credential provided by Studio | Debug run | Deployment |
+| :--- | :--- | :--- | :--- |
+| Blank | Official Ark endpoint with a Studio-managed Ark API Key | Supported | No additional input required |
+| Official Ark endpoint for the current cloud | That endpoint with a Studio-managed Ark API Key | Supported | No additional input required |
+| Custom endpoint (non-official Ark) | No credential | Not supported | You must provide the agent's API Key on the publish page |
+
+<Warning>
+  Debug runs do not support custom model endpoints. Agents using a non-official Ark endpoint will fail at debug time. Use the official Ark endpoint for the current cloud, or deploy first and test through the Runtime.
+</Warning>
+
+When using a custom model endpoint, the publish page displays a "Custom model credentials" group in the environment-variables area, providing a required API Key input for each agent that uses a custom endpoint. The credential is used only for that publish and is not saved in the draft. Generated project code reads the credential from the `CUSTOM_MODEL_<agent_name>_API_KEY` environment variable, and `.env.example` lists it as a placeholder.
+
 ### Configure deployment settings
 
 In the deployment configuration area, select the region and network mode, and optionally set Runtime instance counts. Instance settings appear only when creating a new Runtime; they are hidden when updating an existing Runtime. When updating an existing Runtime, the region and network mode are read from the existing Runtime and remain unchanged.
@@ -352,6 +368,10 @@ The temporary test process is retained for 1,800 seconds by default and can be c
 
 <Note>
   Test runs normalize HTTP MCP tool endpoints configured on a generated agent: a URL not ending in `/mcp` is appended with `/mcp`, and tool discovery is validated over Streamable HTTP. If Studio cannot reach the MCP server to discover tools, the test returns an error prompting you to confirm the URL points to the actual MCP endpoint (typically ending in `/mcp`) and check the token; the original URL saved on the canvas is not modified.
+</Note>
+
+<Note>
+  Debug runs support only the official Ark model endpoint for the current cloud provider. Agents configured with a custom model endpoint cannot start in a debug run; use the official endpoint or test through a deployed Runtime instead.
 </Note>
 
 ### Configure memory
