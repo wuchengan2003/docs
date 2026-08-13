@@ -59,7 +59,7 @@ Studio 对象使用用户优先的版本化布局，路径格式为 `veadk-studi
 
 ## 自定义品牌
 
-使用 `--site-title` 设置最多 6 个字符的系统名称，使用 `--site-logo` 指定本地图片或 HTTP(S) 图片 URL。Logo 会用于侧边栏、登录页和浏览器 favicon，系统名称也会作为浏览器页面标题；省略 `--site-title` 时使用默认名称 `AgentKit Studio`。
+使用 `--site-title` 设置最多 16 个字符的系统名称，使用 `--site-logo` 指定本地图片或 HTTP(S) 图片 URL。Logo 会用于侧边栏、登录页和浏览器 favicon，系统名称也会作为浏览器页面标题；省略 `--site-title` 时使用默认名称 `AgentKit Studio`。
 
 ```bash
 veadk studio \
@@ -1294,7 +1294,7 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
 | :--- | :--- | :--- | :--- |
 | `--agents-dir` | `str` | `.` | 智能体应用的父目录；每个包含 `agent.py` 并暴露 `root_agent` 的子目录作为一个应用。 |
 | `--frontend-dir` | `str \| None` | 包内置界面，回退到 `./frontend/dist` | 覆盖已构建的 Studio 界面目录。 |
-| `--site-title` | `str \| None` | `VEADK_SITE_TITLE`，否则为 `AgentKit Studio` | 自定义系统名称，最多 6 个字符。 |
+| `--site-title` | `str \| None` | `VEADK_SITE_TITLE`，否则为 `AgentKit Studio` | 自定义系统名称，最多 16 个字符。 |
 | `--site-logo` | `str \| None` | `VEADK_SITE_LOGO` | 自定义 Logo，支持本地图片路径或 HTTP(S) URL。 |
 | `--host` | `str` | `127.0.0.1` | 监听地址。 |
 | `--port` | `int` | `8000` | 监听端口。 |
@@ -1410,7 +1410,7 @@ veadk studio deploy \
 | `--vefaas-application-template-id` | `str \| None` | 内置模板 | 覆盖 VeFaaS Application Center 的内置模板 ID。也可通过 `VEFAAS_APPLICATION_TEMPLATE_ID` 设置。 |
 | `--admin` | `str \| None` | `None` | 逗号分隔的管理员名单（用户名或 OAuth 邮箱）。省略 `--admin` 与 `--developer` 时，所有登录用户都按 `admin` 处理。也可通过 `VEADK_STUDIO_ADMINS` 设置。 |
 | `--developer` | `str \| None` | `None` | 逗号分隔的开发者名单（用户名或 OAuth 邮箱）。也可通过 `VEADK_STUDIO_DEVELOPERS` 设置。 |
-| `--site-title` | `str \| None` | `None` | 自定义 Studio 名称，最多 6 个字符。 |
+| `--site-title` | `str \| None` | `None` | 自定义 Studio 名称，最多 16 个字符。 |
 | `--site-logo` | `str \| None` | `None` | 自定义 Studio Logo，支持本地图片路径或 HTTP(S) URL；部署时打包到 VeFaaS。 |
 | `--gateway-name` | `str` | `""` | Serverless API Gateway 名称；省略时复用已有网关，没有可用网关时创建。 |
 | `--gateway-service-name` | `str` | `""` | 指定网关服务名称；留空时自动配置。 |

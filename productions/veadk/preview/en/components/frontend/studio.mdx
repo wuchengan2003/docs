@@ -59,7 +59,7 @@ Optimization snapshots produced by automatic evaluation are stored at `veadk-stu
 
 ## Customize branding
 
-Use `--site-title` to set a system name of up to six characters and `--site-logo` to provide a local image or HTTP(S) image URL. The logo appears in the sidebar, login page, and browser favicon, while the system name becomes the browser title. Omitting `--site-title` uses the default `AgentKit Studio` name.
+Use `--site-title` to set a system name of up to 16 characters and `--site-logo` to provide a local image or HTTP(S) image URL. The logo appears in the sidebar, login page, and browser favicon, while the system name becomes the browser title. Omitting `--site-title` uses the default `AgentKit Studio` name.
 
 ```bash
 veadk studio \
@@ -1294,7 +1294,7 @@ When browsing skills in a skill space, you can select "Optimize" for an existing
 | :--- | :--- | :--- | :--- |
 | `--agents-dir` | `str` | `.` | Parent directory of agent applications. Each child directory with `agent.py` exposing `root_agent` is an app. |
 | `--frontend-dir` | `str \| None` | Bundled UI, then `./frontend/dist` | Override the built Studio UI directory. |
-| `--site-title` | `str \| None` | `VEADK_SITE_TITLE`, otherwise `AgentKit Studio` | Custom system name, up to six characters. |
+| `--site-title` | `str \| None` | `VEADK_SITE_TITLE`, otherwise `AgentKit Studio` | Custom system name, up to 16 characters. |
 | `--site-logo` | `str \| None` | `VEADK_SITE_LOGO` | Custom logo as a local image path or HTTP(S) URL. |
 | `--host` | `str` | `127.0.0.1` | Bind address. |
 | `--port` | `int` | `8000` | Bind port. |
@@ -1410,7 +1410,7 @@ veadk studio deploy \
 | `--vefaas-application-template-id` | `str \| None` | Built-in template | Override the built-in VeFaaS Application Center template ID. Also read from `VEFAAS_APPLICATION_TEMPLATE_ID`. |
 | `--admin` | `str \| None` | `None` | Comma-separated admin list (usernames or OAuth emails). Omitting both `--admin` and `--developer` treats every signed-in user as an `admin`. Also reads `VEADK_STUDIO_ADMINS`. |
 | `--developer` | `str \| None` | `None` | Comma-separated developer list (usernames or OAuth emails). Also reads `VEADK_STUDIO_DEVELOPERS`. |
-| `--site-title` | `str \| None` | `None` | Custom Studio name, up to six characters. |
+| `--site-title` | `str \| None` | `None` | Custom Studio name, up to 16 characters. |
 | `--site-logo` | `str \| None` | `None` | Custom Studio logo as a local image path or HTTP(S) URL; bundled into VeFaaS during deployment. |
 | `--gateway-name` | `str` | `""` | Serverless API Gateway name. If omitted, an existing gateway is reused or a gateway is created when none exists. |
 | `--gateway-service-name` | `str` | `""` | Gateway service name; leave empty for automatic configuration. |
