@@ -8,6 +8,10 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 应用内更新 | 应用内更新的部署日志经过服务端过滤，去除 curl 进度条、配置 JSON 导出、ANSI 转义序列和重复行，仅保留部署相关内容。当部署凭证缺少 VeFaaS 日志查询权限时，日志面板自动隐藏而不显示错误，不影响更新继续进行。更新完成后 Studio 自动刷新页面加载新版本；刷新前如有未关闭的更新对话框，重新打开页面后自动恢复。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 系统信息 | 系统信息页面中的 TOS 存储桶地址、沙箱 Tool ID 和用户池名称新增跳转到对应云服务商控制台的链接。用户池显示字段由 UID 改为 ID。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | `VEIDENTITY_REGION` 的默认值由固定 `cn-beijing` 改为当前云服务商的默认地域（火山引擎为 `cn-beijing`，BytePlus 为 `ap-southeast-1`）。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 更新 | `veadk studio update` 在函数使用默认 Studio IAM Role 时，同步刷新该角色的托管策略至最新版本；使用自定义 Role 时不做修改。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 内置智能体 | 与内置 Codex 智能体对话时，若 Codex app-server 返回错误或连接中断，Studio 现在在对话中展示完整的错误详情，包括 JSON-RPC 错误码、错误消息、附加数据和底层原因，而非仅显示截断的错误消息；错误信息仍经过凭据脱敏处理。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 创建 | 「从 0 快速创建」入口不再显示模式选择子菜单，点击后直接进入自定义创建流程；智能模式、模板和工作流子选项已移除。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 模型选择 | 在自定义创建中配置 LLM 智能体时，可通过模型选择器浏览当前账号在火山方舟已开通的模型并选择目标模型：模型列表由 Studio 服务端获取，仅展示支持智能体调用的 LLM 和 VLM 模型，包含模型名称、展示名称、厂商和开通状态，已停用的模型不显示；列表有服务端缓存，支持手动刷新。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |

@@ -133,7 +133,7 @@ Instance counts must be positive integers, and the minimum cannot exceed the max
 
 When creating a new Runtime, Studio auto-generates a Runtime name from the root agent name (composed of letters, digits, underscores, and hyphens, 4–64 characters), keeping agent and Runtime naming consistent and predictable. The deployment result returns both the agent name and the Runtime name.
 
-When creating a new Runtime, access authentication defaults to API Key. To use user identity verification instead, select a VeIdentity user pool in the deployment configuration area. The Studio server loads the user pools visible to the current account with its own Volcengine credentials, so the browser never receives them. The picker marks the user pool used for the current Studio login: selecting it lets Studio forward the validated login JWT to the Runtime, so callers do not need to obtain a token separately; selecting another user pool means callers must use a JWT issued by that pool to access the Runtime. The user-pool region is determined by the `VEIDENTITY_REGION` environment variable and defaults to `cn-beijing`.
+When creating a new Runtime, access authentication defaults to API Key. To use user identity verification instead, select a VeIdentity user pool in the deployment configuration area. The Studio server loads the user pools visible to the current account with its own Volcengine credentials, so the browser never receives them. The picker marks the user pool used for the current Studio login: selecting it lets Studio forward the validated login JWT to the Runtime, so callers do not need to obtain a token separately; selecting another user pool means callers must use a JWT issued by that pool to access the Runtime. The user-pool region is determined by the `VEIDENTITY_REGION` environment variable and defaults to the current cloud provider's default region (`cn-beijing` for Volcengine, `ap-southeast-1` for BytePlus).
 
 ### Configure build resources
 
@@ -1399,6 +1399,8 @@ During the update, Studio checks the current VeFaaS Function for missing cloud r
 
 The VeFaaS Function console link in the update status is provider-specific: Volcengine deployments point to `console.volcengine.com`, and BytePlus deployments point to `console.byteplus.com`.
 
+During the update, the deployment progress panel streams the VeFaaS deployment log in real time. Logs are filtered on the server to remove curl progress bars, config JSON dumps, ANSI escape sequences, and duplicate lines, retaining only deployment-relevant content. When the deployment credentials lack VeFaaS log-query permission, the log panel is hidden automatically without interrupting the update. After the update completes, Studio automatically reloads the page to load the new version; if an update dialog was open before the reload, it is automatically restored when the page reopens.
+
 ```bash
 veadk studio deploy \
   --vefaas-app-name "veadk-studio" \
@@ -1470,7 +1472,7 @@ export VOLCENGINE_SECRET_KEY="your-secret-key"
 veadk studio update --vefaas-app-name "veadk-studio"
 ```
 
-When `--region` and `--project` are omitted, the command searches Beijing, Shanghai, and all visible projects. If multiple Applications have the same name, add a region or project to narrow the scope. The update preserves the Application and Function IDs, public URL, SSO, IAM, gateway, and existing environment variables. Branding and the CodeEnv and DevEnv Tool IDs change only when their options are explicitly supplied.
+When `--region` and `--project` are omitted, the command searches Beijing, Shanghai, and all visible projects. If multiple Applications have the same name, add a region or project to narrow the scope. The update preserves the Application and Function IDs, public URL, SSO, IAM, gateway, and existing environment variables. Branding and the CodeEnv and DevEnv Tool IDs change only when their options are explicitly supplied. When the function uses the default Studio IAM role, the update also refreshes the role's managed policies to the latest version; custom roles are not modified.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -1526,7 +1528,7 @@ Studio restricts Runtime visibility according to the signed-in account. Existing
 
 ## View system information
 
-After signing in, the account menu at the bottom of the sidebar offers a "System info" entry. Selecting it opens the system information page, which displays the Studio version, storage, sandbox information, and user pools. This page is available only to the `admin` role, and all resource identifiers are read-only.
+After signing in, the account menu at the bottom of the sidebar offers a "System info" entry. Selecting it opens the system information page, which displays the Studio version, storage, sandbox information, and user pools. The TOS bucket, sandbox Tools, and user pools each provide a link that opens the corresponding page in the cloud console in a new tab. This page is available only to the `admin` role, and all resource identifiers are read-only.
 
 ### General
 
@@ -1534,12 +1536,12 @@ Displays the Studio "Current version". When Studio is started locally or built a
 
 ### Storage
 
-Displays the TOS address used by Studio persistent storage. When `VEADK_STUDIO_TOS_BUCKET` and `VEADK_STUDIO_TOS_REGION` are configured, the bucket access address is shown, for example `veadk-studio-<account ID>.tos-cn-beijing.volces.com`. When not configured, "Not configured" is displayed.
+Displays the TOS address used by Studio persistent storage. When `VEADK_STUDIO_TOS_BUCKET` and `VEADK_STUDIO_TOS_REGION` are configured, the bucket access address is shown, for example `veadk-studio-<account ID>.tos-cn-beijing.volces.com`; clicking the address opens the bucket in the cloud console. When not configured, "Not configured" is displayed.
 
 ### Sandbox information
 
-Lists the sandbox Tools configured in Studio and their IDs, including Codex Sandbox (`SANDBOX_CHAT_CODEX`), OpenClaw Sandbox (`SANDBOX_CHAT_OPENCLAW`), Hermes Sandbox (`SANDBOX_CHAT_HERMES`), and Dev Sandbox (`SANDBOX_DEV`). Tools without a configured ID show "Not configured".
+Lists the sandbox Tools configured in Studio and their IDs, including Codex Sandbox (`SANDBOX_CHAT_CODEX`), OpenClaw Sandbox (`SANDBOX_CHAT_OPENCLAW`), Hermes Sandbox (`SANDBOX_CHAT_HERMES`), and Dev Sandbox (`SANDBOX_DEV`). Configured Tool IDs provide a link to the corresponding Tool detail page in the cloud console. Tools without a configured ID show "Not configured".
 
 ### User pools
 
-Lists the VeIdentity user pools associated with the current Studio, showing name, UID, domain, and region. When running locally without Volcengine credentials configured, no user pools are displayed.
+Lists the VeIdentity user pools associated with the current Studio, showing name, ID, domain, and region. Each user pool name provides a link that opens the corresponding user pool page in the cloud console. When running locally without Volcengine credentials configured, no user pools are displayed.
