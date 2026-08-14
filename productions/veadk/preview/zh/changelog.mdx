@@ -8,6 +8,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 内置智能体 | 与内置 Codex 智能体对话时，若 Codex app-server 返回错误或连接中断，Studio 现在在对话中展示完整的错误详情，包括 JSON-RPC 错误码、错误消息、附加数据和底层原因，而非仅显示截断的错误消息；错误信息仍经过凭据脱敏处理。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 创建 | 「从 0 快速创建」入口不再显示模式选择子菜单，点击后直接进入自定义创建流程；智能模式、模板和工作流子选项已移除。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 模型选择 | 在自定义创建中配置 LLM 智能体时，可通过模型选择器浏览当前账号在火山方舟已开通的模型并选择目标模型：模型列表由 Studio 服务端获取，仅展示支持智能体调用的 LLM 和 VLM 模型，包含模型名称、展示名称、厂商和开通状态，已停用的模型不显示；列表有服务端缓存，支持手动刷新。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 模型凭据 | 使用 Ark 模型时，Studio 服务端从当前账号的火山方舟 API Key 列表中选择 API Key 用于调试运行和部署：默认选择与 `MODEL_AGENT_API_KEY_NAME` 匹配的 Key，未匹配时使用第一个 Key；可在部署配置区手动选择指定 Ark API Key，所选 Key 的明文由服务端解析并注入运行环境，不会下发到浏览器。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |

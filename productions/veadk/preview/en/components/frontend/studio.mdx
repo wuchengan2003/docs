@@ -813,6 +813,10 @@ The Agent workspace supports two modes:
 Follow-up messages in an ordinary conversation continue to use the existing message history for that session; only a new session starts with empty context. When a Runtime cannot be connected, Studio distinguishes insufficient permission, an unreachable Agent Server, a private unreachable Runtime, and authentication failure, and displays the corresponding troubleshooting direction.
 
 <Note>
+  When an error occurs during a conversation with the built-in Codex agent — whether the Codex app-server returns an error or the connection is interrupted — Studio displays the complete error detail in the conversation, including the JSON-RPC error code, message, and data, as well as the underlying cause. All error information is credential-redacted before display.
+</Note>
+
+<Note>
   In cloud mode, Studio does not auto-select the first available agent. Before starting a new conversation, connect a Runtime from the agent selector at the top of the chat page. Starting a new chat without a selected agent prompts you to choose one first and opens the agent management page.
 </Note>
 
