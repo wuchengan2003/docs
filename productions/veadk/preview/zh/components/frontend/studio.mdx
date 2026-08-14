@@ -133,7 +133,7 @@ Logo 最大 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF 和 ICO。也可以通�
 
 创建新 Runtime 时，Studio 会根据根智能体名称自动生成 Runtime 名称（由英文字母、数字、下划线和连字符组成，长度 4–64 个字符），确保智能体与 Runtime 的命名一致且可预测。部署结果中会同时返回智能体名称和 Runtime 名称。
 
-创建新 Runtime 时，访问鉴权默认为 API Key；如需改用用户身份验证，可在部署配置区选择 VeIdentity 用户池。Studio 服务端使用自身配置的火山引擎凭证加载当前账号可见的用户池列表，浏览器不接触凭证。列表中会标记当前 Studio 登录所用的用户池：选择该用户池时，Studio 会把登录后验证的 JWT 转发给 Runtime，调用方无需另行获取令牌；选择其他用户池时，调用方需使用该用户池签发的 JWT 访问 Runtime。用户池所在地域通过 `VEIDENTITY_REGION` 环境变量确定，默认为 `cn-beijing`。
+创建新 Runtime 时，访问鉴权默认为 API Key；如需改用用户身份验证，可在部署配置区选择 VeIdentity 用户池。Studio 服务端使用自身配置的火山引擎凭证加载当前账号可见的用户池列表，浏览器不接触凭证。列表中会标记当前 Studio 登录所用的用户池：选择该用户池时，Studio 会把登录后验证的 JWT 转发给 Runtime，调用方无需另行获取令牌；选择其他用户池时，调用方需使用该用户池签发的 JWT 访问 Runtime。用户池所在地域通过 `VEIDENTITY_REGION` 环境变量确定，默认为当前云服务商的默认地域（火山引擎为 `cn-beijing`，BytePlus 为 `ap-southeast-1`）。
 
 ### 配置构建资源
 
@@ -1399,6 +1399,8 @@ Studio 每三分钟检查一次更新，列出可用版本及其变更说明。�
 
 更新状态中的 VeFaaS Function 控制台链接按云服务商区分：火山引擎指向 `console.volcengine.com`，BytePlus 指向 `console.byteplus.com`。
 
+更新过程中，部署进度面板实时展示 VeFaaS 部署日志。日志在服务端经过过滤，去除 curl 进度条、配置 JSON 导出、ANSI 转义序列和重复行，仅保留与部署相关的有效内容。当部署所用凭证缺少 VeFaaS 日志查询权限时，日志面板自动隐藏，不影响更新继续进行。更新完成后，Studio 会自动刷新页面以加载新版本；刷新前如有未关闭的更新对话框，也会在重新打开页面后自动恢复显示。
+
 ```bash
 veadk studio deploy \
   --vefaas-app-name "veadk-studio" \
@@ -1470,7 +1472,7 @@ export VOLCENGINE_SECRET_KEY="your-secret-key"
 veadk studio update --vefaas-app-name "veadk-studio"
 ```
 
-省略 `--region` 和 `--project` 时，命令会在北京、上海及全部可见项目中查找同名 Application。若存在多个候选项，需要补充地域或项目缩小范围。更新保留 Application 与 Function ID、访问 URL、SSO、IAM、网关和已有环境变量；品牌和各 CodeEnv、DevEnv Tool ID 仅在显式传入相应参数时覆盖。
+省略 `--region` 和 `--project` 时，命令会在北京、上海及全部可见项目中查找同名 Application。若存在多个候选项，需要补充地域或项目缩小范围。更新保留 Application 与 Function ID、访问 URL、SSO、IAM、网关和已有环境变量；品牌和各 CodeEnv、DevEnv Tool ID 仅在显式传入相应参数时覆盖。若函数使用默认 Studio IAM Role，更新时会同步刷新该角色的托管策略至最新版本；使用自定义 Role 时不做修改。
 
 | 选项 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
@@ -1526,7 +1528,7 @@ Studio 根据登录账号限制 Runtime 的可见范围；没有创建者记录�
 
 ## 查看系统信息
 
-登录后，侧边栏底部的账号菜单提供「系统信息」入口，选择后进入系统信息页面，展示 Studio 的版本、存储、沙箱信息和用户池。该页面仅对 `admin` 角色开放，所有资源标识均为只读。
+登录后，侧边栏底部的账号菜单提供「系统信息」入口，选择后进入系统信息页面，展示 Studio 的版本、存储、沙箱信息和用户池。页面中的 TOS 存储桶、沙箱 Tool 和用户池均提供跳转到对应云服务商控制台的链接，点击后在新标签页打开。该页面仅对 `admin` 角色开放，所有资源标识均为只读。
 
 ### 通用
 
@@ -1534,12 +1536,12 @@ Studio 根据登录账号限制 Runtime 的可见范围；没有创建者记录�
 
 ### 存储
 
-显示 Studio 持久化存储使用的 TOS 地址。配置了 `VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION` 时显示对应的存储桶访问地址，例如 `veadk-studio-<账号 ID>.tos-cn-beijing.volces.com`；未配置时显示「未配置」。
+显示 Studio 持久化存储使用的 TOS 地址。配置了 `VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION` 时显示对应的存储桶访问地址，例如 `veadk-studio-<账号 ID>.tos-cn-beijing.volces.com`，点击地址可在云控制台中打开对应存储桶；未配置时显示「未配置」。
 
 ### 沙箱信息
 
-列出 Studio 已配置的沙箱 Tool 及其 ID，包括 Codex Sandbox（`SANDBOX_CHAT_CODEX`）、OpenClaw Sandbox（`SANDBOX_CHAT_OPENCLAW`）、Hermes Sandbox（`SANDBOX_CHAT_HERMES`）和 Dev Sandbox（`SANDBOX_DEV`）。未配置的 Tool 显示「未配置」。
+列出 Studio 已配置的沙箱 Tool 及其 ID，包括 Codex Sandbox（`SANDBOX_CHAT_CODEX`）、OpenClaw Sandbox（`SANDBOX_CHAT_OPENCLAW`）、Hermes Sandbox（`SANDBOX_CHAT_HERMES`）和 Dev Sandbox（`SANDBOX_DEV`）。已配置的 Tool ID 提供跳转到云控制台对应 Tool 详情页的链接；未配置的 Tool 显示「未配置」。
 
 ### 用户池
 
-列出当前 Studio 所在的 VeIdentity 用户池，显示名称、UID、域名和地域。本地启动且未配置火山引擎凭证时不显示用户池。
+列出当前 Studio 所在的 VeIdentity 用户池，显示名称、ID、域名和地域，每个用户池的名称提供跳转到云控制台对应用户池页面的链接。本地启动且未配置火山引擎凭证时不显示用户池。
