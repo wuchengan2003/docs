@@ -88,9 +88,13 @@ Credential resolution checks `AGENTKIT_CLOUD_PROVIDER` and then `CLOUD_PROVIDER`
 
 | Field | Env var | Type | Default | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `endpoint` | `DATABASE_TOS_ENDPOINT` | `str` | `tos-cn-beijing.volces.com` | TOS endpoint. Switches to `tos-ap-southeast-1.bytepluses.com` under `byteplus`. |
-| `region` | `DATABASE_TOS_REGION` | `str` | `cn-beijing` | TOS region. Switches to `ap-southeast-1` under `byteplus`. |
+| `endpoint` | `DATABASE_TOS_ENDPOINT` | `str` | `tos-cn-beijing.volces.com` | TOS endpoint. Under `byteplus`, when not explicitly configured, it is automatically aligned with the knowledge base region (e.g., `tos-cn-hongkong.bytepluses.com` when the region is `cn-hongkong`). |
+| `region` | `DATABASE_TOS_REGION` | `str` | `cn-beijing` | TOS region. Under `byteplus`, when not explicitly configured, it is automatically aligned with the knowledge base region. |
 | `bucket` | `DATABASE_TOS_BUCKET` | `str` | `veadk-default-bucket` | TOS bucket name. When empty, the default bucket is used and created automatically. |
+
+<Note>
+Under `byteplus`, the TOS region and endpoint are resolved in the following priority: an explicitly passed `tos_config` takes precedence; otherwise `DATABASE_TOS_REGION` and `DATABASE_TOS_ENDPOINT` environment variables are used; if neither is set, the TOS region and endpoint are automatically aligned with the knowledge base region. TOS bucket creation also uses the aligned region.
+</Note>
 
 ### Retrieval parameters
 

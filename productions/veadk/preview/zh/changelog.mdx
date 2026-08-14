@@ -56,6 +56,7 @@ title: "更新日志"
 | Studio 技能定制 | 新会话页面新增「技能定制」工作区模式，提供技能生成和技能优化的快捷入口，复用技能中心 Dev Sandbox 技能生成能力。该模式仅对 `developer` 和 `admin` 角色开放，且仅在管理员配置可用 Dev Sandbox 后显示。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 持久化存储 | 视频创作等能力新增 Studio 持久化存储：`veadk studio deploy` 部署时自动创建或复用名为 `veadk-studio-<账号 ID>` 的私有 TOS 存储桶；本地启动通过 `VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION` 环境变量配置。参考素材上传和生成结果保存依赖该存储。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 系统信息 | 系统信息页面访问权限由「智能体管理权限」收紧为仅 `admin` 角色可访问，并新增「存储」分区展示 Studio 持久化存储的 TOS 地址。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 知识库 | `byteplus` 模式下，VikingDB 知识库后端的 TOS 区域与接入点不再固定为 `ap-southeast-1`，而是自动与知识库区域对齐（如 `cn-hongkong` → `tos-cn-hongkong.bytepluses.com`）；显式配置 `tos_config` 或 `DATABASE_TOS_REGION` / `DATABASE_TOS_ENDPOINT` 时仍使用用户设置的值。 | [使用 VikingDB 知识库存储](/productions/veadk/preview/zh/components/knowledge/viking) |
 
 ## 1.1.0
 

@@ -88,9 +88,13 @@ kb = KnowledgeBase(
 
 | 配置项 | 环境变量 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- | :--- |
-| `endpoint` | `DATABASE_TOS_ENDPOINT` | `str` | `tos-cn-beijing.volces.com` | TOS 接入点。`byteplus` 下自动切换为 `tos-ap-southeast-1.bytepluses.com`。 |
-| `region` | `DATABASE_TOS_REGION` | `str` | `cn-beijing` | TOS 区域。`byteplus` 下自动切换为 `ap-southeast-1`。 |
+| `endpoint` | `DATABASE_TOS_ENDPOINT` | `str` | `tos-cn-beijing.volces.com` | TOS 接入点。`byteplus` 模式下，未显式配置时自动与知识库区域对齐（如知识库区域为 `cn-hongkong` 时，接入点为 `tos-cn-hongkong.bytepluses.com`）。 |
+| `region` | `DATABASE_TOS_REGION` | `str` | `cn-beijing` | TOS 区域。`byteplus` 模式下，未显式配置时自动与知识库区域对齐。 |
 | `bucket` | `DATABASE_TOS_BUCKET` | `str` | `veadk-default-bucket` | TOS 桶名。为空时使用默认桶并自动创建。 |
+
+<Note>
+`byteplus` 模式下，TOS 区域与接入点的确定优先级如下：显式传入 `tos_config` 时使用其中设置的值；其次读取 `DATABASE_TOS_REGION` 与 `DATABASE_TOS_ENDPOINT` 环境变量；均未设置时自动与知识库区域对齐。TOS 桶的创建也使用对齐后的区域。
+</Note>
 
 ### 检索参数
 
