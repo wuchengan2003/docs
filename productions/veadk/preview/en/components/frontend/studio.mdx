@@ -759,6 +759,7 @@ The directory switches between agent types using the tabs at the top, defaulting
 | :--- | :--- |
 | General agents | Lists all AgentKit Runtimes created by the signed-in user. |
 | Codex agents | Opens the Codex temporary session creation entry. |
+| DeepSeek Harness | Opens the DeepSeek Harness workspace session creation entry. |
 | OpenClaw agents | Not yet available. |
 | Hermes agents | Not yet available. |
 
@@ -808,7 +809,7 @@ When starting a new conversation, Studio offers three workspace modes at the top
 The Agent workspace supports two modes:
 
 - **Agent chat**: starts a normal multi-turn conversation with the selected agent. When the input is empty, starter prompts appear for quick access to common questions.
-- **Built-in agent**: uses a platform-provided agent for conversation. You can select Codex, which starts a multi-turn conversation in an independent AgentKit CodeEnv Session. Exiting deletes the cloud Session and does not add it to ordinary session history.
+- **Built-in agent**: uses a platform-provided agent for conversation. You can select Codex or DeepSeek Harness. Codex starts a multi-turn conversation in an independent AgentKit CodeEnv Session with a dedicated editor; DeepSeek Harness opens the DeepSeek Harness workspace in an independent AgentKit CodeEnv Session. Exiting either deletes the cloud Session and does not add it to ordinary session history.
 
 Follow-up messages in an ordinary conversation continue to use the existing message history for that session; only a new session starts with empty context. When a Runtime cannot be connected, Studio distinguishes insufficient permission, an unreachable Agent Server, a private unreachable Runtime, and authentication failure, and displays the corresponding troubleshooting direction.
 
@@ -837,6 +838,10 @@ veadk studio --agents-dir ./agents --open
 
 <Note>
   When creating a Session or looking up the Tool for built-in agents, Studio first tries the region set by `AGENTKIT_SANDBOX_REGION` (default `cn-beijing`); if that region reports the resource as not found, it automatically falls back to the other supported region (Beijing ↔ Shanghai) and continues. Other errors do not trigger fallback. When deployed to VeFaaS, this region matches `--region`.
+</Note>
+
+<Note>
+  Codex and DeepSeek Harness share the same AgentKit CodeEnv Tool (`SANDBOX_CHAT_CODEX`); no separate Tool is needed for DeepSeek Harness. Sessions for the two built-in agent types are distinguished by an agent-kind identifier and do not interfere with each other.
 </Note>
 
 

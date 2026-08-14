@@ -759,6 +759,7 @@ print(response.json())
 | :--- | :--- |
 | 通用智能体 | 列出当前登录用户创建的全部 AgentKit Runtime。 |
 | Codex 智能体 | 跳转到 Codex 临时会话创建入口。 |
+| DeepSeek Harness | 跳转到 DeepSeek Harness 工作区会话创建入口。 |
 | OpenClaw 智能体 | 暂未开放。 |
 | Hermes 智能体 | 暂未开放。 |
 
@@ -808,7 +809,7 @@ print(response.json())
 智能体工作区支持两种模式：
 
 - **智能体对话**：与当前选中的智能体进行普通多轮对话。空输入时显示快捷提示，可点击快速填入常用提问。
-- **内置智能体**：使用平台提供的智能体进行对话。当前可选 Codex 智能体，在独立的 AgentKit CodeEnv Session 中进行多轮对话；退出后删除云端 Session，内容不写入普通历史会话。
+- **内置智能体**：使用平台提供的智能体进行对话。当前可选 Codex 智能体和 DeepSeek Harness。Codex 智能体在独立的 AgentKit CodeEnv Session 中使用专用编辑器进行多轮对话；DeepSeek Harness 在独立的 AgentKit CodeEnv Session 中打开 DeepSeek Harness 工作区。两者退出后均删除云端 Session，内容不写入普通历史会话。
 
 普通对话在同一会话中发送后续消息时会继续使用已有消息历史；只有新建会话才会从空上下文开始。若 Runtime 无法连接，Studio 会区分权限不足、Agent Server 不可达、私网 Runtime 不可达和鉴权失败，并显示对应的排查方向。
 
@@ -837,6 +838,10 @@ veadk studio --agents-dir ./agents --open
 
 <Note>
   创建内置智能体的 Session、查找对应 Tool 时，Studio 会优先使用 `AGENTKIT_SANDBOX_REGION` 指定的地域（默认 `cn-beijing`）；若该地域返回资源不存在，会自动回退到另一个支持地域（北京 ↔ 上海）继续操作，其他错误不会触发回退。部署到 VeFaaS 时该地域与 `--region` 一致。
+</Note>
+
+<Note>
+  Codex 智能体和 DeepSeek Harness 共用同一个 AgentKit CodeEnv Tool（`SANDBOX_CHAT_CODEX`），无需为 DeepSeek Harness 单独配置 Tool。两类内置智能体的会话通过 agent 类型标识区分，不会互相影响。
 </Note>
 
 
