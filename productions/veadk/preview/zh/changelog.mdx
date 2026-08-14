@@ -8,6 +8,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 埋点 | Studio 前端埋点新增匿名入口访问统计：页面加载后在用户登录前记录一次匿名页面访问，登录后再关联用户身份，用于区分匿名访问与登录访问。`veadk studio deploy` 和 `veadk studio update` 在部署或更新时自动解析云账号 ID 并写入运行时环境，通过 `/web/ui-config` 下发供前端埋点关联使用，无需手动配置。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 应用内更新 | 应用内更新的部署日志经过服务端过滤，去除 curl 进度条、配置 JSON 导出、ANSI 转义序列和重复行，仅保留部署相关内容。当部署凭证缺少 VeFaaS 日志查询权限时，日志面板自动隐藏而不显示错误，不影响更新继续进行。更新完成后 Studio 自动刷新页面加载新版本；刷新前如有未关闭的更新对话框，重新打开页面后自动恢复。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 系统信息 | 系统信息页面中的 TOS 存储桶地址、沙箱 Tool ID 和用户池名称新增跳转到对应云服务商控制台的链接。用户池显示字段由 UID 改为 ID。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | `VEIDENTITY_REGION` 的默认值由固定 `cn-beijing` 改为当前云服务商的默认地域（火山引擎为 `cn-beijing`，BytePlus 为 `ap-southeast-1`）。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
