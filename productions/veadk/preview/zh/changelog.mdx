@@ -8,6 +8,10 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 创建 | 新增存量项目迁移功能：在「添加智能体」中选择「从存量项目迁移」，上传已有的智能体项目压缩包（至多 50 MB），Studio 创建用户独占的 Dev Sandbox Session（1 小时有效期），由 Codex 进行只读框架、入口和迁移边界分析。用户确认框架、入口和开放问题后开始迁移；Structured 框架（LangChain、LangGraph、Google ADK、Strands、AgentCore）运行 `ak migrate`，Dify 和 Any 框架运行 `ak migrate --execution in-place`。迁移完成后可预览、下载或部署到 AgentKit，部署时服务端从 Session 校验产物。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 代码包部署的启动入口支持 `agentkit.yaml`：压缩包根目录存在 `agentkit.yaml` 且声明了 `common.entry_point` 时，以该配置指定的文件作为启动入口；未声明时仍使用根目录的 `app.py`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 创建新 Runtime 时，Runtime 名称支持手动编辑，并在部署前校验名称格式（4–64 个字符，仅含英文字母、数字、下划线和连字符）和检查是否与当前地域已有 Runtime 重名；名称重复时提示修改后重试。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 模型 | BytePlus 沙箱 Tool 的默认模型由 `seed-2-0-lite-260228` 更改为 `dola-seed-2-1-turbo-260628`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 内置智能体 | 新增 DeepSeek Harness 内置智能体：在新会话的内置智能体子菜单中选择 DeepSeek Harness，可在独立的 AgentKit CodeEnv Session 中打开 DeepSeek Harness 工作区。该智能体与 Codex 智能体共用同一个 CodeEnv Tool（`SANDBOX_CHAT_CODEX`），会话通过 agent 类型标识区分。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 埋点 | Studio 前端埋点新增匿名入口访问统计：页面加载后在用户登录前记录一次匿名页面访问，登录后再关联用户身份，用于区分匿名访问与登录访问。`veadk studio deploy` 和 `veadk studio update` 在部署或更新时自动解析云账号 ID 并写入运行时环境，通过 `/web/ui-config` 下发供前端埋点关联使用，无需手动配置。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 应用内更新 | 应用内更新的部署日志经过服务端过滤，去除 curl 进度条、配置 JSON 导出、ANSI 转义序列和重复行，仅保留部署相关内容。当部署凭证缺少 VeFaaS 日志查询权限时，日志面板自动隐藏而不显示错误，不影响更新继续进行。更新完成后 Studio 自动刷新页面加载新版本；刷新前如有未关闭的更新对话框，重新打开页面后自动恢复。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |

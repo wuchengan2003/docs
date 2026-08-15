@@ -4,7 +4,7 @@ title: "Studio agent workbench"
 
 AgentKit Studio uses the same service and complete UI as VeADK Frontend. It provides chat, search, session history, the skill center, skill customization, video creation, automation integrations, and agent creation, testing, deployment, and management, and opens on the chat view by default. The agent workspace renders multi-agent topologies as a canvas, surfaces deployed Runtime versions and deployment status, and supports iterating on the same Runtime.
 
-Custom configuration and code-package deployment are the available project-creation flows; existing-project migration is marked as coming soon and cannot be selected. You can preview and edit generated files, run them in a temporary test process, download a ZIP, or deploy to AgentKit. Studio also supports cloud Runtime selection, multiple skill sources, multimodal conversations, automation integrations, and centralized deployment task status and retries.
+Custom configuration, code-package deployment, and existing-project migration are the available project-creation flows. You can preview and edit generated files, run them in a temporary test process, download a ZIP, or deploy to AgentKit. Studio also supports cloud Runtime selection, multiple skill sources, multimodal conversations, automation integrations, and centralized deployment task status and retries.
 
 ## Start locally
 
@@ -71,7 +71,7 @@ The logo can be up to 5 MB in PNG, JPEG, GIF, WebP, AVIF, or ICO format. The equ
 
 ## Create an agent
 
-1. On Add Agent, select Create from scratch to enter custom configuration. Existing-project migration is not available.
+1. On Add Agent, select Create from scratch to enter custom configuration, choose “Add and deploy from a code package” to upload an existing project, or choose “Migrate an existing project” to migrate LangChain, Dify, or other framework projects to VeADK.
 2. Configure the model, instruction, tools, memory, and knowledge base, and add skills from Skill Hub, a local upload, or an AgentKit SkillSpace. Multi-agent projects can also use sequential, parallel, loop, or A2A nodes, and the canvas lets you inspect and arrange the agent topology.
 3. Review the generated files and run them in a restricted temporary process; download a ZIP if you need to work offline.
 4. Select AgentKit deployment and monitor the build-image, deploy, and publish stages from the workspace. After deployment, the agent appears as published in the workspace and can be updated on the same Runtime.
@@ -131,7 +131,7 @@ In the deployment configuration area, select the region and network mode, and op
 
 Instance counts must be positive integers, and the minimum cannot exceed the maximum. When the agent's short-term memory backend is `local` (in-memory) or unconfigured, Studio defaults the maximum instance count to 1 and warns that multiple instances, process restarts, or rolling updates can cause session loss; a database-backed short-term memory store is recommended. The deployment progress shows a corresponding stage: when the instance range differs from the default 1–5, an "Update instance configuration" stage is added after Runtime creation.
 
-When creating a new Runtime, Studio auto-generates a Runtime name from the root agent name (composed of letters, digits, underscores, and hyphens, 4–64 characters), keeping agent and Runtime naming consistent and predictable. The deployment result returns both the agent name and the Runtime name.
+When creating a new Runtime, Studio auto-generates a Runtime name from the root agent name (composed of letters, digits, underscores, and hyphens, 4–64 characters), keeping agent and Runtime naming consistent and predictable. The Runtime name can be edited manually; Studio validates the name format and checks for conflicts with existing Runtimes in the selected region before deployment. If the name is already in use, deployment fails with a prompt to choose a different name. The deployment result returns both the agent name and the Runtime name.
 
 When creating a new Runtime, access authentication defaults to API Key. To use user identity verification instead, select a VeIdentity user pool in the deployment configuration area. The Studio server loads the user pools visible to the current account with its own Volcengine credentials, so the browser never receives them. The picker marks the user pool used for the current Studio login: selecting it lets Studio forward the validated login JWT to the Runtime, so callers do not need to obtain a token separately; selecting another user pool means callers must use a JWT issued by that pool to access the Runtime. The user-pool region is determined by the `VEIDENTITY_REGION` environment variable and defaults to the current cloud provider's default region (`cn-beijing` for Volcengine, `ap-southeast-1` for BytePlus).
 
@@ -188,7 +188,7 @@ Code-package deployment is an independent creation flow: on Add Agent, select �
 
 <Steps>
   <Step title="Upload the code package">
-    On the Add Agent menu, choose “Add and deploy from a code package” and click the upload area or drag a file to select a `.zip` archive. The archive can be up to 50 MB, contain no more than 800 files after extraction, and must include `app.py` at the root as the AgentKit entry point.
+    On the Add Agent menu, choose “Add and deploy from a code package” and click the upload area or drag a file to select a `.zip` archive. The archive can be up to 50 MB and contain no more than 800 files after extraction. The entry point defaults to `app.py` at the root; if the root contains an `agentkit.yaml` that declares `common.entry_point`, the declared file is used as the entry point instead.
   </Step>
   <Step title="Review or edit files">
     After a successful upload, Studio reports the recognized file count and derives a project name from the archive file name (following Google ADK naming rules: starting with an ASCII letter or underscore, containing only ASCII letters, digits, and underscores, never using the reserved name `user`, and at most 64 characters). Use “View files” to preview or edit file contents in the code browser; re-upload the archive to replace the contents.
@@ -202,7 +202,7 @@ Code-package deployment is an independent creation flow: on Add Agent, select �
 </Steps>
 
 <Note>
-  Studio sanitizes the archive: it ignores `__MACOSX` directories and `.DS_Store` files, and when all files share a single top-level directory it strips that wrapping directory before validating the entry. Entries with absolute paths, empty segments, `.`, `..` segments, or null bytes are rejected, and duplicate file paths raise an error. `app.py` must be in the root after the wrapping directory is removed.
+  Studio sanitizes the archive: it ignores `__MACOSX` directories and `.DS_Store` files, and when all files share a single top-level directory it strips that wrapping directory before validating the entry. Entries with absolute paths, empty segments, `.`, `..` segments, or null bytes are rejected, and duplicate file paths raise an error. The entry point file must be in the root after the wrapping directory is removed.
 </Note>
 
 <Warning>
@@ -214,10 +214,60 @@ Code-package deployment is an independent creation flow: on Add Agent, select �
 | Archive size | 50 MB | Maximum size of a single uploaded archive. |
 | File count | 800 | Maximum number of files retained after extraction. |
 | Uncompressed size | 50 MB | Maximum total size after extraction. |
-| Entry point | `app.py` | The root after the wrapping directory is removed must contain this file. |
+| Entry point | `app.py` | Default entry file. If the root contains an `agentkit.yaml` that declares `common.entry_point`, that value is used instead; otherwise `app.py` at the root is required. |
 | Path safety | — | Absolute paths, `.` / `..` segments, and null bytes are rejected; `__MACOSX` and `.DS_Store` are ignored. |
 | Wrapping directory | Single level | When all files share one top-level directory, that level is stripped automatically. |
 | Project name | 64 characters | Derived from the archive file name and follows ADK naming rules. |
+
+### Migrate an existing project
+
+Existing-project migration is an independent creation flow: on Add Agent, select “Migrate an existing project” and upload an archive of an existing agent project. Studio automatically analyzes the project framework and entry point in a Dev Sandbox and generates a deployable VeADK project.
+
+The following frameworks are supported:
+
+| Framework | Migration method |
+| :--- | :--- |
+| LangChain | Structured migration via `ak migrate` |
+| LangGraph | Structured migration via `ak migrate` |
+| Google ADK | Structured migration via `ak migrate` |
+| Strands | Structured migration via `ak migrate` |
+| AgentCore | Structured migration via `ak migrate` |
+| Dify | Agentic migration via `ak migrate --execution in-place` in a Dev Sandbox |
+| Any (generic) | Agentic migration via `ak migrate --execution in-place` in a Dev Sandbox; suitable for projects that do not fit the above frameworks |
+
+<Steps>
+  <Step title="Upload the project archive">
+    On the Add Agent menu, choose “Migrate an existing project” and upload a `.zip` archive of up to 50 MB.
+  </Step>
+  <Step title="Automatic analysis">
+    Studio creates a user-owned Dev Sandbox Session (1-hour TTL) and invokes the preinstalled Codex to perform read-only analysis of the uploaded project, identifying the framework, entry file, and migration boundary. The analysis includes confidence scores with evidence (file paths and line numbers) for each framework, a recommended framework and entry, open questions for the user, and the migration boundary (included and excluded files).
+  </Step>
+  <Step title="Confirm migration parameters">
+    After analysis, confirm the framework, entry file (required for Structured frameworks), and application name, answer any open questions, and confirm the migration boundary to start the migration.
+  </Step>
+  <Step title="Run migration">
+    Structured frameworks run `ak migrate` for direct conversion; Dify and Any run `ak migrate --execution in-place` with Codex assistance in the same Dev Sandbox Session. All state, logs, and artifacts remain within the Session.
+  </Step>
+  <Step title="Preview, download, or deploy">
+    After migration completes, preview the migrated files in Studio, download a ZIP, or deploy directly to AgentKit. During deployment, Studio resolves and verifies the migration artifact from the current user's Session server-side, without relying on browser-submitted files.
+  </Step>
+</Steps>
+
+<Warning>
+  Migration runs in a Dev Sandbox Session with a 1-hour TTL. Once the Session expires, preview, download, and deployment are no longer available; you must re-upload and re-migrate. The `app.py` in the migrated artifact runs inside the deployed AgentKit Runtime — deploy only trusted projects.
+</Warning>
+
+<Note>
+  When deploying a migration artifact to AgentKit, Studio automatically adapts model environment variables (`MODEL_AGENT_API_BASE`, `MODEL_AGENT_NAME`, and `MODEL_NAME`) to the current cloud provider, ensuring the migrated project uses the correct model endpoint and model name in the target cloud environment.
+</Note>
+
+| Check | Limit | Description |
+| :--- | :--- | :--- |
+| Archive size | 50 MB | Maximum size of a single uploaded archive. |
+| Session TTL | 1 hour | Lifetime of the Dev Sandbox Session; artifacts become unavailable after expiry. |
+| Framework selection | — | Structured frameworks (LangChain, LangGraph, Google ADK, Strands, AgentCore) require an entry file; Dify and Any do not accept a Structured entry. |
+| Application name | 63 characters | Lowercase letters, digits, and hyphens only; must start and end with a letter or digit. |
+| Artifact safety | — | Each file in the migration ZIP is verified against the manifest by size and SHA256; path traversal, symlinks, and files that modify Agent runtime methods are rejected. |
 
 ### Add skills
 
@@ -1371,7 +1421,7 @@ The deployer's long-lived access and secret keys are not written to the VeFaaS a
 
 When `--sandbox-chat-codex-tool-id` is omitted, deployment creates the AgentKit CodeEnv Tool for built-in agents in the region selected by `--region`; the deploy command also creates an additional DevEnv Tool for the Dev Sandbox. Sessions created by these Tools use the same region as the VeFaaS Function and API Gateway. Model credentials are configured only on the respective Tools; the VeFaaS Function receives only the Tool IDs. You can pass existing Tool IDs when suitable Tools are already available in the same region.
 
-The model, endpoint, and candidate regions for sandbox Tools differ by cloud provider: Volcengine uses the `doubao-seed-2-1-pro-260628` model with `https://ark.cn-beijing.volces.com/api/v3`, and candidate regions `cn-beijing` and `cn-shanghai`; BytePlus uses the `seed-2-0-lite-260228` model with `https://ark.ap-southeast.bytepluses.com/api/v3`, and candidate region `ap-southeast-1`.
+The model, endpoint, and candidate regions for sandbox Tools differ by cloud provider: Volcengine uses the `doubao-seed-2-1-pro-260628` model with `https://ark.cn-beijing.volces.com/api/v3`, and candidate regions `cn-beijing` and `cn-shanghai`; BytePlus uses the `dola-seed-2-1-turbo-260628` model with `https://ark.ap-southeast.bytepluses.com/api/v3`, and candidate region `ap-southeast-1`.
 
 <Note>
   When creating sandbox Tools during deployment and updates, the CLI automatically retries transient errors such as rate limits, network failures, and temporary server errors. Concurrent Tool creations are staggered to avoid triggering rate limits. Each creation request carries an idempotency token so that retries do not create duplicate Tools. When Tool provisioning fails, error messages include the Tool ID and cloud service error details (error code, status code, and request ID) to help with troubleshooting.
