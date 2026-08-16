@@ -2,7 +2,7 @@
 title: "Studio agent workbench"
 ---
 
-AgentKit Studio uses the same service and complete UI as VeADK Frontend. It provides chat, search, session history, the skill center, skill customization, video creation, automation integrations, and agent creation, testing, deployment, and management, and opens on the chat view by default. The agent workspace renders multi-agent topologies as a canvas, surfaces deployed Runtime versions and deployment status, and supports iterating on the same Runtime.
+AgentKit Studio uses the same service and complete UI as VeADK Frontend. It provides chat, search, session history, the library hub, video creation, automation integrations, and agent creation, testing, deployment, and management, and opens on the chat view by default. The agent workspace renders multi-agent topologies as a canvas, surfaces deployed Runtime versions and deployment status, and supports iterating on the same Runtime.
 
 Custom configuration, code-package deployment, and existing-project migration are the available project-creation flows. You can preview and edit generated files, run them in a temporary test process, download a ZIP, or deploy to AgentKit. Studio also supports cloud Runtime selection, multiple skill sources, multimodal conversations, automation integrations, and centralized deployment task status and retries.
 
@@ -1243,11 +1243,21 @@ Creates a Feishu agent powered by an AgentKit Runtime directly from Studio. Afte
   The Feishu bot's App Secret is used only for the current deployment and is not written to generated source, workflows, or logs. Deployment can be cancelled during the process; cancellation stops the task and cleans up the created Runtime.
 </Note>
 
-## Skill Center
+## Library
 
-The "Skills" page in the sidebar provides skill space management and Dev Sandbox skill generation. Here you can create and manage skill spaces, upload and browse skills, and generate new skills or optimize existing ones from natural-language descriptions using the Dev Sandbox. Skill generation uses a dedicated AgentKit DevEnv Tool and is independent of the CodeEnv-based built-in agent mode.
+The "Library" page in the sidebar consolidates skill, knowledge base, and artifact management into three tabs:
 
-### Prerequisites
+| Tab | Description |
+| :--- | :--- |
+| Skills | Manage skill spaces and skills, including upload, browse, Dev Sandbox generation, and optimization. |
+| Knowledge | Create and manage user-owned AgentKit knowledge bases, upload files or import web pages as knowledge data. |
+| Artifacts | Browse documents, images, and videos generated in conversations. |
+
+### Skills
+
+The Skills tab provides skill space management and Dev Sandbox skill generation. Here you can create and manage skill spaces, upload and browse skills, and generate new skills or optimize existing ones from natural-language descriptions using the Dev Sandbox. Skill generation uses a dedicated AgentKit DevEnv Tool and is independent of the CodeEnv-based built-in agent mode.
+
+#### Prerequisites
 
 Skill space management and generation operations are performed by the Studio server using its own Volcengine credentials; the browser never touches them. For local startup, provide access through `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY`; for VeFaaS deployments, use the IAM Role bound to the function.
 
@@ -1257,7 +1267,7 @@ Dev Sandbox skill generation requires an administrator to configure an AgentKit 
   Dev Sandbox skill generation is available only to `developer` and `admin` roles. Skill space browsing is available to all signed-in users, but non-admins can only see skill spaces they created.
 </Note>
 
-### Skill publish storage
+#### Skill publish storage
 
 When publishing a skill to a skill space, Studio uploads the skill package to a TOS bucket. The bucket is selected by the following priority:
 
@@ -1274,7 +1284,7 @@ The object prefix within the bucket is specified by the `VEADK_SKILL_CREATOR_TOS
   When Studio persistent storage is configured, skill publishing automatically reuses that bucket with no additional configuration. To use a separate bucket for skill publishing, set the `VEADK_SKILL_CREATOR_TOS_BUCKET` environment variable.
 </Note>
 
-### Manage skill spaces
+#### Manage skill spaces
 
 Skill spaces are loaded by region and support filtering by name. Administrators can see all skill spaces visible to the current account across all regions; non-admins see only spaces they created.
 
@@ -1284,7 +1294,7 @@ Skill spaces are loaded by region and support filtering by name. Administrators 
 | Edit space | Modify the space name and description. |
 | Delete space | All skills in the space must be deleted before the space can be deleted; if skills remain, a prompt appears asking to remove them first. |
 
-### Manage skills
+#### Manage skills
 
 After entering a skill space, you can browse all skills within it and filter by name. Each skill supports the following actions:
 
@@ -1302,11 +1312,11 @@ After entering a skill space, you can browse all skills within it and filter by 
   The skill name must be unique within the target skill space. If a skill with the same name already exists in the target space, the upload is rejected; rename the skill and re-upload, or use the optimize function to overwrite the existing skill.
 </Note>
 
-### Generate skills with the Dev Sandbox
+#### Generate skills with the Dev Sandbox
 
 Selecting "Create skill" on a skill space page opens the Dev Sandbox skill generation workbench. The workbench creates an independent development sandbox session via the DevEnv Tool and generates a `SKILL.md` and associated files in ADK skill format from a natural-language description.
 
-#### Generation plan
+##### Generation plan
 
 | Setting | Description |
 | :--- | :--- |
@@ -1326,7 +1336,7 @@ Available style presets for each group:
 
 The model list is read from the DevEnv Tool configuration; a model ID can also be entered manually.
 
-#### Generation workflow
+##### Generation workflow
 
 <Steps>
   <Step title="Enter goal and configuration">
@@ -1354,9 +1364,66 @@ The model list is read from the DevEnv Tool configuration; a model ID can also b
   Dev Sandbox sessions run in an AgentKit development environment. Generated skill content comes from model output; review the files before publishing to ensure they do not contain sensitive information or inappropriate content.
 </Warning>
 
-#### Optimize an existing skill
+##### Optimize an existing skill
 
 When browsing skills in a skill space, you can select "Optimize" for an existing skill. The optimization workflow is similar to creation but uses the existing skill as the source: enter an optimization goal, start a Dev Sandbox session, and generate an improved version. After optimization, you can choose to overwrite the original skill or publish it as a new skill.
+### Knowledge
+
+The Knowledge tab lets you create and manage user-owned AgentKit knowledge bases, and upload files or import web pages as knowledge data. Knowledge bases are created on the AgentKit platform; creation and write operations require Studio to use Volcengine or BytePlus credentials to call the AgentKit knowledge service.
+
+#### Create a knowledge base
+
+Click "Create knowledge base" to open the dialog and provide the following:
+
+| Field | Required | Description |
+| :--- | :--- | :--- |
+| Name | Yes | 1–48 characters, starting with a letter, containing only letters, digits, and underscores. |
+| Description | No | Up to 80 characters. |
+
+<Note>
+  The description is limited to 80 characters because Studio appends a signed marker to identify knowledge base ownership; the combined description and marker must not exceed the AgentKit knowledge base's 200-character description limit.
+</Note>
+
+Knowledge bases are loaded by region and support name search. Volcengine deployments list knowledge bases in `cn-beijing` and `cn-shanghai`; BytePlus deployments list knowledge bases in `ap-southeast-1`. When creating a new knowledge base, the region options are `cn-beijing` for Volcengine and `ap-southeast-1` for BytePlus.
+
+#### Manage knowledge bases
+
+Each knowledge base card shows the name, description, creator, and status. Users with management permission can edit the description, add data, or delete the knowledge base; users without permission can only browse.
+
+| Action | Description |
+| :--- | :--- |
+| Edit description | Modify the description, up to 80 characters. The name cannot be changed after creation. |
+| Add data | Upload a file or import a web page as a knowledge document. |
+| Delete knowledge base | Requires confirmation. Deletion is irreversible; the knowledge base and all its data are removed. |
+
+#### Add knowledge data
+
+After entering a knowledge base, users with management permission can add knowledge data. Three source types are supported:
+
+| Source | Supported formats | Description |
+| :--- | :--- | :--- |
+| Image | PNG, JPG, JPEG | Single file up to 200 MB. |
+| Document | PDF, PPTX, DOCX, XLSX, TXT | Single file up to 200 MB. |
+| Web page | Public web page URL | Studio fetches the page server-side, extracts the main content as Markdown, and stores it in the knowledge base. |
+
+<Warning>
+  Web page imports are performed by the Studio server with SSRF protection: the target URL and resolved IP addresses are validated against internal or reserved ranges; redirects are limited to 3, HTML size to 5 MB, and extracted Markdown to 2 MB; only `text/html` and `application/xhtml+xml` content types are accepted.
+</Warning>
+
+Each knowledge data item supports an optional name, type, and metadata (JSON format). After adding, you can preview the parsed content in the knowledge base, including text, tables, images, and PDFs. Data parsing takes time; newly added data may not be previewable immediately—refresh later to check.
+
+<Note>
+  File uploads are relayed through Studio's private TOS storage before being imported into the AgentKit knowledge base. When Studio persistent storage is configured, the corresponding bucket is reused automatically.
+</Note>
+
+### Artifacts
+
+The Artifacts tab consolidates documents, images, and videos generated during conversations. Artifacts are grouped by session source, showing the associated app, session, and creation time, with type filtering and search support. Click an artifact to preview images or videos; document artifacts support inline preview.
+
+<Note>
+  Artifacts are collected from session events of deployed agents. To view artifacts, ensure Studio is connected to a deployed Runtime and that sessions with artifact events exist.
+</Note>
+
 
 ## `veadk studio` options
 
@@ -1417,7 +1484,7 @@ When the deployment automatically provisions an Identity user pool, a TOS bucket
 
 `--region` selects the Studio deployment region, defaults to `cn-beijing`, and also supports `cn-shanghai`; the VeFaaS Application, Function, API Gateway, and AgentKit resources use the selected deployment region. When both `--user-pool-id` and `--allowed-client-id` are provided, the command locates the existing VeIdentity user pool and client across the deployment region and the Beijing and Shanghai regions: it queries the deployment region first, then searches the other region on a miss, emitting a warning and continuing when matched cross-region. When these options are omitted, the user pool and client are created or reused in the deployment region without cross-region lookup. `--project` selects the VeFaaS function project and defaults to `default`.
 
-The deployer's long-lived access and secret keys are not written to the VeFaaS application environment. Deployed Studio uses temporary credentials from its bound IAM role.
+The deployer's long-lived access and secret keys are not written to the VeFaaS application environment. Deployed Studio uses temporary credentials from its bound IAM role. During deployment, a knowledge signing key is generated or reused and written to the `VEADK_STUDIO_KNOWLEDGE_SIGNING_KEY` environment variable to identify knowledge base ownership. If the variable already exists, the existing value is preserved; otherwise, a deterministic key is derived from the deployment secret and deployment identity, so the same deployment can verify previously created knowledge bases after updates.
 
 When `--sandbox-chat-codex-tool-id` is omitted, deployment creates the AgentKit CodeEnv Tool for built-in agents in the region selected by `--region`; the deploy command also creates an additional DevEnv Tool for the Dev Sandbox. Sessions created by these Tools use the same region as the VeFaaS Function and API Gateway. Model credentials are configured only on the respective Tools; the VeFaaS Function receives only the Tool IDs. You can pass existing Tool IDs when suitable Tools are already available in the same region.
 
@@ -1429,7 +1496,7 @@ The model, endpoint, and candidate regions for sandbox Tools differ by cloud pro
 
 ### IAM permission pre-check
 
-`veadk studio deploy` automatically runs a read-only IAM permission pre-check before creating any cloud resources. The pre-check reads the caller's attached IAM policies and evaluates each required IAM Action for the deployment. The required permission scope depends on the deployment configuration: when existing identity resources are not specified via `--user-pool-id` and `--allowed-client-id`, permissions for creating user pools are required; when `--iam-role` is not provided, role management permissions are required; when no existing bucket is specified via `VEADK_STUDIO_TOS_BUCKET`, bucket creation permissions are required; when sandbox Tool IDs are not specified, Tool creation permissions are required; when `--gateway-name` is not provided, gateway management permissions are required; when `--keep-failed-deploy` is not enabled, permissions for cleaning up failed resources are also required.
+`veadk studio deploy` automatically runs a read-only IAM permission pre-check before creating any cloud resources. The pre-check reads the caller's attached IAM policies and evaluates each required IAM Action for the deployment. The required permission scope depends on the deployment configuration: when existing identity resources are not specified via `--user-pool-id` and `--allowed-client-id`, permissions for creating user pools are required; when `--iam-role` is not provided, role management permissions are required; when no existing bucket is specified via `VEADK_STUDIO_TOS_BUCKET`, bucket creation permissions are required; when sandbox Tool IDs are not specified, Tool creation permissions are required; when `--gateway-name` is not provided, gateway management permissions are required (including `apig:UpdateRoute` to enable the HTTP methods required by Studio APIs); when `--keep-failed-deploy` is not enabled, permissions for cleaning up failed resources are also required.
 
 After the pre-check completes, the terminal prints a permission table listing each IAM Action, its purpose, and whether it is satisfied. If any permission is missing, the deployment stops before creating cloud resources; the terminal also prints the IAM configuration URL for the corresponding cloud provider to help you add the missing permissions. The Volcengine URL is `https://console.volcengine.com/iam/policymanage` and the BytePlus URL is `https://console.byteplus.com/iam/policymanage`.
 
