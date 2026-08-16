@@ -26,7 +26,7 @@ To use BytePlus as the cloud provider, pass `--provider byteplus` and supply cre
 
 ## Studio persistent storage
 
-Studio capabilities such as video creation and automatic evaluation require persistent object storage to save reference assets, generated results, and optimization snapshots. Studio uses TOS as the persistent storage backend. When no dedicated publish storage is configured, skill publishing also reuses the persistent storage bucket; see [Skill publish storage](#skill-publish-storage).
+Studio capabilities such as video creation, automatic evaluation, and artifact persistence require persistent object storage to save reference assets, generated results, optimization snapshots, and conversation artifacts. Studio uses TOS as the persistent storage backend. When no dedicated publish storage is configured, skill publishing also reuses the persistent storage bucket; see [Skill publish storage](#skill-publish-storage).
 
 ### Cloud deployment
 
@@ -1251,7 +1251,7 @@ The "Library" page in the sidebar consolidates skill, knowledge base, and artifa
 | :--- | :--- |
 | Skills | Manage skill spaces and skills, including upload, browse, Dev Sandbox generation, and optimization. |
 | Knowledge | Create and manage user-owned AgentKit knowledge bases, upload files or import web pages as knowledge data. |
-| Artifacts | Browse documents, images, and videos generated in conversations. |
+| Artifacts | Browse and manage documents, images, and videos generated in conversations; images and videos can be persisted, edited, and deleted. |
 
 ### Skills
 
@@ -1418,12 +1418,39 @@ Each knowledge data item supports an optional name, type, and metadata (JSON for
 
 ### Artifacts
 
-The Artifacts tab consolidates documents, images, and videos generated during conversations. Artifacts are grouped by session source, showing the associated app, session, and creation time, with type filtering and search support. Click an artifact to preview images or videos; document artifacts support inline preview.
+The Artifacts tab consolidates documents, images, and videos generated during conversations. Image and video artifacts are persisted to Studio persistent storage and remain available after refreshing the page or switching sessions; document artifacts are shown only while the corresponding session events are available. Artifacts are grouped by session source, showing the associated app, session, and creation time, with type filtering and search support. Click an artifact to preview images or videos; document artifacts support inline preview.
 
-<Note>
-  Artifacts are collected from session events of deployed agents. To view artifacts, ensure Studio is connected to a deployed Runtime and that sessions with artifact events exist.
-</Note>
+When you open the Artifacts tab, Studio automatically collects image and video artifacts from the currently visible session events and syncs them to persistent storage. Artifacts that have already been saved are not written again; only image and video artifacts are synced.
 
+#### Manage artifacts
+
+Each persisted artifact supports the following actions:
+
+| Action | Description |
+| :--- | :--- |
+| Preview | Preview image or video content inline. |
+| Download | Download the artifact file to your computer. |
+| Edit info | Update the artifact name, description, and tags. |
+| Delete | Requires confirmation before deletion. Once deleted, the artifact and its content cannot be recovered. |
+
+When editing artifact info, the name is up to 180 characters, the description is up to 500 characters, and you can add up to 10 tags with each tag up to 32 characters.
+
+#### Prerequisites
+
+Artifact persistence depends on Studio persistent storage. When persistent storage is not configured, the Artifacts tab cannot sync or display persisted artifacts and shows "管理员未配置持久化存储". For configuration details, see [Studio persistent storage](#studio-persistent-storage).
+
+Artifact syncing validates the source URL: only HTTPS addresses from trusted generation services are accepted, and sources that resolve to private or reserved IP ranges are blocked, preventing content from untrusted addresses. The default trusted source host suffixes are `volces.com`, `volccdn.com`, `byteplus.com`, and `bytepluses.com`. The maximum size for a single artifact defaults to 512 MB.
+
+<Warning>
+  Artifact content is stored in the TOS bucket configured for Studio, isolated by the signed-in user. Do not generate or upload content containing sensitive information in conversations.
+</Warning>
+
+The following environment variables adjust artifact sync behavior:
+
+| Environment variable | Default | Description |
+| :--- | :--- | :--- |
+| `VEADK_ARTIFACT_MAX_FILE_BYTES` | `536870912` (512 MB) | Maximum number of bytes allowed for a single artifact. |
+| `VEADK_ARTIFACT_SOURCE_HOSTS` | `volces.com,volccdn.com,byteplus.com,bytepluses.com` | Comma-separated trusted source host suffixes; uses the default when empty. |
 
 ## `veadk studio` options
 
