@@ -2,7 +2,7 @@
 title: "Studio 智能体工作台"
 ---
 
-AgentKit Studio 使用与 VeADK Frontend 相同的服务和完整界面，提供对话、搜索、历史会话、技能中心、技能定制、视频创作、自动化集成，以及智能体创建、测试、部署和管理功能，启动后默认进入对话页面。智能体工作台以画布形式呈现多智能体拓扑，并集中展示已部署 Runtime 的版本与部署状态，支持在同一 Runtime 上迭代更新。
+AgentKit Studio 使用与 VeADK Frontend 相同的服务和完整界面，提供对话、搜索、历史会话、库、视频创作、自动化集成，以及智能体创建、测试、部署和管理功能，启动后默认进入对话页面。智能体工作台以画布形式呈现多智能体拓扑，并集中展示已部署 Runtime 的版本与部署状态，支持在同一 Runtime 上迭代更新。
 
 当前可通过自定义配置、代码包部署或从存量项目迁移创建项目。你可以预览和编辑生成的文件，启动临时测试进程，将项目下载为 ZIP，或者部署到 AgentKit。Studio 还支持选择云端 Runtime、多来源技能、多模态会话、自动化集成，以及集中查看和重试部署任务。
 
@@ -1243,11 +1243,21 @@ PR 评审工作流需要在仓库中配置以下 GitHub Secrets：
   飞书机器人的 App Secret 仅用于本次部署，不写入生成源码、工作流或日志。部署期间可取消部署，取消将停止任务并清理已创建的 Runtime。
 </Note>
 
-## 技能中心
+## 库
 
-侧边栏的「技能」页面提供技能空间管理和 Dev Sandbox 技能生成。在此页面可以创建和管理技能空间、上传和浏览技能、以及通过 Dev Sandbox 从自然语言描述生成新技能或优化已有技能。生成技能使用独立的 AgentKit DevEnv Tool，与内置智能体的 CodeEnv 模式互不影响。
+侧边栏的「库」页面集中管理技能、知识库和产物，分为三个标签页：
 
-### 前提条件
+| 标签 | 说明 |
+| :--- | :--- |
+| 技能库 | 管理技能空间和技能，包括上传、浏览、通过 Dev Sandbox 生成和优化技能。 |
+| 知识库 | 创建和管理用户拥有的 AgentKit 知识库，上传文件或导入网页作为知识数据。 |
+| 产物 | 浏览对话中生成的文档、图片和视频等产物。 |
+
+### 技能库
+
+技能库标签页提供技能空间管理和 Dev Sandbox 技能生成。在此页面可以创建和管理技能空间、上传和浏览技能、以及通过 Dev Sandbox 从自然语言描述生成新技能或优化已有技能。生成技能使用独立的 AgentKit DevEnv Tool，与内置智能体的 CodeEnv 模式互不影响。
+
+#### 前提条件
 
 技能中心的管理和生成操作由 Studio 服务端使用自身配置的火山引擎凭证完成，浏览器不接触凭证。本地启动时通过 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY` 提供访问权限；部署到 VeFaaS 时使用绑定 IAM Role 的临时凭证。
 
@@ -1257,7 +1267,7 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
   Dev Sandbox 技能生成仅对 `developer` 和 `admin` 角色开放。技能空间的浏览对所有已登录用户开放，但非管理员仅能看到自己创建的技能空间。
 </Note>
 
-### 技能发布存储
+#### 技能发布存储
 
 发布技能到技能空间时，Studio 会将技能包上传到 TOS 存储桶。存储桶按以下优先级选择：
 
@@ -1274,7 +1284,7 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
   已配置 Studio 持久化存储时，技能发布会自动复用该存储桶，无需额外配置。如需为技能发布使用独立存储桶，设置 `VEADK_SKILL_CREATOR_TOS_BUCKET` 环境变量即可。
 </Note>
 
-### 管理技能空间
+#### 管理技能空间
 
 技能空间按地域加载，支持按名称搜索。管理员可以查看全部地域中当前账号可见的全部技能空间；非管理员仅能看到自己创建的空间。
 
@@ -1284,7 +1294,7 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
 | 编辑空间 | 修改空间名称和描述。 |
 | 删除空间 | 删除前需确认空间中的技能已删除；空间中仍有技能时会提示先删除。 |
 
-### 管理技能
+#### 管理技能
 
 进入某个技能空间后，可以浏览其中全部技能并按名称搜索。每个技能支持以下操作：
 
@@ -1302,11 +1312,11 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
   技能名称需在目标技能空间内唯一。如果目标技能空间中已存在同名技能，上传会被拒绝，可重命名后重新上传或使用优化功能覆盖。
 </Note>
 
-### 通过 Dev Sandbox 生成技能
+#### 通过 Dev Sandbox 生成技能
 
 在技能空间页面中选择「创建技能」可进入 Dev Sandbox 技能生成工作台。该工作台通过 DevEnv Tool 创建独立的开发沙箱会话，根据自然语言描述生成符合 ADK 技能格式的 `SKILL.md` 及其相关文件。
 
-#### 生成方案
+##### 生成方案
 
 | 配置项 | 说明 |
 | :--- | :--- |
@@ -1326,7 +1336,7 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
 
 模型列表从 DevEnv Tool 的配置中读取，也可直接输入模型 ID。
 
-#### 生成流程
+##### 生成流程
 
 <Steps>
   <Step title="填写目标与配置">
@@ -1354,9 +1364,66 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
   Dev Sandbox 会话在 AgentKit 开发环境中运行。生成的技能内容来自模型的输出，发布前应检查文件内容，确认不包含敏感信息或不当内容。
 </Warning>
 
-#### 优化已有技能
+##### 优化已有技能
 
 在技能空间中浏览技能时，可对已有技能选择「优化」。优化流程与创建类似，但以现有技能作为来源：填写优化目标后启动 Dev Sandbox 会话，生成改进版本。优化完成后可选择覆盖原技能或作为新技能发布。
+### 知识库
+
+知识库标签页用于创建和管理用户拥有的 AgentKit 知识库，并上传文件或导入网页作为知识数据。知识库创建在 AgentKit 平台上，创建和写入操作需要 Studio 使用火山引擎或 BytePlus 凭证调用 AgentKit 知识库服务。
+
+#### 创建知识库
+
+点击「新建知识库」打开创建对话框，填写以下信息：
+
+| 字段 | 必填 | 说明 |
+| :--- | :--- | :--- |
+| 名称 | 是 | 1–48 个字符，以字母开头，仅支持字母、数字和下划线。 |
+| 描述 | 否 | 至多 80 个字符。 |
+
+<Note>
+  知识库描述限制为 80 个字符，是因为 Studio 会在描述中追加签名标记以标识知识库归属，该标记与描述合计不超过 AgentKit 知识库的 200 字符描述上限。
+</Note>
+
+知识库按地域加载并支持按名称搜索。火山引擎部署时列出 `cn-beijing` 和 `cn-shanghai` 两个地域的知识库；BytePlus 部署时列出 `ap-southeast-1` 地域的知识库。新建知识库时，火山引擎部署的地域选项为 `cn-beijing`，BytePlus 部署为 `ap-southeast-1`。
+
+#### 管理知识库
+
+每个知识库卡片展示名称、描述、创建者和状态。有管理权限的用户可以编辑知识库描述、添加数据或删除知识库；无管理权限的用户仅可浏览。
+
+| 操作 | 说明 |
+| :--- | :--- |
+| 编辑描述 | 修改知识库描述，至多 80 个字符。名称创建后不可修改。 |
+| 添加数据 | 上传文件或导入网页作为知识库文档。 |
+| 删除知识库 | 删除前需确认。删除后知识库及其全部数据不可恢复。 |
+
+#### 添加知识数据
+
+进入知识库后，有管理权限的用户可以添加知识数据。数据来源分为三类：
+
+| 来源 | 支持格式 | 说明 |
+| :--- | :--- | :--- |
+| 图片 | PNG、JPG、JPEG | 单个文件不超过 200 MB。 |
+| 文档 | PDF、PPTX、DOCX、XLSX、TXT | 单个文件不超过 200 MB。 |
+| 网页 | 公开网页 URL | Studio 服务端抓取网页并提取正文内容为 Markdown 后存入知识库。 |
+
+<Warning>
+  网页导入由 Studio 服务端执行，包含 SSRF 防护：校验目标地址和解析后的 IP 是否为内网或保留地址，限制重定向次数（至多 3 次）、HTML 大小（至多 5 MB）和提取后的 Markdown 大小（至多 2 MB），仅接受 `text/html` 和 `application/xhtml+xml` 内容类型。
+</Warning>
+
+每条知识数据支持设置可选名称、类型和 Metadata（JSON 格式）。添加后可在知识库中预览已解析的内容，包括文本、表格、图片、PDF 等。数据解析需要时间，刚添加的数据可能暂时无法预览，可稍后刷新查看。
+
+<Note>
+  文件上传通过 Studio 的私有 TOS 存储中转后导入 AgentKit 知识库。已配置 Studio 持久化存储时自动复用对应存储桶。
+</Note>
+
+### 产物
+
+产物标签页集中展示对话中生成的文档、图片和视频等产物。产物按会话来源分组，显示所属应用、会话和生成时间，支持按类型筛选和搜索。点击产物可预览图片或视频，文档类产物支持在线预览。
+
+<Note>
+  产物从已部署智能体的会话事件中收集。如需查看产物，确保 Studio 已连接到已部署的 Runtime 并存在包含产物事件的会话。
+</Note>
+
 
 ## `veadk studio` 参数
 
@@ -1417,7 +1484,7 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 `--region` 指定 Studio 的部署地域，默认为 `cn-beijing`，也支持 `cn-shanghai`；VeFaaS Application、Function、API Gateway 和 AgentKit 资源均使用所选部署地域。同时传入 `--user-pool-id` 与 `--allowed-client-id` 时，命令会在所部署地域以及北京、上海两个地域之间查找已有的 VeIdentity 用户池与客户端：优先查询部署地域，未命中时跨地域查询另一个地域；跨地域命中时终端会输出 warning 并继续部署。省略这两个参数时，用户池与客户端在部署地域创建或复用，不进行跨地域查找。`--project` 指定 VeFaaS 函数所属项目，默认为 `default`。
 
-部署者的长期 AK/SK 不会写入 VeFaaS 应用环境变量。已部署的 Studio 使用绑定 IAM Role 的临时凭证访问火山引擎服务。
+部署者的长期 AK/SK 不会写入 VeFaaS 应用环境变量。已部署的 Studio 使用绑定 IAM Role 的临时凭证访问火山引擎服务。部署时自动生成或复用知识库签名密钥并写入 `VEADK_STUDIO_KNOWLEDGE_SIGNING_KEY` 环境变量，用于标识知识库归属。若已存在该环境变量则保留原值，否则根据部署密钥和部署标识生成确定性密钥，使同一部署在更新后仍能验证已创建的知识库。
 
 未指定 `--sandbox-chat-codex-tool-id` 时，部署命令会在 `--region` 指定的地域创建内置智能体使用的 AgentKit CodeEnv Tool；同时还会额外创建一个 DevEnv Tool 用于开发沙箱。这些 Tool 创建的 Session 与 VeFaaS Function、API Gateway 保持同一地域。模型凭据只配置在各自 Tool 中，VeFaaS Function 只接收 Tool ID。若已有符合要求且地域一致的 Tool，可通过参数直接复用。
 
@@ -1429,7 +1496,7 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 ### IAM 权限预检
 
-`veadk studio deploy` 在创建任何云资源前，自动执行只读 IAM 权限预检。预检读取当前调用者已绑定的 IAM 策略，逐一评估部署所需 IAM Action 是否满足。所需权限范围取决于部署配置：当未通过 `--user-pool-id` 与 `--allowed-client-id` 指定已有身份资源时，需要创建用户池相关权限；未指定 `--iam-role` 时需要角色管理权限；未通过 `VEADK_STUDIO_TOS_BUCKET` 指定已有存储桶时需要存储桶创建权限；未指定沙箱 Tool ID 时需要 Tool 创建权限；未指定 `--gateway-name` 时需要网关管理权限；未启用 `--keep-failed-deploy` 时还需要清理失败资源的删除权限。
+`veadk studio deploy` 在创建任何云资源前，自动执行只读 IAM 权限预检。预检读取当前调用者已绑定的 IAM 策略，逐一评估部署所需 IAM Action 是否满足。所需权限范围取决于部署配置：当未通过 `--user-pool-id` 与 `--allowed-client-id` 指定已有身份资源时，需要创建用户池相关权限；未指定 `--iam-role` 时需要角色管理权限；未通过 `VEADK_STUDIO_TOS_BUCKET` 指定已有存储桶时需要存储桶创建权限；未指定沙箱 Tool ID 时需要 Tool 创建权限；未指定 `--gateway-name` 时需要网关管理权限（包括开放 Studio API 所需 HTTP 方法的 `apig:UpdateRoute` 权限）；未启用 `--keep-failed-deploy` 时还需要清理失败资源的删除权限。
 
 预检完成后，终端输出一张权限表格，列出每项 IAM Action 的作用及是否满足。若存在缺失权限，部署在创建云资源前终止；终端同时输出对应云服务商的 IAM 配置入口链接，便于前往补充权限。火山引擎入口为 `https://console.volcengine.com/iam/policymanage`，BytePlus 入口为 `https://console.byteplus.com/iam/policymanage`。
 
@@ -1527,7 +1594,7 @@ export VOLCENGINE_SECRET_KEY="your-secret-key"
 veadk studio update --vefaas-app-name "veadk-studio"
 ```
 
-省略 `--region` 和 `--project` 时，命令会在北京、上海及全部可见项目中查找同名 Application。若存在多个候选项，需要补充地域或项目缩小范围。更新保留 Application 与 Function ID、访问 URL、SSO、IAM、网关和已有环境变量；品牌和各 CodeEnv、DevEnv Tool ID 仅在显式传入相应参数时覆盖。若函数使用默认 Studio IAM Role，更新时会同步刷新该角色的托管策略至最新版本；使用自定义 Role 时不做修改。
+省略 `--region` 和 `--project` 时，命令会在北京、上海及全部可见项目中查找同名 Application。若存在多个候选项，需要补充地域或项目缩小范围。更新保留 Application 与 Function ID、访问 URL、SSO、IAM、网关和已有环境变量；品牌和各 CodeEnv、DevEnv Tool ID 仅在显式传入相应参数时覆盖。更新时自动检查并补齐 `VEADK_STUDIO_KNOWLEDGE_SIGNING_KEY` 环境变量：若缺失则根据当前环境生成，确保更新后知识库管理功能可用。若函数使用默认 Studio IAM Role，更新时会同步刷新该角色的托管策略至最新版本；使用自定义 Role 时不做修改。
 
 | 选项 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
