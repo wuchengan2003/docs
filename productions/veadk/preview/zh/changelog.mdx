@@ -8,6 +8,9 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 端云接力 | 新增端云接力能力：在「管理智能体」的 Codex 标签下点击「接力」打开引导对话框，按顺序复制插件安装提示词与接力提示词（含 Studio 地址和一次性配对码，默认有效期 20 分钟），本地 Codex 插件即可将项目代码、Git 元数据和可见会话历史（含用户消息图片）迁移到一个临时云端 Codex Sandbox Session，并在云端继续执行任务。接力进度按「等待端侧请求」「创建云端 Session」「恢复项目」「发送续跑任务」展示，完成后可直接进入云端会话。会话历史至多 100 条消息、单条 20,000 字符、总计 100,000 字符；图片至多 10 张（PNG/JPEG/GIF/WebP），单张 4 MB、总计 8 MB。该入口仅对 `admin` 与 `developer` 可见。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio Sandbox | 新增 `STUDIO_EXPOSE_SANDBOX_ENDPOINT` 环境变量（默认关闭）。启用后 Codex 会话编辑器输入框旁显示「复制 Sandbox Endpoint」按钮，可将当前 Sandbox 公开端点复制到剪贴板；本地启动与云端部署均通过环境变量配置。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 更新 | `veadk studio update` 更新时向已绑定的 VeIdentity 用户池客户端注册当前 Studio 公网地址的 `/oauth2/callback` 回调并启用免确认，确保更新后 SSO 登录回调可用；注册失败时输出 warning 并提示手动添加。查询已有部署与提交代码包更新时对限流、网络抖动等服务端临时故障自动重试，重试仍失败时提示云端发布可能仍在进行、可稍后重试。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 库 | 侧边栏新增「库」页面，集中管理技能、知识库和产物三个标签页。原有「技能」入口合并为库的技能库标签页。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 知识库 | 库页面新增知识库标签页：创建和管理用户拥有的 AgentKit 知识库，知识库名称需以字母开头、仅含字母数字和下划线（1–48 字符），描述至多 80 字符。支持上传图片（PNG/JPG/JPEG）和文档（PDF/PPTX/DOCX/XLSX/TXT，单个文件不超过 200 MB），也支持导入公开网页：Studio 服务端抓取网页并提取正文为 Markdown，包含 SSRF 防护、重定向与大小限制。文件通过私有 TOS 中转后导入 AgentKit 知识库。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 产物 | 库页面新增产物标签页：集中展示对话中生成的文档、图片和视频，按会话来源分组，支持按类型筛选和搜索。图片和视频产物持久化保存到 Studio 持久化存储，刷新或切换会话后仍然可用；持久化产物支持编辑名称、描述和标签，以及下载和删除。同步仅处理图片和视频，并通过来源地址校验（仅接受受信任生成服务的 HTTPS 地址）防止写入不可信内容。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |

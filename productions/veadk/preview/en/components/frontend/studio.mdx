@@ -653,6 +653,57 @@ During custom creation, Studio saves unpublished agent drafts in the current bro
 
 Drafts use the browser's local storage. When storage is full or writes are rejected, Studio shows the corresponding reason; remove unneeded drafts or clear site storage and retry.
 
+## Hand off a local task to the cloud
+
+Local-to-cloud handoff migrates an in-progress local Codex conversation and project into a Studio cloud Codex Sandbox so the task can continue in the cloud. Use it when local compute, environment, or runtime limits make it preferable to continue a coding task on a cloud Codex. The entry point is on the Codex tab of the "Manage agents" page and is visible only to roles with agent-creation permission (`admin` and `developer`).
+
+<Warning>
+  Handoff transfers only project code and visible conversation history. It does not copy local Codex system prompts, reasoning, tool-call logs, runtime state, SSH private keys, or global configuration. The pairing code is a one-time credential; do not share it publicly.
+</Warning>
+
+<Steps>
+  <Step title="Install the AgentKit Studio Plugin">
+    On first use, choose an installation method in the "Hand off to the cloud" dialog. Select "Install via Codex conversation" to copy a prompt that you paste into your local Codex conversation so it performs the installation; select "Install from terminal" to copy and run the following command in a local terminal:
+
+    ```bash
+    codex plugin marketplace add volcengine/veadk-python \
+      --sparse .agents/plugins \
+      --sparse plugins/agentkit-studio \
+      && codex plugin add agentkit-studio@veadk-python
+    ```
+  </Step>
+  <Step title="Copy the handoff prompt">
+    After the plugin is installed, click "Copy handoff prompt". The prompt contains the current Studio URL and a one-time pairing code whose default validity is 20 minutes, shown with a countdown in the dialog. If the code expires or becomes invalid, click "Refresh pairing code" to generate a new one.
+  </Step>
+  <Step title="Run the handoff in local Codex">
+    Paste the prompt into your local Codex conversation. The plugin bundles the project's Git-tracked files and non-ignored untracked files, Git metadata, and the visible user and assistant messages from the current task (including local images attached to user messages), uploads them to Studio, creates a temporary cloud Codex Sandbox Session, restores the project, injects the conversation history, and finally sends one continuation message so the cloud Codex continues the task. After upload the cloud task runs independently and the local terminal can be closed.
+  </Step>
+  <Step title="Track progress and open the cloud session">
+    The "Handoff status" panel shows progress across four stages: "Waiting for local request", "Creating cloud Session", "Restoring project", and "Sending continuation task". When handoff completes, click "Enter Codex" to open the created cloud Sandbox Session in Studio and continue the conversation.
+  </Step>
+</Steps>
+
+During handoff the cloud Codex runs in the background; Studio synchronizes the cloud task's progress and replies in the conversation view. If handoff fails after the Session is created, during project restore or upload, you can retry with the original pairing code and Studio reuses the existing Session instead of creating a duplicate.
+
+Conversation history and image migration are subject to the following limits:
+
+| Item | Limit |
+| :--- | :--- |
+| Visible messages | Up to 100 |
+| Characters per message | Up to 20,000 |
+| Total history characters | Up to 100,000 |
+| Images attached to user messages | Up to 10, PNG, JPEG, GIF, or WebP |
+| Per-image size | Up to 4 MB |
+| Total image size | Up to 8 MB |
+| Continuation message length | Up to 20,000 characters |
+| Cloud Session type | Temporary Session only |
+
+### Handoff environment variables
+
+| Environment variable | Default | Description |
+| :--- | :--- | :--- |
+| `STUDIO_CODEX_PROJECT_HANDOFF_PAIRING_TTL_SECONDS` | `1200` (20 minutes) | Pairing-code validity, range 60–3600 seconds. Configured via an environment variable for local startup and written to the VeFaaS Function environment for cloud deployment. |
+
 ## Update a deployed agent
 
 An agent deployed to AgentKit can be edited again in Studio and updated on the same Runtime instead of creating a new deployment each time. The update produces an incremented image version based on the Runtime's current version and publishes it on the existing Runtime.
@@ -925,6 +976,10 @@ Typing `/model ` triggers the model list; choose one or type a model ID directly
 #### Workspace
 
 The workspace button on the left of the input selects the directory where the current Codex Thread runs commands and modifies files. In the dialog you can enter an absolute path directly or browse the directory tree. Once a conversation starts, the workspace is locked; start a new Sandbox Session to choose again.
+
+<Note>
+  When an administrator enables the `STUDIO_EXPOSE_SANDBOX_ENDPOINT` environment variable (any value other than `0`/`false`), the Codex session editor shows a "Copy Sandbox Endpoint" button next to the composer that copies the current Sandbox public endpoint to the clipboard. The button is hidden when the variable is not enabled. It is configured via an environment variable for both local and deployed Studio, and is disabled by default.
+</Note>
 
 #### Permissions
 
@@ -1621,7 +1676,7 @@ export VOLCENGINE_SECRET_KEY="your-secret-key"
 veadk studio update --vefaas-app-name "veadk-studio"
 ```
 
-When `--region` and `--project` are omitted, the command searches Beijing, Shanghai, and all visible projects. If multiple Applications have the same name, add a region or project to narrow the scope. The update preserves the Application and Function IDs, public URL, SSO, IAM, gateway, and existing environment variables. Branding and the CodeEnv and DevEnv Tool IDs change only when their options are explicitly supplied. When the function uses the default Studio IAM role, the update also refreshes the role's managed policies to the latest version; custom roles are not modified.
+When `--region` and `--project` are omitted, the command searches Beijing, Shanghai, and all visible projects. If multiple Applications have the same name, add a region or project to narrow the scope. The update preserves the Application and Function IDs, public URL, SSO, IAM, gateway, and existing environment variables. Branding and the CodeEnv and DevEnv Tool IDs change only when their options are explicitly supplied. When the function uses the default Studio IAM role, the update also refreshes the role's managed policies to the latest version; custom roles are not modified. The update also registers the `/oauth2/callback` callback of the current Studio public URL on the bound VeIdentity user-pool client and enables skip-consent, so SSO login remains usable after the update; if registration fails, the terminal prints a warning and instructs you to add the URL to the client's allowed callback URLs manually. When querying existing deployments and submitting the code-bundle update, the command automatically retries transient server errors such as rate limiting and network jitter; if it still fails after retrying, the terminal notes that the cloud release may still be in progress and you can rerun the same update command shortly after.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
