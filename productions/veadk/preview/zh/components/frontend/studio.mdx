@@ -653,6 +653,57 @@ Studio 不会在浏览器中保存 Runtime API Key，因此管理页只显示 Ru
 
 草稿保存使用浏览器本地存储空间。存储空间不足或被浏览器拒绝写入时，Studio 会提示对应原因，可删除不再需要的草稿或清理站点存储后重试。
 
+## 端云接力到云端继续执行
+
+端云接力用于把本地 Codex 正在进行的会话与项目迁移到 Studio 云端 Codex Sandbox，并在云端继续执行任务。适用于本地算力、环境或运行时长受限，需要把当前编码任务转到云端 Codex 继续推进的场景。该入口位于「管理智能体」页面的 Codex 标签下，仅对具备创建智能体权限的角色（`admin` 与 `developer`）可见。
+
+<Warning>
+  端云接力只迁移项目代码与可见会话历史，不复制本地 Codex 的系统提示词、推理过程、工具调用记录、运行时状态、SSH 私钥或全局配置。配对码为一次性凭证，请勿公开分享。
+</Warning>
+
+<Steps>
+  <Step title="安装 AgentKit Studio Plugin">
+    首次使用时，在「接力到云端继续执行」对话框中选择安装方式。选择「与 Codex 对话安装」可复制一段提示词，粘贴到本地 Codex 对话中由其执行安装；选择「从终端安装」则复制以下命令在本地终端执行：
+
+    ```bash
+    codex plugin marketplace add volcengine/veadk-python \
+      --sparse .agents/plugins \
+      --sparse plugins/agentkit-studio \
+      && codex plugin add agentkit-studio@veadk-python
+    ```
+  </Step>
+  <Step title="复制接力提示词">
+    插件安装完成后，点击「复制接力提示词」。提示词中包含当前 Studio 地址和一次性配对码，配对码默认有效期 20 分钟，并在对话框中显示倒计时。配对码过期或失效时可点击「刷新配对码」重新生成。
+  </Step>
+  <Step title="在本地 Codex 中执行接力">
+    将提示词粘贴到本地 Codex 对话中。插件会将当前项目的 Git 跟踪文件与非忽略的未跟踪文件、Git 元数据，以及当前任务中可见的用户与助手消息（含用户消息附带的本地图片）打包上传到 Studio，创建一个临时云端 Codex Sandbox Session，恢复项目并注入会话历史，最后发送一条续跑消息让云端 Codex 继续任务。上传完成后云端任务独立运行，本地终端可断开。
+  </Step>
+  <Step title="查看进度并进入云端会话">
+    对话框的「接力状态」面板按「等待端侧请求」「创建云端 Session」「恢复项目」「发送续跑任务」四个阶段展示进度。接力完成后点击「进入 Codex」即可在 Studio 中打开创建的云端 Sandbox Session 继续对话。
+  </Step>
+</Steps>
+
+接力过程中云端 Codex 在后台执行，Studio 会在会话页面同步展示云端任务的进度与回复。若接力在创建 Session 之后、恢复项目或上传阶段失败，可使用原配对码重试，Studio 会复用已创建的 Session 而不会重复创建。
+
+会话历史与图片迁移存在以下限制：
+
+| 项目 | 限制 |
+| :--- | :--- |
+| 可见消息数 | 至多 100 条 |
+| 单条消息字符数 | 至多 20,000 字符 |
+| 会话历史总字符数 | 至多 100,000 字符 |
+| 用户消息附带图片 | 至多 10 张，支持 PNG、JPEG、GIF、WebP |
+| 单张图片大小 | 至多 4 MB |
+| 图片总大小 | 至多 8 MB |
+| 续跑消息长度 | 至多 20,000 字符 |
+| 云端 Session 类型 | 仅临时 Session |
+
+### 端云接力环境变量
+
+| 环境变量 | 默认值 | 说明 |
+| :--- | :--- | :--- |
+| `STUDIO_CODEX_PROJECT_HANDOFF_PAIRING_TTL_SECONDS` | `1200`（20 分钟） | 配对码有效期，取值范围 60–3600 秒。本地启动时通过环境变量配置，云端部署时写入 VeFaaS Function 环境。 |
+
 ## 更新已部署的智能体
 
 已部署到 AgentKit 的智能体可以在 Studio 中重新编辑并更新到同一 Runtime，而不必每次创建新部署。更新会基于该 Runtime 的当前版本生成递增的镜像版本，并在原 Runtime 上发布新版本。
@@ -925,6 +976,10 @@ veadk studio --agents-dir ./agents --open
 #### 工作空间
 
 点击输入框左侧的工作空间按钮可选择当前 Codex Thread 执行命令与修改文件的目录。在对话框中可直接输入绝对路径或浏览目录树选择。对话开始后工作空间会被锁定，需新建 Sandbox 会话后才能重新选择。
+
+<Note>
+  当管理员启用 `STUDIO_EXPOSE_SANDBOX_ENDPOINT` 环境变量（设为非 `0`/`false` 值）后，Codex 会话编辑器输入框旁会显示「复制 Sandbox Endpoint」按钮，可将当前 Sandbox 的公开端点复制到剪贴板。未启用时该按钮不显示。该变量在本地启动与云端部署的 Studio 中均通过环境变量配置，默认关闭。
+</Note>
 
 #### 权限
 
@@ -1621,7 +1676,7 @@ export VOLCENGINE_SECRET_KEY="your-secret-key"
 veadk studio update --vefaas-app-name "veadk-studio"
 ```
 
-省略 `--region` 和 `--project` 时，命令会在北京、上海及全部可见项目中查找同名 Application。若存在多个候选项，需要补充地域或项目缩小范围。更新保留 Application 与 Function ID、访问 URL、SSO、IAM、网关和已有环境变量；品牌和各 CodeEnv、DevEnv Tool ID 仅在显式传入相应参数时覆盖。更新时自动检查并补齐 `VEADK_STUDIO_KNOWLEDGE_SIGNING_KEY` 环境变量：若缺失则根据当前环境生成，确保更新后知识库管理功能可用。若函数使用默认 Studio IAM Role，更新时会同步刷新该角色的托管策略至最新版本；使用自定义 Role 时不做修改。
+省略 `--region` 和 `--project` 时，命令会在北京、上海及全部可见项目中查找同名 Application。若存在多个候选项，需要补充地域或项目缩小范围。更新保留 Application 与 Function ID、访问 URL、SSO、IAM、网关和已有环境变量；品牌和各 CodeEnv、DevEnv Tool ID 仅在显式传入相应参数时覆盖。更新时自动检查并补齐 `VEADK_STUDIO_KNOWLEDGE_SIGNING_KEY` 环境变量：若缺失则根据当前环境生成，确保更新后知识库管理功能可用。若函数使用默认 Studio IAM Role，更新时会同步刷新该角色的托管策略至最新版本；使用自定义 Role 时不做修改。更新还会向已绑定的 VeIdentity 用户池客户端注册当前 Studio 公网地址的 `/oauth2/callback` 回调并启用免确认，确保更新后 SSO 登录回调可用；注册失败时终端会输出 warning，并提示在用户池客户端的允许回调地址中手动添加该地址。查询已有部署与提交代码包更新时，命令会对限流、网络抖动等服务端临时故障自动重试；重试后仍失败时终端会提示云端发布可能仍在进行，可稍后重新执行同一更新命令。
 
 | 选项 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
