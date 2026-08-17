@@ -919,6 +919,10 @@ Follow-up messages in an ordinary conversation continue to use the existing mess
 </Note>
 
 <Note>
+  Built-in Codex sessions recover automatically after an idle timeout or transport disconnection. On the next message or request, Studio rebuilds the connection and resumes the current Thread, preserving the existing conversation history, workspace lock state, and context usage — no manual new session is required. Recovery is transparent to the user; if recovery fails, the credential-redacted error detail is still shown in the conversation.
+</Note>
+
+<Note>
   In cloud mode, Studio does not auto-select the first available agent. Before starting a new conversation, connect a Runtime from the agent selector at the top of the chat page. Starting a new chat without a selected agent prompts you to choose one first and opens the agent management page.
 </Note>
 
