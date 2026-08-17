@@ -74,7 +74,8 @@ The logo can be up to 5 MB in PNG, JPEG, GIF, WebP, AVIF, or ICO format. The equ
 1. On Add Agent, select Create from scratch to enter custom configuration, choose “Add and deploy from a code package” to upload an existing project, or choose “Migrate an existing project” to migrate LangChain, Dify, or other framework projects to VeADK.
 2. Configure the model, instruction, tools, memory, and knowledge base, and add skills from Skill Hub, a local upload, or an AgentKit SkillSpace. Multi-agent projects can also use sequential, parallel, loop, or A2A nodes, and the canvas lets you inspect and arrange the agent topology.
 3. Review the generated files and run them in a restricted temporary process; download a ZIP if you need to work offline.
-4. Select AgentKit deployment and monitor the build-image, deploy, and publish stages from the workspace. After deployment, the agent appears as published in the workspace and can be updated on the same Runtime.
+4. In the Environment step, select command-line tools to bake into the cloud Runtime image, or customize the Dockerfile used to build the image; this step is optional.
+5. Select AgentKit deployment and monitor the build-image, deploy, and publish stages from the workspace. After deployment, the agent appears as published in the workspace and can be updated on the same Runtime.
 
 <Note>
   Resource pickers in custom creation (such as agent centers and knowledge-base collections) support local keyword filtering: type in the dropdown to filter the currently loaded options. Filtering applies only to the loaded list and does not change the region, project scope, or refresh behavior.
@@ -185,6 +186,43 @@ When using "Select existing," the Studio server loads existing resources for the
 | Resource list is empty | Confirm that the current account has created the corresponding resources in the selected region and that the credentials have view permissions. |
 | Resource list fails to load | Check the Studio login session, network connectivity, and credential permissions, then retry. |
 | Deployment reports a resource validation error | Verify that the selected or entered resources are complete; for example, CR requires an instance, namespace, and repository. |
+
+### Configure the cloud environment
+
+The custom-creation lifecycle follows four steps: Architecture, Debug, Environment, and Publish. The Environment step sits between Debug and Publish and lets you select official command-line tools to bake into the cloud Runtime image, or customize the Dockerfile used to build the image. The step is optional: when no tools are selected and no custom Dockerfile is provided, deployment uses the default AgentKit image build and the generated project contains no `Dockerfile`.
+
+#### Select command-line tools
+
+The following official command-line tools can be selected in the Environment step; selected tools are installed into the deployment image:
+
+| Tool | Category | Description |
+| :--- | :--- | :--- |
+| Lark CLI | Productivity | Run Lark OpenPlatform development and management commands in the cloud. |
+| GitHub CLI | Development | Work with GitHub repositories, issues, and pull requests in the cloud. |
+| Pandoc | Productivity | Convert between Markdown, HTML, Word, and other document formats. |
+
+After selecting any tool, Studio generates a provider-specific Dockerfile and adds it to the generated project (path `Dockerfile`). The Dockerfile builds on the AgentKit-provided base image (Volcengine uses the Beijing-region image, BytePlus uses the Singapore-region image), installs the system dependencies required by the selected tools, and downloads the binaries from the official GitHub Release archives, verifying SHA-256 checksums for both amd64 and arm64 before installing them; Pandoc is installed from system packages. The image then installs Python dependencies, copies the application code, and uses `python -m app` as the entrypoint.
+
+<Note>
+  The generated Dockerfile never contains access keys or credentials. Provide any tokens or credentials the tools need as runtime environment variables after deployment; do not write them into the Dockerfile.
+</Note>
+
+#### Customize the Dockerfile
+
+Use "Advanced configuration" at the bottom of the Environment step to open the Dockerfile editor and edit the build content directly.
+
+| Action | Description |
+| :--- | :--- |
+| Edit Dockerfile | The editor initially shows the content auto-generated from the cloud provider and tool selection; once you save custom content, changing the tool selection will not overwrite your edits. |
+| Restore auto-generated | Resets the Dockerfile to the version generated from the current cloud provider and tool selection. |
+
+The Dockerfile is limited to 64 KiB and cannot be empty; an empty or oversized Dockerfile blocks the Publish step, and Studio keeps you on the Environment step with a message.
+
+<Warning>
+  Never write access keys, tokens, or other credentials into the Dockerfile. The Dockerfile is submitted to the cloud build service together with the project and may be readable by anyone with access to the build artifacts.
+</Warning>
+
+Whenever tools are selected or a custom Dockerfile is provided, the generated project includes a `Dockerfile`, which the cloud build service uses during deployment. Providing only a custom Dockerfile without selecting any tools also generates a `Dockerfile` and uses it verbatim.
 
 ### Add and deploy from a code package
 

@@ -13,6 +13,7 @@ title: "更新日志"
 | Studio 创建 | 生成智能体的系统提示词（`instruction`）长度上限由 20,000 个字符提高到 40,000 个字符。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 知识库 | 导入网页时先展示提取内容的渲染预览，确认后才会存入知识库；取消或预览失败不会创建任何数据。网页文档自动以页面标题命名，未获取到标题时使用域名。当主要提取方式无法获取正文时尝试备用提取；页面依赖 JavaScript 动态渲染而无可见内容时提示无法导入。已导入的网页文档在知识库中预览时显示原始 Markdown 原文。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 沙箱 | 管理员打开沙箱会话列表时，自动恢复当前智能体类型的可恢复快照（后台并发，至多 3 个），恢复后直接展示就绪会话，不再需要手动唤醒。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 创建 | 自定义创建新增「环境」步骤：在调试与发布之间选择需要预装到云端 Runtime 镜像的命令行工具（Lark CLI、GitHub CLI、Pandoc），或通过高阶配置自定义构建镜像使用的 Dockerfile；不选择工具且不自定义时使用默认镜像构建。生成的 Dockerfile 基于云服务商对应的基础镜像，按 amd64 与 arm64 架构校验 SHA-256 安装工具，且不包含任何凭据。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.2
 
