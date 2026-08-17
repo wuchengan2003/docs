@@ -59,7 +59,7 @@ Studio 对象使用用户优先的版本化布局，路径格式为 `veadk-studi
 
 ## 自定义品牌
 
-使用 `--site-title` 设置最多 16 个字符的系统名称，使用 `--site-logo` 指定本地图片或 HTTP(S) 图片 URL。Logo 会用于侧边栏、登录页和浏览器 favicon，系统名称也会作为浏览器页面标题；省略 `--site-title` 时使用默认名称 `AgentKit Studio`。
+使用 `--site-title` 设置最多 16 个字符的系统名称，使用 `--site-logo` 指定本地图片或 HTTP(S) 图片 URL。Logo 会用于侧边栏、登录页和浏览器 favicon。浏览器页面标题会随当前界面动态变化：新会话首页只显示系统名称；进入对话后显示会话名称；进入自动化、系统信息、创建智能体、库、搜索等功能页时，标题为「系统名称 - 页面名称」。省略 `--site-title` 时使用默认名称 `AgentKit Studio`。
 
 ```bash
 veadk studio \

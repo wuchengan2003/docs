@@ -8,6 +8,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 界面 | 浏览器页面标题随当前界面动态变化：新会话首页只显示系统名称；进入对话后显示会话名称；进入自动化、系统信息、创建智能体、库、搜索等功能页时，标题为「系统名称 - 页面名称」。此前标题固定为系统名称。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 内置智能体 | 内置 Codex 会话在连接空闲超时或传输层断开后自动恢复：下一次发送消息或请求时，Studio 重建连接并恢复当前 Thread，保留对话历史、工作空间锁定状态与上下文用量，无需手动新建会话。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | `veadk studio deploy` 在创建或查找 VeIdentity 用户池与客户端、注册 SSO 回调时，仅使用部署者提供的凭证，不再回退到运行环境中的 VeFaaS IAM 凭证，避免部署期间误用非预期的临时凭证。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 端云接力 | 新增端云接力能力：在「管理智能体」的 Codex 标签下点击「接力」打开引导对话框，按顺序复制插件安装提示词与接力提示词（含 Studio 地址和一次性配对码，默认有效期 20 分钟），本地 Codex 插件即可将项目代码、Git 元数据和可见会话历史（含用户消息图片）迁移到一个临时云端 Codex Sandbox Session，并在云端继续执行任务。接力进度按「等待端侧请求」「创建云端 Session」「恢复项目」「发送续跑任务」展示，完成后可直接进入云端会话。会话历史至多 100 条消息、单条 20,000 字符、总计 100,000 字符；图片至多 10 张（PNG/JPEG/GIF/WebP），单张 4 MB、总计 8 MB。该入口仅对 `admin` 与 `developer` 可见。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
