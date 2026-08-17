@@ -1021,7 +1021,7 @@ From the Add menu, choose Enter terminal or View browser to open an interactive 
 </Note>
 
 <Note>
-  When a built-in agent's session has ended but left a restorable snapshot, administrators see the snapshot in the sandbox session list with a "Wakeable" status. Click "Wake" to restore a ready session from the snapshot and continue the conversation; you can also delete snapshots you no longer need. The snapshot detail page shows the snapshot status, reason, Snapshot ID, and source Session ID. This capability is available only to the `admin` role and requires the corresponding sandbox snapshot Tool to be configured.
+  When a built-in agent's session has ended but left a restorable snapshot, opening the sandbox session list as an administrator automatically resumes restorable snapshots for the listed agent kind. Studio resumes them concurrently in the background (up to 3 at a time), then refreshes the list to show the ready sessions directly — no manual wake is required. Snapshots that fail to resume are skipped and do not affect the rest of the list. This capability is available only to the `admin` role and requires the corresponding sandbox snapshot Tool to be configured.
 </Note>
 
 
