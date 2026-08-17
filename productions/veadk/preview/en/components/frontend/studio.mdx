@@ -953,7 +953,6 @@ veadk studio --agents-dir ./agents --open
   Codex and DeepSeek Harness share the same AgentKit CodeEnv Tool (`SANDBOX_CHAT_CODEX`); no separate Tool is needed for DeepSeek Harness. Sessions for the two built-in agent types are distinguished by an agent-kind identifier and do not interfere with each other.
 </Note>
 
-
 ### Codex session controls
 
 After selecting the Codex agent, conversations use a dedicated Codex session composer. The composer exposes permissions and workspace entries on the left of the input, terminal, browser, and file-upload entries in the Add menu, and supports slash commands, model switching, and Skill invocation. These controls apply only to the current Sandbox Session and do not modify the deployed agent.
@@ -1023,7 +1022,6 @@ From the Add menu, choose Enter terminal or View browser to open an interactive 
 <Note>
   When a built-in agent's session has ended but left a restorable snapshot, opening the sandbox session list as an administrator automatically resumes restorable snapshots for the listed agent kind. Studio resumes them concurrently in the background (up to 3 at a time), then refreshes the list to show the ready sessions directly — no manual wake is required. Snapshots that fail to resume are skipped and do not affect the rest of the list. This capability is available only to the `admin` role and requires the corresponding sandbox snapshot Tool to be configured.
 </Note>
-
 
 ## Skill customization
 
@@ -1467,11 +1465,14 @@ After entering a knowledge base, users with management permission can add knowle
 | :--- | :--- | :--- |
 | Image | PNG, JPG, JPEG | Single file up to 200 MB. |
 | Document | PDF, PPTX, DOCX, XLSX, TXT | Single file up to 200 MB. |
-| Web page | Public web page URL | Studio fetches the page server-side, extracts the main content as Markdown, and stores it in the knowledge base. |
+| Web page | Public web page URL | Studio fetches the page server-side, extracts the main content as Markdown, and stores it in the knowledge base after preview confirmation. |
 
 <Warning>
   Web page imports are performed by the Studio server with SSRF protection: the target URL and resolved IP addresses are validated against internal or reserved ranges; redirects are limited to 3, HTML size to 5 MB, and extracted Markdown to 2 MB; only `text/html` and `application/xhtml+xml` content types are accepted.
 </Warning>
+<Note>
+  When importing a web page, Studio first fetches the page and extracts the main content as Markdown, then shows a rendered preview before saving. Only an explicit confirmation stores the previewed Markdown; cancelling or a preview failure leaves the knowledge base unchanged. Web documents are named automatically from the page title, falling back to the hostname when no title is available. When the primary extractor yields no content, Studio attempts a fallback parser to extract visible body text; if the page requires JavaScript rendering and has no visible content, Studio reports that the page cannot be imported. Imported web documents show their original Markdown source when previewed in the knowledge base, rather than chunked retrieval results.
+</Note>
 
 Each knowledge data item supports an optional name, type, and metadata (JSON format). After adding, you can preview the parsed content in the knowledge base, including text, tables, images, and PDFs. Data parsing takes time; newly added data may not be previewable immediately—refresh later to check.
 

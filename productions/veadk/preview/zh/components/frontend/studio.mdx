@@ -953,7 +953,6 @@ veadk studio --agents-dir ./agents --open
   Codex 智能体和 DeepSeek Harness 共用同一个 AgentKit CodeEnv Tool（`SANDBOX_CHAT_CODEX`），无需为 DeepSeek Harness 单独配置 Tool。两类内置智能体的会话通过 agent 类型标识区分，不会互相影响。
 </Note>
 
-
 ### Codex 会话控件
 
 选择 Codex 智能体后，对话使用专用的 Codex 会话编辑器。该编辑器在输入框左侧提供权限与工作空间入口，在「添加」菜单中提供终端、浏览器与文件上传入口，并支持快捷命令、模型切换和 Skill 调用。这些控件只作用于当前 Sandbox Session，不修改已部署的智能体。
@@ -1023,7 +1022,6 @@ veadk studio --agents-dir ./agents --open
 <Note>
   当内置智能体的会话结束后留下可恢复的快照时，管理员打开沙箱会话列表会自动恢复当前智能体类型的可恢复快照：Studio 在后台并发恢复（至多 3 个），恢复完成后列表刷新并直接展示就绪的会话，无需手动唤醒。恢复失败的快照会被跳过，不影响其余会话展示。该能力仅对 `admin` 角色开放，且仅在已配置对应的沙箱快照 Tool 时可用。
 </Note>
-
 
 ## 技能定制
 
@@ -1467,11 +1465,14 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
 | :--- | :--- | :--- |
 | 图片 | PNG、JPG、JPEG | 单个文件不超过 200 MB。 |
 | 文档 | PDF、PPTX、DOCX、XLSX、TXT | 单个文件不超过 200 MB。 |
-| 网页 | 公开网页 URL | Studio 服务端抓取网页并提取正文内容为 Markdown 后存入知识库。 |
+| 网页 | 公开网页 URL | Studio 服务端抓取网页并提取正文内容为 Markdown，预览确认后存入知识库。 |
 
 <Warning>
   网页导入由 Studio 服务端执行，包含 SSRF 防护：校验目标地址和解析后的 IP 是否为内网或保留地址，限制重定向次数（至多 3 次）、HTML 大小（至多 5 MB）和提取后的 Markdown 大小（至多 2 MB），仅接受 `text/html` 和 `application/xhtml+xml` 内容类型。
 </Warning>
+<Note>
+  导入网页时，Studio 先抓取页面并提取正文为 Markdown，在保存前展示渲染预览。确认后才会将预览的 Markdown 存入知识库；取消或预览失败不会创建任何数据。网页文档的名称自动取自页面标题，未获取到标题时使用域名作为名称。当主要提取方式无法获取正文时，Studio 尝试以备用方式提取页面可见文本；若页面依赖 JavaScript 动态渲染而无可见内容，会提示该页面可能无法导入。已导入的网页文档在知识库中预览时显示原始 Markdown 原文，而非分块后的检索结果。
+</Note>
 
 每条知识数据支持设置可选名称、类型和 Metadata（JSON 格式）。添加后可在知识库中预览已解析的内容，包括文本、表格、图片、PDF 等。数据解析需要时间，刚添加的数据可能暂时无法预览，可稍后刷新查看。
 
