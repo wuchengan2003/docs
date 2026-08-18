@@ -239,7 +239,7 @@ Intelligent development is a goal-driven creation flow: on Add Agent, select "In
     Enter a goal description on the "Intelligent development" page, for example "Create an agent that reads sales data, generates weekly reports, and validates the output format." If any key information may affect the result, Codex confirms with you before starting.
   </Step>
   <Step title="Build and validate">
-    Studio creates an intelligent-development sandbox session where Codex outlines the goal and implementation, then writes, runs, and validates the agent code. Progress and intermediate results are visible in the conversation in real time. The development environment is retained for up to 8 hours and can be iterated on within the same session.
+    Studio creates an intelligent-development sandbox session where Codex outlines the goal and implementation, then writes, runs, and validates the agent code. During the build, progress messages appear as a separate progress indicator in the conversation, distinct from the assistant's text output; the indicator disappears automatically when the current turn completes. Delivery summaries follow a structured Markdown format: a one-sentence outcome summary first, followed by sections for Completed, Validation, and Remaining issues. The development environment is retained for up to 8 hours and can be iterated on within the same session.
   </Step>
   <Step title="Inspect and deploy the artifact">
     After the build completes, a delivery card appears in the conversation showing the agent name, entry-point file, file count, artifact size, and validation status. Artifacts that have passed cloud validation are marked "Validated delivery" with the number of passed checks; unvalidated artifacts are marked "Generated agent source." From the card you can view the source files, download a ZIP, or deploy directly to an AgentKit Runtime.
@@ -256,7 +256,11 @@ When deploying from intelligent development, the source is materialized server-s
 
 #### Session management
 
-Intelligent-development sessions appear in the sidebar history list, mixed with regular conversations and sorted by time. An in-progress session shows a "Building" status; you can switch to other pages and return to resume the session. Completed sessions can be reopened to continue the conversation or deleted; deleting an in-progress session requires stopping the active build first.
+Intelligent-development sessions appear in the sidebar history list, mixed with regular conversations and sorted by time. An in-progress session shows a "Building" status; you can switch to other pages and return to resume the session. When resuming or reopening a completed session, the conversation history shows only user messages and assistant responses; internal intent-gate and task-scheduling steps are not displayed. Completed sessions can be reopened to continue the conversation or deleted; deleting an in-progress session requires stopping the active build first.
+
+<Note>
+  Tool calls, thinking content, and progress messages from intelligent development are redacted server-side before being sent to the browser: task credentials and private paths are removed and never appear in the browser.
+</Note>
 
 ### Add and deploy from a code package
 

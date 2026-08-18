@@ -18,6 +18,10 @@ title: "更新日志"
 | Studio 创建 | 自定义创建新增「环境」步骤：在调试与发布之间选择需要预装到云端 Runtime 镜像的命令行工具（Lark CLI、GitHub CLI、Pandoc），或通过高阶配置自定义构建镜像使用的 Dockerfile；不选择工具且不自定义时使用默认镜像构建。生成的 Dockerfile 基于云服务商对应的基础镜像，按 amd64 与 arm64 架构校验 SHA-256 安装工具，且不包含任何凭据。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 应用内更新 | 应用内更新不再修改 Function 的 IAM 角色策略；如需更新 IAM 权限，请使用 `veadk studio update` 命令。当 Function 角色缺少 `vefaas:GetApplicationRevisionLog` 权限时，日志面板替换为权限提示并显示对应云服务商的 IAM 控制台链接，管理员可据此前往补充权限，更新不受影响。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 创建 | 新增智能模式创建方式：在「添加智能体」中选择「智能模式」，用自然语言描述目标后，沙箱中的 Codex 自动判断意图，完成项目构建、调试和临时云端验证，生成可部署的源码产物。构建完成后在对话中展示交付物卡片，可查看源码、下载 ZIP 或直接部署到 AgentKit Runtime；部署时源码由服务端从已验证交付物物化，仅支持创建新 Runtime。智能开发会话保留至多 8 小时，出现在侧边栏历史中并支持恢复和删除。该功能需要已配置开发沙箱 Tool（`SANDBOX_DEV`）。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能开发会话 | 恢复或重新打开智能开发会话时，对话历史仅展示用户消息和助手回复，内部的意图判断与任务调度过程不再显示。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能开发进度 | 构建过程中的进度消息以独立的进度指示器形式显示在对话中，与助手回复文本区分开；进度指示器在当前轮次结束后自动消失。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能开发交付 | 交付物说明采用统一的结构化格式：先给出一句话结果摘要，随后按「已完成」「验证」「遗留问题」分节列出具体内容。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 安全 | 智能开发过程中的工具调用、思考内容和进度消息在发送到浏览器前经过服务端脱敏，任务凭据和私有路径被移除。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.2
 
