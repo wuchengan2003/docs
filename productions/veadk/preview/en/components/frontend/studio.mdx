@@ -1086,7 +1086,7 @@ The Video creation workspace generates videos from text prompts and optional ref
 1. Select the "Video creation" workspace on the new-conversation page.
 2. Choose a video task mode and, as needed, upload reference assets and set the aspect ratio, resolution, and duration.
 3. Enter a video description in the input box. After submitting, Studio first enhances the prompt, then creates a video generation task.
-4. Track progress in the video task dialog. When generation completes, preview and download the resulting video.
+4. Track progress in the video task dialog: during generation it shows whether the task is queued or the model is generating, along with the elapsed time. You can close the dialog while a task is generating and it continues running in the background without affecting the result; when generation completes, preview and download the resulting video.
 
 ### Video task modes
 
@@ -1122,7 +1122,7 @@ The models used differ by cloud provider:
 | BytePlus | `dreamina-seedance-2-5-260628` | `dola-seed-2-1-turbo-260628` |
 
 <Note>
-  Video generation runs asynchronously. The dialog shows the real-time status of both the enhancement and generation stages. When a stage fails, you can retry from the failed stage without re-entering the prompt.
+  Video generation runs asynchronously. The dialog shows the real-time status of both the enhancement and generation stages: during generation it distinguishes whether the task is queued or the model is generating and shows the elapsed time. You can close the dialog while a task is generating and it continues running in the background without affecting the result. When a stage fails, the dialog displays the error details returned by the server (with keys and signatures automatically redacted); you can retry from the failed stage without re-entering the prompt.
 </Note>
 
 ### Reference assets and persistent storage
