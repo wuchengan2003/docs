@@ -354,7 +354,7 @@ The following frameworks are supported:
 When creating an agent, add skills from the following sources. Skill files are written to the generated project's `skills/` directory:
 
 - **Skill Hub**: Search the public Volcengine skill repository by keyword and add a skill.
-- **Local upload**: Drag in a folder or select a ZIP archive. Each skill directory must contain `SKILL.md`. Studio checks file presence, count, size, and path safety; ADK performs full frontmatter and skill-format validation at load time. The generated skill directory uses the `name` field from `SKILL.md` or the uploaded directory name.
+- **Local upload**: Drag in a folder or select a ZIP archive. Each skill directory must contain `SKILL.md`. Studio checks file presence, count, size, and path safety, and automatically ignores macOS metadata files inside `__MACOSX` directories; ADK performs full frontmatter and skill-format validation at load time. The generated skill directory uses the `name` field from `SKILL.md` or the uploaded directory name.
 - **AgentKit SkillSpace**: Browse skill spaces visible to the current account, then select a skill and version.
 
 Browsing AgentKit SkillSpaces and their skills is performed by the Studio server using its own configured Volcengine credentials; the browser never sees credentials. For a local Studio, grant access through `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY`. A VeFaaS deployment uses temporary credentials from its bound IAM role. When SSO login is enabled, you must be signed in to Studio before browsing skill spaces.
@@ -1444,7 +1444,7 @@ After entering a skill space, you can browse all skills within it and filter by 
 | Local upload | Upload a ZIP file to the current skill space. The ZIP file must not exceed 20 MiB; file format, count, and path safety are validated before upload. |
 
 <Note>
-  When uploading a ZIP, Studio checks that the archive contains `SKILL.md` and validates file count and path safety. Full frontmatter and skill format validation is performed by ADK at load time. A validation function is available to pre-check ZIP contents before upload.
+  When uploading a ZIP, Studio checks that the archive contains `SKILL.md` and validates file count and path safety, automatically ignoring macOS metadata files inside `__MACOSX` directories. Full frontmatter and skill format validation is performed by ADK at load time. A validation function is available to pre-check ZIP contents before upload.
 
   The skill name must be unique within the target skill space. If a skill with the same name already exists in the target space, the upload is rejected; rename the skill and re-upload, or use the optimize function to overwrite the existing skill.
 </Note>
