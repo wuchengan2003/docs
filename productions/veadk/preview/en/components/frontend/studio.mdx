@@ -813,6 +813,10 @@ Updates are still governed by Studio role permissions: `admin` can update all St
   When updating a Runtime, Studio loads the existing environment variables from the Runtime and preserves them; values entered explicitly in the deployment form override the existing ones. When a Runtime target is selected for a debug test run, the Runtime environment variables are injected into the test process.
 </Note>
 
+<Note>
+  When updating a deployed agent, Studio rebuilds the editable draft exclusively from the Runtime's currently deployed configuration and does not merge in locally saved drafts. If the Runtime's agent configuration cannot be read due to a network or server error, the update entry shows a notice and disables the update temporarily; retry after a moment.
+</Note>
+
 ## View integration methods
 
 After selecting a deployed agent in "Manage agents", the detail page offers an "Integration methods" tab. The tab probes the protocols and endpoints that the current Runtime actually exposes and provides ready-to-use request examples, so you can call the agent from outside Studio without consulting the console.

@@ -11,6 +11,7 @@ title: "更新日志"
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
 | Studio 更新 | 编辑已部署的智能体时，Studio 从 Runtime 读取的智能体名称和模型配置现在以实际部署状态为准：模型名称不再包含提供方前缀，模型来源（Ark 或自定义）根据火山方舟模型目录正确分类。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 更新 | 编辑已部署的智能体时，Studio 现在以该 Runtime 当前部署的配置为唯一来源重建可编辑草稿，不再混入本地保存的旧草稿内容。当因网络或服务端错误无法读取 Runtime 的 Agent 配置时，更新入口暂时禁用并提示稍后重试。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 视频创作 | 视频任务对话框在生成阶段区分任务排队与模型生成状态并显示已等待时长；生成过程中可关闭对话框，任务会继续在后台运行。失败时对话框显示服务端返回的错误详情（已自动脱敏密钥与签名信息），可从失败阶段重试。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 创建 | 生成智能体的系统提示词（`instruction`）长度上限由 20,000 个字符提高到 40,000 个字符。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 知识库 | 导入网页时先展示提取内容的渲染预览，确认后才会存入知识库；取消或预览失败不会创建任何数据。网页文档自动以页面标题命名，未获取到标题时使用域名。当主要提取方式无法获取正文时尝试备用提取；页面依赖 JavaScript 动态渲染而无可见内容时提示无法导入。已导入的网页文档在知识库中预览时显示原始 Markdown 原文。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
