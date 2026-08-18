@@ -354,7 +354,7 @@ Dockerfile 至多 64 KiB，且不能为空；内容为空或超长时无法进�
 创建智能体时可从以下来源添加技能，添加后技能文件写入生成项目的 `skills/` 目录：
 
 - **Skill Hub**：在火山引擎公开技能仓库中按关键词检索技能并添加。
-- **本地上传**：拖入文件夹或选择 ZIP 包。每个技能目录需包含 `SKILL.md`；Studio 检查文件是否存在、文件数量、大小和路径安全，完整的 frontmatter 与技能格式由 ADK 在加载时校验。生成项目中的技能目录名取自 `SKILL.md` 的 `name` 字段或上传目录名。
+- **本地上传**：拖入文件夹或选择 ZIP 包。每个技能目录需包含 `SKILL.md`；Studio 检查文件是否存在、文件数量、大小和路径安全，并自动忽略 `__MACOSX` 目录中的 macOS 元数据文件，完整的 frontmatter 与技能格式由 ADK 在加载时校验。生成项目中的技能目录名取自 `SKILL.md` 的 `name` 字段或上传目录名。
 - **AgentKit SkillSpace**：浏览当前账号可见的技能空间，选择技能及其版本。
 
 浏览 AgentKit SkillSpace 及其中技能由 Studio 服务端使用自身配置的火山引擎凭证完成，浏览器不会接触凭证。本地启动时通过 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY` 提供访问权限；部署到 VeFaaS 时使用绑定 IAM Role 的临时凭证。启用 SSO 登录后，浏览技能空间需要先完成 Studio 登录。
@@ -1452,7 +1452,7 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
 | 本地上传 | 选择 ZIP 文件上传到当前技能空间。ZIP 文件大小不能超过 20 MiB，上传前会校验文件格式、数量和路径安全。 |
 
 <Note>
-  上传 ZIP 时，Studio 会检查压缩包是否包含 `SKILL.md`、文件数量和路径安全。完整的 frontmatter 与技能格式由 ADK 在加载时校验。上传前可使用校验功能预检 ZIP 内容。
+  上传 ZIP 时，Studio 会检查压缩包是否包含 `SKILL.md`、文件数量和路径安全，并自动忽略 `__MACOSX` 目录中的 macOS 元数据文件。完整的 frontmatter 与技能格式由 ADK 在加载时校验。上传前可使用校验功能预检 ZIP 内容。
 
   技能名称需在目标技能空间内唯一。如果目标技能空间中已存在同名技能，上传会被拒绝，可重命名后重新上传或使用优化功能覆盖。
 </Note>
