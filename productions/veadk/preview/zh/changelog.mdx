@@ -10,6 +10,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 系统信息 | 系统信息页面新增 Codex Sandbox 模型环境变量修复：检测 Codex Sandbox（`SANDBOX_CHAT_CODEX`）与快照版（`SANDBOX_CHAT_CODEX_SNAPSHOT`）的 Tool 环境变量是否缺失 `MODEL_AGENT_API_KEY` 或 `MODEL_AGENT_BASE_URL`；缺失且 Tool 中存在 `CODEX_API_KEY` 与 `CODEX_BASE_URL` 时，管理员可在 Tool ID 旁点击更新按钮，由 Studio 服务端回填缺失的变量，密钥不下发浏览器。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 系统信息 | 系统信息页面的沙箱信息列表新增 DeepSeek Harness Sandbox（`SANDBOX_CHAT_CODEX`），它与 Codex Sandbox 共用同一个 AgentKit CodeEnv Tool，因此显示相同的 Tool ID；沙箱 Tool 按固定顺序排列。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 导航 | 系统信息、智能体详情和沙箱智能体详情页现在以浮层形式在当前页面上方打开，保留来源页面，左上角的返回按钮可回到打开前的页面；此前打开这些页面会离开当前视图。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 技能库 | 新建技能空间时支持选择地域：火山引擎可选 `cn-beijing` 与 `cn-shanghai`（默认 `cn-beijing`），BytePlus 为 `ap-southeast-1`；技能空间卡片同时展示其所属地域，未显式记录地域的空间显示当前云服务商的默认地域。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |

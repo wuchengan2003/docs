@@ -1829,7 +1829,7 @@ Studio restricts Runtime visibility according to the signed-in account. Existing
 
 ## View system information
 
-After signing in, the account menu at the bottom of the sidebar offers a "System info" entry. Selecting it opens the system information page over the current page, which displays the Studio version, storage, sandbox information, and user pools. The back button in the top-left corner of the page returns to the page you were on before opening System info; the previous page is preserved. The TOS bucket, sandbox Tools, and user pools each provide a link that opens the corresponding page in the cloud console in a new tab. This page is available only to the `admin` role, and all resource identifiers are read-only.
+After signing in, the account menu at the bottom of the sidebar offers a "System info" entry. Selecting it opens the system information page over the current page, which displays the Studio version, storage, sandbox information, and user pools. The back button in the top-left corner of the page returns to the page you were on before opening System info; the previous page is preserved. The TOS bucket, sandbox Tools, and user pools each provide a link that opens the corresponding page in the cloud console in a new tab. This page is available only to the `admin` role, and all resource identifiers are read-only; administrators can backfill missing model environment variables on a Codex Sandbox Tool that needs repair (see [Sandbox information](#sandbox-information)).
 
 ### General
 
@@ -1842,6 +1842,20 @@ Displays the TOS address used by Studio persistent storage. When `VEADK_STUDIO_T
 ### Sandbox information
 
 Lists the sandbox Tools configured in Studio and their IDs, including Codex Sandbox (`SANDBOX_CHAT_CODEX`), DeepSeek Harness Sandbox (`SANDBOX_CHAT_CODEX`), OpenClaw Sandbox (`SANDBOX_CHAT_OPENCLAW`), Hermes Sandbox (`SANDBOX_CHAT_HERMES`), and Dev Sandbox (`SANDBOX_DEV`), shown in a fixed order. DeepSeek Harness Sandbox shares the same AgentKit CodeEnv Tool as Codex Sandbox (`SANDBOX_CHAT_CODEX`), so the two display the same Tool ID. Configured Tool IDs provide a link to the corresponding Tool detail page in the cloud console. Tools without a configured ID show "Not configured".
+
+#### Codex Sandbox model environment repair
+
+For Codex Sandbox (`SANDBOX_CHAT_CODEX`) and Codex Sandbox snapshot (`SANDBOX_CHAT_CODEX_SNAPSHOT`), the System info page also checks whether the Tool's environment variables include `MODEL_AGENT_API_KEY` and `MODEL_AGENT_BASE_URL`. When either variable is missing and the Tool also has both `CODEX_API_KEY` and `CODEX_BASE_URL`, an update button appears next to the Tool ID.
+
+When an administrator clicks the update button, the Studio server uses its own Volcengine or BytePlus credentials to read `CODEX_API_KEY` and `CODEX_BASE_URL` from the Tool's current environment variables, backfills the missing `MODEL_AGENT_API_KEY` and `MODEL_AGENT_BASE_URL`, and shows the result next to the Tool ID. Keys are never sent to the browser at any point.
+
+<Note>
+  If the Tool is missing `CODEX_API_KEY` or `CODEX_BASE_URL`, the update button does not appear and an error message next to the Tool ID indicates which variables are missing. Add the missing variables to the Tool in the cloud console first, then refresh the System info page to re-check.
+</Note>
+
+<Warning>
+  This action only backfills missing `MODEL_AGENT_API_KEY` and `MODEL_AGENT_BASE_URL`; it does not overwrite existing values or modify any other Tool environment variables. Before running it, confirm that the Tool's `CODEX_API_KEY` and `CODEX_BASE_URL` point to the intended model credentials.
+</Warning>
 
 ### User pools
 
