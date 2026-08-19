@@ -72,7 +72,7 @@ kb = KnowledgeBase(
 | `resource_id` | `str` | Read from env var `DATABASE_VIKING_RESOURCE_ID`, defaults to `""` | VikingDB knowledge base resource ID, used for request routing in multi-resource scenarios. Left empty to omit. |
 | `version` | `str` | Read from env var `DATABASE_VIKING_VERSION`, defaults to `"2"` | Collection version, either `"2"` or `"4"`. |
 | `cloud_provider` | `str` | Read from env var `CLOUD_PROVIDER`, defaults to `volces` | Cloud provider, `volces` or `byteplus`; determines the endpoint and default region. |
-| `region` | `str` | Derived from `cloud_provider` (`cn-beijing` for `volces`, `cn-hongkong` for `byteplus`), overridable via `DATABASE_VIKING_REGION` | Service region. In `byteplus` mode, an unset or Chinese-mainland region (`cn-beijing`, `cn-shanghai`, `cn-guangzhou`) is automatically mapped to `cn-hongkong`; other regions are used as-is. |
+| `region` | `str` | Derived from `cloud_provider` (`cn-beijing` for `volces`, `cn-hongkong` for `byteplus`), overridable via `DATABASE_VIKING_REGION` | Service region. In `volces` mode, when not set explicitly it reads `DATABASE_VIKING_REGION` and then `REGION`, defaulting to `cn-beijing` if neither is set. In `byteplus` mode, an unset or Chinese-mainland region (`cn-beijing`, `cn-shanghai`, `cn-guangzhou`) is automatically mapped to `cn-hongkong`; other regions are used as-is. |
 | `base_url` | `str` | Derived from `region` and `cloud_provider` | Knowledge base API base URL, overridable via `DATABASE_VIKING_BASE_URL`. |
 | `host` | `str` | Derived from `region` and `cloud_provider` | Knowledge base API host. |
 | `schema` | `str` | `https` | Request scheme. |
@@ -88,8 +88,8 @@ Credential resolution checks `AGENTKIT_CLOUD_PROVIDER` and then `CLOUD_PROVIDER`
 
 | Field | Env var | Type | Default | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `endpoint` | `DATABASE_TOS_ENDPOINT` | `str` | `tos-cn-beijing.volces.com` | TOS endpoint. Under `byteplus`, when not explicitly configured, it is automatically aligned with the knowledge base region (e.g., `tos-cn-hongkong.bytepluses.com` when the region is `cn-hongkong`). |
-| `region` | `DATABASE_TOS_REGION` | `str` | `cn-beijing` | TOS region. Under `byteplus`, when not explicitly configured, it is automatically aligned with the knowledge base region. |
+| `endpoint` | `DATABASE_TOS_ENDPOINT` | `str` | `tos-cn-beijing.volces.com` | TOS endpoint. When not explicitly configured, if `region` is set explicitly or resolved from `REGION`, the endpoint is derived as `tos-<region>.volces.com`. Under `byteplus`, when not explicitly configured, it is automatically aligned with the knowledge base region (e.g., `tos-cn-hongkong.bytepluses.com` when the region is `cn-hongkong`). |
+| `region` | `DATABASE_TOS_REGION` | `str` | `cn-beijing` | TOS region. In `volces` mode, when not set explicitly it falls back to the `REGION` environment variable and then the default `cn-beijing`. Under `byteplus`, when not explicitly configured, it is automatically aligned with the knowledge base region. |
 | `bucket` | `DATABASE_TOS_BUCKET` | `str` | `veadk-default-bucket` | TOS bucket name. When empty, the default bucket is used and created automatically. |
 
 <Note>

@@ -78,7 +78,7 @@ kb = KnowledgeBase(
 | 配置项 | 环境变量 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- | :--- |
 | `endpoint` | `DATABASE_TOS_VECTOR_ENDPOINT` | `str` | `tosvectors-cn-beijing.volces.com` | TOS 向量服务接入点。 |
-| `region` | `DATABASE_TOS_VECTOR_REGION` | `str` | `cn-beijing` | 区域。 |
+| `region` | `DATABASE_TOS_VECTOR_REGION` | `str` | `cn-beijing` | 区域。未显式设置时回退到 `REGION` 环境变量，仍为空时默认 `cn-beijing`。 |
 | `security_token` | `DATABASE_TOS_VECTOR_SECURITY_TOKEN` | `str \| None` | `None` | STS 临时凭证令牌。 |
 | `max_retry_count` | `DATABASE_TOS_VECTOR_MAX_RETRY_COUNT` | `int` | `3` | 最大重试次数。 |
 | `max_connections` | `DATABASE_TOS_VECTOR_MAX_CONNECTIONS` | `int` | `1024` | 最大连接数。 |
