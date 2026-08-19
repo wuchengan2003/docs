@@ -32,6 +32,8 @@ Changes in Preview that do not yet correspond to a released tag. The following t
 | Studio security | Tool calls, thinking content, and progress messages from intelligent development are redacted server-side before being sent to the browser; task credentials and private paths are removed. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
 | Studio skill upload | macOS metadata files inside `__MACOSX` directories are now ignored when uploading skill ZIP archives; these files are not written to the skill space. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
 | Remote skills proxy | Adds remote skills proxy: declaratively expose skills hosted in the AgentKit Skills Sandbox as individual tools via a JSON manifest, with per-skill description, input schema, and timeout. The framework forwards each call to the remote sandbox via `execute_skills`; skill code runs only remotely. | [Remote skills proxy](/productions/veadk/preview/en/components/tools/remote-skills) |
+| Model | When using Volcengine Ark models, multiple text or multimodal parts within a single message are now correctly aggregated into one input item. Previously, these parts could be split into separate input items or the final part could be omitted. | [Model](/productions/veadk/preview/en/components/agent/model) |
+| Tracing | During streaming model calls, request events are now emitted only once on the first chunk instead of being duplicated on every chunk; `None` attribute values are now consistently removed from all span events. | [Observability overview](/productions/veadk/preview/en/components/observability) |
 
 ## 1.1.2
 
