@@ -165,7 +165,7 @@ memory = LongTermMemory(
 | :--- | :--- | :--- | :--- |
 | `control_endpoint` | `str \| None` | `None` | Required. ContextBucket control endpoint. |
 | `endpoint` | `str` | `"tos-cn-beijing.volces.com"` | TOS data endpoint. |
-| `region` | `str` | `"cn-beijing"` | TOS service region. |
+| `region` | `str` | `"cn-beijing"` | TOS service region. Falls back to the `REGION` environment variable when not explicitly set, then defaults to `cn-beijing`. |
 
 ### Save option
 
@@ -183,7 +183,7 @@ Pass `infer=False` to `await memory.add_session_to_memory(session, infer=False)`
 | `DATABASE_TOS_CONTEXT_CONTROL_ENDPOINT` | None | Required. ContextBucket control endpoint. |
 | `DATABASE_TOS_CONTEXT_BUCKET_NAME` | Uses `index` | ContextBucket name. |
 | `DATABASE_TOS_CONTEXT_ENDPOINT` | `tos-cn-beijing.volces.com` | TOS data endpoint. |
-| `DATABASE_TOS_CONTEXT_REGION` | `cn-beijing` | TOS service region. |
+| `DATABASE_TOS_CONTEXT_REGION` | `cn-beijing` | TOS service region. Falls back to the `REGION` env var when not set. |
 | `VOLCENGINE_ACCESS_KEY` | None | Volcengine Access Key. |
 | `VOLCENGINE_SECRET_KEY` | None | Volcengine Secret Key. |
 | `VOLCENGINE_SESSION_TOKEN` | `""` | STS session token; not required with long-term AK/SK credentials. |

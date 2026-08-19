@@ -138,7 +138,7 @@ Instance counts must be positive integers, and the minimum cannot exceed the max
 
 When creating a new Runtime, Studio auto-generates a Runtime name from the root agent name (composed of letters, digits, underscores, and hyphens, 4–64 characters), keeping agent and Runtime naming consistent and predictable. The Runtime name can be edited manually; Studio validates the name format and checks for conflicts with existing Runtimes in the selected region before deployment. If the name is already in use, deployment fails with a prompt to choose a different name. The deployment result returns both the agent name and the Runtime name.
 
-When creating a new Runtime, access authentication defaults to API Key. To use user identity verification instead, select a VeIdentity user pool in the deployment configuration area. The Studio server loads the user pools visible to the current account with its own Volcengine credentials, so the browser never receives them. The picker marks the user pool used for the current Studio login: selecting it lets Studio forward the validated login JWT to the Runtime, so callers do not need to obtain a token separately; selecting another user pool means callers must use a JWT issued by that pool to access the Runtime. The user-pool region is determined by the `VEIDENTITY_REGION` environment variable and defaults to the current cloud provider's default region (`cn-beijing` for Volcengine, `ap-southeast-1` for BytePlus).
+When creating a new Runtime, access authentication defaults to API Key. To use user identity verification instead, select a VeIdentity user pool in the deployment configuration area. The Studio server loads the user pools visible to the current account with its own Volcengine credentials, so the browser never receives them. The picker marks the user pool used for the current Studio login: selecting it lets Studio forward the validated login JWT to the Runtime, so callers do not need to obtain a token separately; selecting another user pool means callers must use a JWT issued by that pool to access the Runtime. The user-pool region is determined by the `VEIDENTITY_REGION` environment variable. In Volcengine mode, when `VEIDENTITY_REGION` is not set it falls back to the `REGION` environment variable and then the default `cn-beijing`; BytePlus mode is fixed to `ap-southeast-1`.
 
 ### Configure build resources
 
@@ -599,7 +599,7 @@ Selecting **Code execution** in the custom agent's built-in tools adds the `run_
 | Studio setting | Generated-project env var | Type | Required | Default | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Code-execution sandbox ID | `AGENTKIT_TOOL_ID` | `str` | Yes | — | AgentKit code-execution sandbox ID used by `run_code`, e.g. `t-xxxxxxxx`. |
-| AgentKit Tools region | `AGENTKIT_TOOL_REGION` | `str` | No | `cn-beijing` | Region for calling AgentKit Tools. |
+| AgentKit Tools region | `AGENTKIT_TOOL_REGION` | `str` | No | `cn-beijing` | Region for calling AgentKit Tools. In Volcengine mode, when unset it falls back to the `REGION` environment variable and then defaults to `cn-beijing`; BytePlus mode does not read `REGION` and uses the BytePlus default region. |
 
 <Note>
   Both values apply to local debug runs and deployed runtimes, and the generated `.env.example` includes both variables. The sandbox ID and region are used only on the Studio server and are never delivered to the browser.
@@ -1029,7 +1029,7 @@ veadk studio --agents-dir ./agents --open
 | `AGENTKIT_SANDBOX_REGION` | `cn-beijing` | Preferred region for creating Sessions and looking up Tools for built-in agents; supports `cn-beijing` and `cn-shanghai`. |
 
 <Note>
-  When creating a Session or looking up the Tool for built-in agents, Studio first tries the region set by `AGENTKIT_SANDBOX_REGION` (default `cn-beijing`); if that region reports the resource as not found, it automatically falls back to the other supported region (Beijing ↔ Shanghai) and continues. Other errors do not trigger fallback. When deployed to VeFaaS, this region matches `--region`.
+  When creating a Session or looking up the Tool for built-in agents, Studio first tries the region set by `AGENTKIT_SANDBOX_REGION`; in Volcengine mode, when it is not set it falls back to the `REGION` environment variable and then the default `cn-beijing`. If that region reports the resource as not found, it automatically falls back to the other supported region (Beijing ↔ Shanghai) and continues. Other errors do not trigger fallback. When deployed to VeFaaS, this region matches `--region`.
 </Note>
 
 <Note>

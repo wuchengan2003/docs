@@ -79,7 +79,7 @@ The backend prefers `volcengine_access_key` and `volcengine_secret_key` from exp
 
 ### Defaults for region and memory_type
 
-- `region`: in `byteplus` mode it is always `cn-hongkong`, ignoring the env var and any explicitly passed value; in other modes, when not set explicitly it reads env `DATABASE_VIKING_REGION` and defaults to `cn-beijing` if still empty.
+- `region`: in `byteplus` mode it is always `cn-hongkong`, ignoring the env var and any explicitly passed value; in other modes, when not set explicitly it reads `DATABASE_VIKING_REGION` and then `REGION`, defaulting to `cn-beijing` if neither is set.
 - `memory_type`: when not set explicitly, reads env `DATABASE_VIKINGMEM_MEMORY_TYPE` (a comma-separated string is parsed into a list); when still empty, defaults to `["sys_event_v1", "sys_profile_v1"]`.
 
 ## Environment variables
@@ -89,7 +89,7 @@ The backend prefers `volcengine_access_key` and `volcengine_secret_key` from exp
 | `VOLCENGINE_ACCESS_KEY` | None | Volcengine Access Key. |
 | `VOLCENGINE_SECRET_KEY` | None | Volcengine Secret Key. |
 | `CLOUD_PROVIDER` | `volces` | Cloud provider, `volces` or `byteplus`. |
-| `DATABASE_VIKING_REGION` | `cn-beijing` (ignored in `byteplus` mode, which is fixed to `cn-hongkong`) | Memory region. |
+| `DATABASE_VIKING_REGION` | `cn-beijing` (ignored in `byteplus` mode, which is fixed to `cn-hongkong`) | Memory region. Falls back to the `REGION` env var when not set. |
 | `DATABASE_VIKINGMEM_PROJECT` | `default` | Memory project name. |
 | `DATABASE_VIKINGMEM_MEMORY_TYPE` | `sys_event_v1,sys_profile_v1` | Memory types, comma-separated. |
 

@@ -72,7 +72,7 @@ kb = KnowledgeBase(
 | `resource_id` | `str` | 读取环境变量 `DATABASE_VIKING_RESOURCE_ID`，缺省 `""` | VikingDB 知识库资源 ID，用于多资源场景下的请求路由。留空时不附加该字段。 |
 | `version` | `str` | 读取环境变量 `DATABASE_VIKING_VERSION`，缺省 `"2"` | 集合版本，取值 `"2"` 或 `"4"`。 |
 | `cloud_provider` | `str` | 读取环境变量 `CLOUD_PROVIDER`，缺省 `volces` | 云服务商，`volces` 或 `byteplus`，决定接入域名与默认区域。 |
-| `region` | `str` | 由 `cloud_provider` 推导（`volces` 为 `cn-beijing`，`byteplus` 为 `cn-hongkong`），可用 `DATABASE_VIKING_REGION` 覆盖 | 服务区域。`byteplus` 模式下，未设置或为中国大陆地域（`cn-beijing`、`cn-shanghai`、`cn-guangzhou`）时自动映射为 `cn-hongkong`，其他地域保持原样。 |
+| `region` | `str` | 由 `cloud_provider` 推导（`volces` 为 `cn-beijing`，`byteplus` 为 `cn-hongkong`），可用 `DATABASE_VIKING_REGION` 覆盖 | 服务区域。`volces` 模式下未显式设置时，依次读取 `DATABASE_VIKING_REGION` 与 `REGION` 环境变量，均未设置时默认为 `cn-beijing`。`byteplus` 模式下，未设置或为中国大陆地域（`cn-beijing`、`cn-shanghai`、`cn-guangzhou`）时自动映射为 `cn-hongkong`，其他地域保持原样。 |
 | `base_url` | `str` | 由 `region` 与 `cloud_provider` 推导 | 知识库 API 地址，可用 `DATABASE_VIKING_BASE_URL` 覆盖。 |
 | `host` | `str` | 由 `region` 与 `cloud_provider` 推导 | 知识库 API 主机名。 |
 | `schema` | `str` | `https` | 请求协议。 |
@@ -88,8 +88,8 @@ kb = KnowledgeBase(
 
 | 配置项 | 环境变量 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- | :--- |
-| `endpoint` | `DATABASE_TOS_ENDPOINT` | `str` | `tos-cn-beijing.volces.com` | TOS 接入点。`byteplus` 模式下，未显式配置时自动与知识库区域对齐（如知识库区域为 `cn-hongkong` 时，接入点为 `tos-cn-hongkong.bytepluses.com`）。 |
-| `region` | `DATABASE_TOS_REGION` | `str` | `cn-beijing` | TOS 区域。`byteplus` 模式下，未显式配置时自动与知识库区域对齐。 |
+| `endpoint` | `DATABASE_TOS_ENDPOINT` | `str` | `tos-cn-beijing.volces.com` | TOS 接入点。未显式配置时，若 `region` 已显式设置或通过 `REGION` 环境变量解析，则自动推导为 `tos-<region>.volces.com`。`byteplus` 模式下，未显式配置时自动与知识库区域对齐（如知识库区域为 `cn-hongkong` 时，接入点为 `tos-cn-hongkong.bytepluses.com`）。 |
+| `region` | `DATABASE_TOS_REGION` | `str` | `cn-beijing` | TOS 区域。`volces` 模式下未显式设置时，依次回退到 `REGION` 环境变量与默认值 `cn-beijing`。`byteplus` 模式下，未显式配置时自动与知识库区域对齐。 |
 | `bucket` | `DATABASE_TOS_BUCKET` | `str` | `veadk-default-bucket` | TOS 桶名。为空时使用默认桶并自动创建。 |
 
 <Note>

@@ -10,6 +10,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| 区域配置 | 火山引擎模式下，TOS、TOS 向量、TOS Context、VikingDB 知识库与记忆、VeIdentity、AgentKit Tools 与沙箱等组件在未显式设置地域时，新增对 `REGION` 环境变量的回退，仍为空时再使用各组件默认地域（通常为 `cn-beijing`）；BytePlus 模式不读取 `REGION`，行为不变。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) · [使用 VikingDB 存储](/productions/veadk/preview/zh/components/knowledge/viking) · [使用 TOS 向量存储](/productions/veadk/preview/zh/components/knowledge/tos-vector) · [使用 TOS Context 存储](/productions/veadk/preview/zh/components/memory/tos-context) · [使用 VikingDB 记忆](/productions/veadk/preview/zh/components/memory/vikingdb) · [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 迁移 | 存量项目迁移的分析与迁移过程中，「Codex 执行动态」面板改为以结构化形式展示执行进展：分析与迁移计划按条目显示完成状态，命令执行、文件更新、外部工具调用、网络搜索和子任务协作分别显示输入、输出与退出码或错误信息，执行异常时展示错误详情；所有动态内容在发送到浏览器前经服务端脱敏。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 沙箱 | 沙箱会话创建时，显示名称的 UTF-8 编码超出会话元数据字节上限时不再导致创建失败，Studio 会按字符边界截断并追加省略号。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 系统信息 | 系统信息页面新增 Codex Sandbox 模型环境变量修复：检测 Codex Sandbox（`SANDBOX_CHAT_CODEX`）与快照版（`SANDBOX_CHAT_CODEX_SNAPSHOT`）的 Tool 环境变量是否缺失 `MODEL_AGENT_API_KEY` 或 `MODEL_AGENT_BASE_URL`；缺失且 Tool 中存在 `CODEX_API_KEY` 与 `CODEX_BASE_URL` 时，管理员可在 Tool ID 旁点击更新按钮，由 Studio 服务端回填缺失的变量，密钥不下发浏览器。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |

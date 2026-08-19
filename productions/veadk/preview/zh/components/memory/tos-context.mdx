@@ -162,7 +162,7 @@ memory = LongTermMemory(
 | :--- | :--- | :--- | :--- |
 | `control_endpoint` | `str \| None` | `None` | 必填。ContextBucket 控制面端点。 |
 | `endpoint` | `str` | `"tos-cn-beijing.volces.com"` | TOS 数据面端点。 |
-| `region` | `str` | `"cn-beijing"` | TOS 服务区域。 |
+| `region` | `str` | `"cn-beijing"` | TOS 服务区域。未显式设置时回退到 `REGION` 环境变量，仍为空时默认 `cn-beijing`。 |
 
 ### 保存选项
 
@@ -180,7 +180,7 @@ memory = LongTermMemory(
 | `DATABASE_TOS_CONTEXT_CONTROL_ENDPOINT` | 无 | 必填。ContextBucket 控制面端点。 |
 | `DATABASE_TOS_CONTEXT_BUCKET_NAME` | 使用 `index` | ContextBucket 名称。 |
 | `DATABASE_TOS_CONTEXT_ENDPOINT` | `tos-cn-beijing.volces.com` | TOS 数据面端点。 |
-| `DATABASE_TOS_CONTEXT_REGION` | `cn-beijing` | TOS 服务区域。 |
+| `DATABASE_TOS_CONTEXT_REGION` | `cn-beijing` | TOS 服务区域。未设置时回退到 `REGION` 环境变量。 |
 | `VOLCENGINE_ACCESS_KEY` | 无 | 火山引擎 Access Key。 |
 | `VOLCENGINE_SECRET_KEY` | 无 | 火山引擎 Secret Key。 |
 | `VOLCENGINE_SESSION_TOKEN` | `""` | STS 临时凭证的会话令牌；长期 AK/SK 无需设置。 |
