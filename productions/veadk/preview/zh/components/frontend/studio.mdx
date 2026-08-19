@@ -533,6 +533,11 @@ Studio 调用 `doubao-seed-2-0-lite-260428` 模型，根据需求生成一份经
 
 本地向量库、OpenSearch、Redis 与 mem0 后端的连接和向量化模型参数以环境变量形式写入生成项目；VikingDB Memory 与 OpenViking 使用火山引擎凭证链，由 Studio 服务端转发到调试运行和 AgentKit 运行时，无需在创建页重复填写 AK/SK。各后端的完整参数、默认值和限制见对应组件页面。
 
+选择 VikingDB Memory 时，Studio 会通过服务端凭证列出当前账号在当前云服务商地域下可见的 VikingDB 记忆库集合。列表依次查询 `DATABASE_VIKINGMEM_PROJECT`、`VEADK_STUDIO_PROJECT` 环境变量指定的项目与 `default` 项目中的集合。选择已有集合后，其名称将作为长期记忆的集合索引，Studio 同时根据所选集合自动填充项目、地域和记忆类型（对应 `DATABASE_VIKINGMEM_PROJECT`、`DATABASE_VIKING_REGION`、`DATABASE_VIKINGMEM_MEMORY_TYPE` 环境变量，这些变量不在创建页展示）；未选择已有集合时，集合名称默认根据智能体名称自动生成，运行时若集合不存在会自动创建。需要重新获取列表时，可使用刷新按钮。
+
+本地启动时，通过 `VOLCENGINE_ACCESS_KEY` 和 `VOLCENGINE_SECRET_KEY` 提供查询权限；部署到 VeFaaS 后，使用绑定 IAM Role 的临时凭证。凭证只在服务端使用，不会下发到浏览器。
+
+
 选择 OpenViking 时，Studio 在创建页填写以下配置项并写入生成项目的环境变量：
 
 | Studio 配置项 | 生成项目环境变量 | 是否必填 | 默认值 / 占位 | 说明 |

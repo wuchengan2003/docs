@@ -533,6 +533,11 @@ After enabling long-term memory for an agent, select one of these backends in St
 
 Connection and embedding-model parameters for the local, OpenSearch, Redis, and mem0 backends are written to the generated project as environment variables. VikingDB Memory and OpenViking use the Volcengine credential chain, forwarded by the Studio server to debug runs and AgentKit runtimes, so AK/SK do not need to be re-entered on the creation page. For full parameters, defaults, and limits, see each backend's component page.
 
+When you select VikingDB Memory, Studio lists memory collections visible to the current account in the current cloud provider's region via server-side credentials. The list queries collections from the projects specified by the `DATABASE_VIKINGMEM_PROJECT` and `VEADK_STUDIO_PROJECT` environment variables, then the `default` project. Selecting an existing collection uses its name as the long-term memory collection index, and Studio automatically fills the project, region, and memory types (mapped to the `DATABASE_VIKINGMEM_PROJECT`, `DATABASE_VIKING_REGION`, and `DATABASE_VIKINGMEM_MEMORY_TYPE` environment variables, which are not shown on the creation page). If you do not select an existing collection, the collection name is auto-generated from the agent name, and the collection is created at runtime if it does not exist. Use the refresh button to reload the list.
+
+For a local Studio, provide access through `VOLCENGINE_ACCESS_KEY` and `VOLCENGINE_SECRET_KEY`. A VeFaaS deployment uses temporary credentials from its bound IAM role. Credentials remain on the server and are never delivered to the browser.
+
+
 When you select OpenViking, Studio collects the following settings on the creation page and writes them to the generated project's environment variables:
 
 | Studio setting | Generated env var | Required | Default / placeholder | Description |

@@ -10,6 +10,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 记忆 | 自定义创建中选择 VikingDB Memory 长期记忆后端时，新增记忆库选择器：通过服务端凭证列出当前账号可见的 VikingDB 记忆库集合，选择已有集合后将其名称作为集合索引，并自动填充项目、地域和记忆类型对应的环境变量（不展示在创建页）；未选择时集合名称根据智能体名称自动生成，运行时若集合不存在会自动创建。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [使用 VikingDB 存储](/productions/veadk/preview/zh/components/memory/vikingdb) |
 | 区域配置 | 火山引擎模式下，TOS、TOS 向量、TOS Context、VikingDB 知识库与记忆、VeIdentity、AgentKit Tools 与沙箱等组件在未显式设置地域时，新增对 `REGION` 环境变量的回退，仍为空时再使用各组件默认地域（通常为 `cn-beijing`）；BytePlus 模式不读取 `REGION`，行为不变。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) · [使用 VikingDB 存储](/productions/veadk/preview/zh/components/knowledge/viking) · [使用 TOS 向量存储](/productions/veadk/preview/zh/components/knowledge/tos-vector) · [使用 TOS Context 存储](/productions/veadk/preview/zh/components/memory/tos-context) · [使用 VikingDB 记忆](/productions/veadk/preview/zh/components/memory/vikingdb) · [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 迁移 | 存量项目迁移的分析与迁移过程中，「Codex 执行动态」面板改为以结构化形式展示执行进展：分析与迁移计划按条目显示完成状态，命令执行、文件更新、外部工具调用、网络搜索和子任务协作分别显示输入、输出与退出码或错误信息，执行异常时展示错误详情；所有动态内容在发送到浏览器前经服务端脱敏。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 沙箱 | 沙箱会话创建时，显示名称的 UTF-8 编码超出会话元数据字节上限时不再导致创建失败，Studio 会按字符边界截断并追加省略号。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
