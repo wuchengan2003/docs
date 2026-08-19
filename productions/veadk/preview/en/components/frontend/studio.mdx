@@ -340,6 +340,9 @@ The following frameworks are supported:
 <Note>
   When deploying a migration artifact to AgentKit, Studio automatically adapts model environment variables (`MODEL_AGENT_API_BASE`, `MODEL_AGENT_NAME`, and `MODEL_NAME`) to the current cloud provider, ensuring the migrated project uses the correct model endpoint and model name in the target cloud environment.
 </Note>
+<Note>
+  During analysis and migration, the "Codex activity" panel renders Codex's progress in a structured form: analysis and migration plans show per-item completion status and progress; command execution, file updates, external tool calls, web searches, and sub-task coordination each display their input, output, and exit code or error details, with error details shown when execution fails. All activity content is redacted server-side before reaching the browser; keys, tokens, and other sensitive fields are removed.
+</Note>
 
 | Check | Limit | Description |
 | :--- | :--- | :--- |
