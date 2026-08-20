@@ -864,6 +864,93 @@ Studio 不会在浏览器中保存 Runtime API Key，因此管理页只显示 Ru
   更新已部署的智能体时，Studio 以该 Runtime 当前部署的配置为唯一来源重建可编辑草稿，不混入本地保存的旧草稿内容。若因网络或服务端错误无法读取该 Runtime 的 Agent 配置，更新入口会显示提示并暂时禁用更新，请稍后重试。
 </Note>
 
+## 通过 GitHub 交付智能体
+
+Studio 可将自定义创建生成的智能体源码交付到 GitHub 仓库，提供两种交付模式。「GitHub 代码同步」把生成的源码直接推送到目标分支，Runtime 仍由部署按钮发布；「挂载持续交付」在目标分支写入 AgentKit Runtime 的 GitHub Actions 工作流，后续向该分支推送代码会自动构建并发布到绑定的 Runtime。两种模式适用于需要版本管理与持续交付的团队。
+
+<Note>
+  「挂载持续交付」会向仓库写入 GitHub Actions Secret，需要安装 `github-cicd` 可选依赖组以提供加密能力，安装方式见[安装](/productions/veadk/preview/zh/get-started/installation)。「GitHub 代码同步」不写入 Secret，无需该依赖。
+</Note>
+
+### 交付模式
+
+在部署配置区选择 GitHub 交付后，可在以下两种模式间切换：
+
+| 模式 | 行为 | 是否写入工作流与 Secret |
+| :--- | :--- | :--- |
+| GitHub 代码同步 | Studio 将生成的源码直接推送到目标分支；该分支由 Studio 管理，远端冲突时同步会失败。Runtime 仍由部署按钮发布。 | 否 |
+| 挂载持续交付 | 首次部署成功后初始化目标分支（写入源码与 GitHub Actions 工作流），后续向该分支推送代码会触发工作流并更新绑定的 Runtime。 | 是 |
+
+### 配置 GitHub 交付
+
+两种模式共用以下表单字段：
+
+| 字段 | 必填 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- |
+| GitHub 仓库 URL | 是 | — | 支持 `owner/repository` 或完整 GitHub HTTPS/SSH 地址，仅支持 `github.com`。 |
+| GitHub Token | 是 | — | 需要对目标仓库的 contents 写入和 pull request 权限；仅用于当前请求，不下发浏览器持久化。 |
+| 目标分支 | 否 | `main` | 源码推送与工作流监听的分支。 |
+| 火山引擎 Access Key | 挂载持续交付必填 | — | 用于写入 GitHub Actions Secret，供工作流发布 Runtime。 |
+| 火山引擎 Secret Key | 挂载持续交付必填 | — | 用于写入 GitHub Actions Secret。 |
+| 火山引擎 Session Token | 否 | — | 使用临时凭据时必填。 |
+
+使用 BytePlus 作为云服务商时，对应的 Secret 名称与 Runtime 发布凭据为 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN`；火山引擎模式下为 `VOLCENGINE_ACCESS_KEY`、`VOLCENGINE_SECRET_KEY` 和可选的 `VOLCENGINE_SESSION_TOKEN`。地域沿用部署配置区的发布区域。
+
+<Warning>
+  挂载持续交付会将火山引擎或 BytePlus 凭据加密写入目标仓库的 GitHub Actions Secret。请确认目标仓库的访问范围与协作权限符合数据安全要求，并使用具备最小权限的凭据。
+</Warning>
+
+### 部署时挂载持续交付
+
+选择「挂载持续交付」创建新 Runtime 时，点击部署后 Studio 会先创建 Runtime，再执行「挂载 GitHub 持续交付」阶段：初始化目标分支并写入 GitHub Actions 工作流，初始化成功后才完成部署流程。该阶段在部署进度中独立展示，并实时显示 GitHub 挂载日志，可在同步中、已同步或读取失败等状态间展开与复制，日志在服务端完成凭据脱敏后下发。
+
+工作流文件写入仓库的 `.github/workflows/publish-agentkit.yml`，在以下情况触发：
+
+- 推送到目标分支（提交信息包含 `[skip runtime]` 时跳过发布）；
+- 手动触发。
+
+工作流使用与 Runtime 绑定的并发组，安装项目依赖与 AgentKit Python SDK，并发布 Runtime 的递增版本。BytePlus 模式下工作流额外注入 BytePlus 凭据与记忆地域环境变量。
+
+### 版本管理与回退
+
+在工作台选中已绑定 GitHub 持续交付的 Runtime 后，详情页提供「版本」标签。该标签列出目标分支的提交历史与工作流运行记录，每个版本显示提交、分支、来源、发布状态与创建时间：
+
+| 发布状态 | 含义 |
+| :--- | :--- |
+| 已发布 | 该版本已成功发布到 Runtime。 |
+| 发布中 | 工作流正在构建或发布。 |
+| 等待发布 | 源码已推送，等待工作流触发。 |
+| 发布失败 | 工作流运行失败。 |
+
+选择某个历史版本可创建回退。已挂载持续交付时，Studio 自动合并回退 Pull Request，将目标分支恢复到所选版本并触发工作流发布该版本；仅做代码同步时，Studio 创建回退 Pull Request 等待人工合并。回退事件同样记录在版本列表中。
+
+### 使用命令行同步源码
+
+除 Studio 界面外，可使用 `veadk github-cicd-pipeline` 命令将 Studio 导出的 AgentProject JSON 推送到目标分支，对应「GitHub 代码同步」模式：
+
+```bash
+veadk github-cicd-pipeline \
+  --github-url https://github.com/org/repo \
+  --github-branch main \
+  --github-token "$GITHUB_TOKEN" \
+  --project-json ./agent-project.json \
+  --region cn-beijing
+```
+
+| 参数 | 必填 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `--github-url` | 是 | — | GitHub 仓库地址。 |
+| `--github-branch` | 否 | `main` | 源码推送的目标分支。 |
+| `--github-token` | 是 | — | GitHub Token，需对目标仓库有 contents 写入权限。 |
+| `--project-json` | 是 | — | Studio 导出的 AgentProject JSON 文件路径。 |
+| `--region` | 否 | `cn-beijing` | AgentKit Runtime 地域。 |
+
+该命令仅同步源码到目标分支，不写入 GitHub Actions 工作流与 Secret，也不会发布 Runtime。
+
+<Note>
+  与「自动化集成」中的 [AgentKit Runtime 持续交付](#agentkit-runtime-持续交付) 不同，本节能力内嵌在自定义创建的部署流程中，针对 Studio 生成的智能体源码，并可在创建 Runtime 的同时初始化 GitHub 交付。两者可按需分别使用。
+</Note>
+
 ## 查看接入方式
 
 在「管理智能体」中选择一个已部署的智能体后，详情页提供「接入方法」标签。该标签探测当前 Runtime 实际暴露的公开接入协议与端点，并给出可直接参考的调用示例，方便在不查阅控制台的情况下从外部调用该智能体。

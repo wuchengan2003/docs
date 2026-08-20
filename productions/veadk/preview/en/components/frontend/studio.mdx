@@ -864,6 +864,93 @@ Updates are still governed by Studio role permissions: `admin` can update all St
   When updating a deployed agent, Studio rebuilds the editable draft exclusively from the Runtime's currently deployed configuration and does not merge in locally saved drafts. If the Runtime's agent configuration cannot be read due to a network or server error, the update entry shows a notice and disables the update temporarily; retry after a moment.
 </Note>
 
+## Deliver agents through GitHub
+
+Studio can deliver the source generated during custom creation to a GitHub repository with two delivery modes. "GitHub code sync" pushes the generated source directly to the target branch, while the Runtime is still published from the deploy button; "Attach continuous delivery" writes an AgentKit Runtime GitHub Actions workflow to the target branch, and subsequent pushes to that branch automatically build and publish to the bound Runtime. Both modes suit teams that need version control and continuous delivery.
+
+<Note>
+  "Attach continuous delivery" writes GitHub Actions Secrets to the repository and requires the `github-cicd` optional dependency group for encryption. See [Installation](/productions/veadk/preview/en/get-started/installation). "GitHub code sync" does not write Secrets and does not require this dependency.
+</Note>
+
+### Delivery modes
+
+After selecting GitHub delivery in the deployment settings, you can switch between the following modes:
+
+| Mode | Behavior | Writes workflow and Secrets |
+| :--- | :--- | :--- |
+| GitHub code sync | Studio pushes the generated source directly to the target branch; the branch is managed by Studio and sync fails on remote conflicts. The Runtime is still published from the deploy button. | No |
+| Attach continuous delivery | After the first deployment succeeds, Studio initializes the target branch (writing the source and a GitHub Actions workflow); subsequent pushes to that branch trigger the workflow and update the bound Runtime. | Yes |
+
+### Configure GitHub delivery
+
+Both modes share the following form fields:
+
+| Field | Required | Default | Description |
+| :--- | :--- | :--- | :--- |
+| GitHub repository URL | Yes | — | Accepts `owner/repository` or a full GitHub HTTPS/SSH URL; only `github.com` is supported. |
+| GitHub Token | Yes | — | Requires contents write and pull request permissions on the target repository; used only for the current request and never persisted in the browser. |
+| Target branch | No | `main` | Branch the source is pushed to and the workflow listens on. |
+| Volcengine Access Key | Required for continuous delivery | — | Written as a GitHub Actions Secret for the workflow to publish the Runtime. |
+| Volcengine Secret Key | Required for continuous delivery | — | Written as a GitHub Actions Secret. |
+| Volcengine Session Token | No | — | Required when using temporary credentials. |
+
+When using BytePlus as the cloud provider, the corresponding Secret names and Runtime publishing credentials are `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`; in Volcengine mode they are `VOLCENGINE_ACCESS_KEY`, `VOLCENGINE_SECRET_KEY`, and the optional `VOLCENGINE_SESSION_TOKEN`. The region follows the publish region in the deployment settings.
+
+<Warning>
+  Attaching continuous delivery encrypts and writes Volcengine or BytePlus credentials to the GitHub Actions Secrets of the target repository. Confirm that the repository's access scope and collaboration permissions meet your data-security requirements, and use credentials with the least required privileges.
+</Warning>
+
+### Attach continuous delivery during deployment
+
+When you choose "Attach continuous delivery" while creating a new Runtime, clicking deploy first creates the Runtime and then runs the "Attach GitHub continuous delivery" phase: it initializes the target branch and writes the GitHub Actions workflow, and the deployment flow completes only after initialization succeeds. This phase appears as a separate step in the deployment progress and shows a live GitHub delivery log with sync states (syncing, synced, or read failed) that you can expand and copy; logs are redacted server-side before being sent.
+
+The workflow file is written to `.github/workflows/publish-agentkit.yml` in the repository and is triggered when:
+
+- you push to the target branch (commits whose message contains `[skip runtime]` skip the publish); or
+- you trigger it manually.
+
+The workflow uses a concurrency group bound to the Runtime, installs the project dependencies and the AgentKit Python SDK, and publishes an incremented Runtime version. In BytePlus mode the workflow additionally injects BytePlus credentials and the memory-region environment variables.
+
+### Version management and rollback
+
+After selecting a Runtime that is bound to GitHub continuous delivery in the workspace, the detail page provides a "Versions" tab. It lists the commit history and workflow runs of the target branch; each version shows its commit, branch, source, publish status, and creation time:
+
+| Publish status | Meaning |
+| :--- | :--- |
+| Published | The version has been published to the Runtime successfully. |
+| Publishing | The workflow is building or publishing. |
+| Pending | The source has been pushed and is waiting for the workflow to trigger. |
+| Failed | The workflow run failed. |
+
+Selecting a historical version creates a rollback. When continuous delivery is attached, Studio automatically merges the rollback Pull Request, restoring the target branch to the selected version and triggering the workflow to publish that version; with code sync only, Studio creates a rollback Pull Request for manual merging. Rollback events are also recorded in the version list.
+
+### Sync source from the command line
+
+Besides the Studio UI, you can use the `veadk github-cicd-pipeline` command to push an AgentProject JSON exported by Studio to the target branch, corresponding to the "GitHub code sync" mode:
+
+```bash
+veadk github-cicd-pipeline \
+  --github-url https://github.com/org/repo \
+  --github-branch main \
+  --github-token "$GITHUB_TOKEN" \
+  --project-json ./agent-project.json \
+  --region cn-beijing
+```
+
+| Option | Required | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `--github-url` | Yes | — | GitHub repository URL. |
+| `--github-branch` | No | `main` | Target branch to push the source to. |
+| `--github-token` | Yes | — | GitHub token with contents write permission on the target repository. |
+| `--project-json` | Yes | — | Path to an AgentProject JSON file exported by Studio. |
+| `--region` | No | `cn-beijing` | AgentKit Runtime region. |
+
+This command only syncs the source to the target branch; it does not write a GitHub Actions workflow or Secrets and does not publish a Runtime.
+
+<Note>
+  Unlike the [AgentKit Runtime continuous delivery](#agentkit-runtime-continuous-delivery) capability under Automation integrations, this feature is embedded in the custom-creation deployment flow, targets source generated by Studio, and can initialize GitHub delivery while creating a Runtime. Use either as needed.
+</Note>
+
 ## View integration methods
 
 After selecting a deployed agent in "Manage agents", the detail page offers an "Integration methods" tab. The tab probes the protocols and endpoints that the current Runtime actually exposes and provides ready-to-use request examples, so you can call the agent from outside Studio without consulting the console.
