@@ -1638,6 +1638,8 @@ The following environment variables adjust artifact sync behavior:
 
 `veadk studio deploy` deploys Studio as a VeFaaS application protected by VeIdentity login. It creates or reuses a Serverless API Gateway. Unless you pass an IAM role, it also creates or reuses `VeADKFrontendServiceRole` and `VeADKFrontendPolicy`. When `--user-pool-id` and `--allowed-client-id` are omitted, the command creates or reuses a named VeIdentity user pool and web client in the deployment region. After deployment, the command registers the public callback with the user-pool client and updates the application configuration.
 
+Before deployment, the command checks the VeFaaS service role `ServerlessApplicationRole`: if it is missing, the role is created automatically with the `vefaas_full_access` custom policy and the required system policies; if the role already exists, the command reconciles any missing custom and system policies for both Volcengine and BytePlus. This check is independent of `--iam-role` and runs even when a custom role is specified.
+
 <Warning>
   This operation creates or changes VeFaaS, API Gateway, IAM, and VeIdentity resources. It can incur charges and affect production access. The default role has broad permissions to create and manage AgentKit runtimes and related cloud resources. Have an administrator review the scope before production deployment; pass `--iam-role` to use a preconfigured, narrower role.
 </Warning>

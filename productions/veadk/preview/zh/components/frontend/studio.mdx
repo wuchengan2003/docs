@@ -1638,6 +1638,8 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
 
 `veadk studio deploy` 将 Studio 部署为 VeFaaS 应用，并接入 VeIdentity 登录。部署命令会创建或复用 Serverless API Gateway；未指定 IAM Role 时，还会创建或复用 `VeADKFrontendServiceRole` 及 `VeADKFrontendPolicy`。未指定 `--user-pool-id` 与 `--allowed-client-id` 时，命令会在部署地域自动创建或复用同名的 VeIdentity 用户池与 Web 客户端。部署完成后，命令会把公网回调地址注册到用户池客户端并更新应用配置。
 
+部署前，命令会检查 VeFaaS 服务角色 `ServerlessApplicationRole`：缺失时自动创建并绑定 `vefaas_full_access` 自定义策略及所需系统策略；角色已存在时，补齐缺失的自定义策略与系统策略，火山引擎与 BytePlus 均适用。该检查独立于 `--iam-role`，即使指定自定义角色也会执行。
+
 <Warning>
   此操作会创建或修改 VeFaaS、API Gateway、IAM 和 VeIdentity 资源，可能产生费用并影响线上访问。默认 Role 具备用于创建和管理 AgentKit Runtime 及相关云资源的广泛权限。生产环境部署前应由管理员审查权限范围；需要收敛权限时，通过 `--iam-role` 使用预先配置的 Role。
 </Warning>
