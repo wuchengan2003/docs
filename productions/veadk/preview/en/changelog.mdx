@@ -45,6 +45,7 @@ Changes in Preview that do not yet correspond to a released tag. The following t
 | Studio version management | A "Versions" tab is added to the detail page of a Runtime bound to GitHub continuous delivery, listing the target-branch commit history, workflow runs, and publish status, with rollback support: when continuous delivery is attached, a rollback PR is merged automatically and publishing is triggered; with code sync only, a rollback PR is created for manual merging. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
 | CLI | Adds the `veadk github-cicd-pipeline` command, which pushes an AgentProject JSON exported by Studio to a target GitHub branch, corresponding to the code-sync mode. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
 | Dependencies | Adds the `github-cicd` optional dependency group (PyNaCl), used by Studio to encrypt GitHub Actions Secrets when attaching continuous delivery. | [Installation](/productions/veadk/preview/en/get-started/installation) |
+| Dependencies | Relaxes the `a2a-sdk` version constraint to `>=0.3.7,<1.0.0`, allowing installation of newer A2A protocol SDK versions. | [Installation](/productions/veadk/preview/en/get-started/installation) |
 
 ## 1.1.2
 
