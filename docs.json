@@ -150,6 +150,7 @@
                     "group": "扩展",
                     "pages": [
                       "productions/veadk/preview/zh/components/extensions/index",
+                      "productions/veadk/preview/zh/components/extensions/harness",
                       {
                         "group": "消息渠道",
                         "pages": [
@@ -3217,6 +3218,7 @@
                     "group": "Extensions",
                     "pages": [
                       "productions/veadk/preview/en/components/extensions/index",
+                      "productions/veadk/preview/en/components/extensions/harness",
                       {
                         "group": "Message channels",
                         "pages": [
