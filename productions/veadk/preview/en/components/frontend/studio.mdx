@@ -77,9 +77,10 @@ The logo can be up to 5 MB in PNG, JPEG, GIF, WebP, AVIF, or ICO format. The equ
 
 1. On Add Agent, select Create from scratch to enter custom configuration, choose "Intelligent development" to describe a goal and let Codex build it, choose “Add and deploy from a code package” to upload an existing project, or choose “Migrate an existing project” to migrate LangChain, Dify, or other framework projects to VeADK.
 2. Configure the model, instruction, tools, memory, and knowledge base, and add skills from Skill Hub, a local upload, or an AgentKit SkillSpace. Multi-agent projects can also use sequential, parallel, loop, or A2A nodes, and the canvas lets you inspect and arrange the agent topology.
-3. Review the generated files and run them in a restricted temporary process; download a ZIP if you need to work offline.
-4. In the Environment step, select command-line tools to bake into the cloud Runtime image, or customize the Dockerfile used to build the image; this step is optional.
-5. Select AgentKit deployment and monitor the build-image, deploy, and publish stages from the workspace. After deployment, the agent appears as published in the workspace and can be updated on the same Runtime.
+3. In the Optimization step, optionally enable Harness Sidecar optimizations for the agent; this step is optional and no Sidecar starts when nothing is selected.
+4. Review the generated files and run them in a restricted temporary process; download a ZIP if you need to work offline.
+5. In the Environment step, select command-line tools to bake into the cloud Runtime image, or customize the Dockerfile used to build the image; this step is optional.
+6. Select AgentKit deployment and monitor the build-image, deploy, and publish stages from the workspace. After deployment, the agent appears as published in the workspace and can be updated on the same Runtime.
 
 <Note>
   Resource pickers in custom creation (such as agent centers and knowledge-base collections) support local keyword filtering: type in the dropdown to filter the currently loaded options. Filtering applies only to the loaded list and does not change the region, project scope, or refresh behavior.
@@ -191,9 +192,43 @@ When using "Select existing," the Studio server loads existing resources for the
 | Resource list fails to load | Check the Studio login session, network connectivity, and credential permissions, then retry. |
 | Deployment reports a resource validation error | Verify that the selected or entered resources are complete; for example, CR requires an instance, namespace, and repository. |
 
+### Configure agent optimizations
+
+Custom creation adds an Optimization step between Architecture and Debug for enabling Harness Sidecar optimizations. Harness Sidecar runs agent-enhancement behavior in a separate managed runtime; the application process itself does not load the related plugin implementations.
+
+<Note>
+  Harness Sidecar optimizations support Volcengine accounts only. BytePlus accounts cannot use optimization items; keep them empty to continue deployment. Ordinary BytePlus agents are unaffected.
+</Note>
+
+In the Optimization step, first choose an optimization scenario, then select optimization components as needed:
+
+| Scenario | When to use | Default selected components |
+| :--- | :--- | :--- |
+| Custom | Select components on demand; no Sidecar starts when nothing is selected | — |
+| Operations | Operations diagnosis, databases, logs, and monitoring MCP | Context governance, answer verification and repair, Goal-task control, MCP-resilience governance |
+
+Selecting the Operations scenario automatically loads SQL read-only protection. Optimization components are grouped into three categories:
+
+| Group | Component | Purpose |
+| :--- | :--- | :--- |
+| Improve answer quality | Context governance | Governs context assembly, task anchoring, and the context budget. |
+| Improve answer quality | Answer verification and repair | Verifies evidence and answers, running repairs or alerts on failure. |
+| Reduce running cost | Context and result compression | Compresses long context and large tool results to lower token cost. |
+| Enhance stability | Goal-task control | Manages Goal-task progress, resumption, and end conditions. |
+| Enhance stability | MCP-resilience governance | Governs connection, timeout, empty results, large returns, and call budget; includes SQL read-only protection by default. |
+
+After enabling optimization items, the Publish step requires the runtime settings they depend on:
+
+- When Context governance, Context and result compression, Answer verification and repair, or Goal-task control is selected and a Volcengine Ark model is used, model-gateway settings are required. Studio fills in the model provider, model API base, and model name automatically; the Ark API Key is injected from the selected API Key and does not need to be entered manually.
+- When MCP-resilience governance is selected, provide the MCP unified gateway address (`MCP_URLS`) and API Key (`MCP_API_KEY`).
+
+<Warning>
+  After enabling Harness Sidecar optimizations, the related enhancement behavior runs in a managed runtime and accesses the model and MCP gateway. Confirm that the configured model credentials, MCP gateway address, and access scope meet your data-handling and security requirements.
+</Warning>
+
 ### Configure the cloud environment
 
-The custom-creation lifecycle follows four steps: Architecture, Debug, Environment, and Publish. The Environment step sits between Debug and Publish and lets you select official command-line tools to bake into the cloud Runtime image, or customize the Dockerfile used to build the image. The step is optional: when no tools are selected and no custom Dockerfile is provided, deployment uses the default AgentKit image build and the generated project contains no `Dockerfile`.
+The custom-creation lifecycle follows five steps: Architecture, Optimization, Debug, Environment, and Publish. The Environment step sits between Debug and Publish and lets you select official command-line tools to bake into the cloud Runtime image, or customize the Dockerfile used to build the image. The step is optional: when no tools are selected and no custom Dockerfile is provided, deployment uses the default AgentKit image build and the generated project contains no `Dockerfile`.
 
 #### Select command-line tools
 
