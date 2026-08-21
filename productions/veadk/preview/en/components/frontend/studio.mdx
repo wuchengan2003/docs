@@ -2003,6 +2003,14 @@ veadk studio deploy \
 | `--studio-update-bucket` | `str` | `veadk-studio` | TOS bucket holding immutable Studio release bundles; written to the function env as `VEADK_STUDIO_UPDATE_BUCKET`. Also read from `VEADK_STUDIO_UPDATE_BUCKET`. |
 | `--studio-update-prefix` | `str` | `veadk/studio/main` | TOS object prefix for the Studio main release channel. Also read from `VEADK_STUDIO_UPDATE_PREFIX`. |
 
+## Studio BFF dynamic tools
+
+When the connected AgentKit Runtime has enabled the Studio BFF dynamic tools host via `enable_studio_tools=True`, the Studio agent information rail shows **Add Studio tools to this conversation** below the agent's static tools. New chats start with every Studio tool disabled; users can toggle individual tools, and the selection persists across turns within the current browser process. The browser sends the selected tool ID list on each Runtime run; an empty or omitted list uses the ordinary run path. Tool code and credentials remain in the Studio BFF and are never sent to the Runtime or browser.
+
+<Note>
+This feature requires the Runtime to explicitly enable the `enable_studio_tools` parameter. See [Deploy to AgentKit](/productions/veadk/preview/en/deploy/agentkit).
+</Note>
+
 ## Frontend usage telemetry
 
 Studio frontend product-behavior data is reported through TEA to track instance visits, sign-in usage, and the outcomes of agent deployment, sandbox creation, agent connection, message sending, debug test runs, and source code downloads. Telemetry is automatically enabled when running `veadk studio` (both local startup and `veadk studio deploy` instances) and requires no configuration; `veadk frontend` does not enable it. Reporting failures do not affect normal Studio usage. After the page loads, Studio records a single anonymous page entry before the user signs in; user identity is associated only after sign-in, distinguishing anonymous visits from authenticated visits.

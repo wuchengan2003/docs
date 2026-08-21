@@ -10,6 +10,11 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| AgentKit 集成 | `create_agentkit_app` 新增 `enable_studio_tools` 与 `enable_studio_routes` 参数：前者在 Runtime 侧挂载 Studio BFF 动态工具的通用宿主（`StudioExternalToolset`），后者挂载 Studio BFF 动态 HTTP 路由的通用宿主。工具执行器与路由处理器始终保留在 Studio BFF 侧，Runtime 通过反向通道接收工具目录和路由分发。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) |
+| AgentKit 集成 | 移除会话级能力叠加接口（`/harness/capabilities/tools`、`/harness/apps/{app_name}/users/{user_id}/sessions/{session_id}/capabilities` 和 `/harness/run_sse`），由 Studio BFF 动态工具机制替代。技能目录路由（`/harness/skills/findskill`、`/harness/skills/spaces`、`/harness/skills/spaces/{space_id}/skills`）未启用动态路由的 Runtime 保留原生处理器，启用的 Runtime 由 Studio BFF 通过反向路由通道处理。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) |
+| Studio BFF | Studio 可通过反向通道将本地或内网工具暴露给兼容的 Runtime，无需暴露 BFF 公网地址。兼容 Runtime 的智能体信息栏新增「在此对话中添加 Studio 工具」入口，新会话默认禁用所有 Studio 工具，浏览器在每次运行时发送选中的工具 ID 列表。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) |
+| 内置工具 | `image_edit`、`image_generate` 和 `video_generate` 的模型凭证改为在工具执行时解析，而非模块导入时。导入工具模块不再触发客户端初始化或要求凭证已配置。各工具独立 API Key 环境变量（`MODEL_EDIT_API_KEY`、`MODEL_IMAGE_API_KEY`、`MODEL_VIDEO_API_KEY`）的解析优先级不变。 | [图像编辑](/productions/veadk/preview/zh/components/tools/image-edit) · [图像生成](/productions/veadk/preview/zh/components/tools/image-generate) · [视频生成](/productions/veadk/preview/zh/components/tools/video-generate) |
+| 依赖 | 新增核心依赖 `jsonschema>=4.23,<5`，用于校验 Studio BFF 动态工具参数。 | [安装](/productions/veadk/preview/zh/get-started/installation) |
 | Studio 界面 | 侧边栏导航按 Figma 设计重构，统一导航项图标与排版，「库」页面更名为「资源库」。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 网站集成 | 新增网站集成能力（Beta）：在「自动化」页面的「网站集成」卡片中选择已部署 Runtime 并输入网站域名，生成专属 Token 与嵌入代码片段；将 `<script>` 标签粘贴到网页 `</body>` 前即可在页面右下角渲染悬浮聊天窗口。访客通过 Studio 嵌入接口创建有效期一小时的会话并流式对话，不接触任何凭证或 Runtime 直连地址。使用自定义 JWT 鉴权的 Runtime 暂不支持。已配置持久化存储时集成记录保存在 TOS 中，否则使用进程内存。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Harness 扩展 | `HarnessExtension` 新增受管 Sidecar 模式：通过 `HarnessExtension.from_env()` 或 `sidecar` 参数启用，在独立的受控运行时中执行全部增强行为，应用进程不加载相关插件；同时新增 `HarnessSidecarConfig`、`ModelProxyConfig`、`MCPGatewayConfig` 等配置类与对应环境变量。进程内插件模式保持可用，两种模式互斥。 | [Harness](/productions/veadk/preview/zh/components/extensions/harness) |

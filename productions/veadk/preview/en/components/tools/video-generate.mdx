@@ -22,9 +22,15 @@ Requirements:
 
 Environment variables:
 
+- `MODEL_VIDEO_API_KEY`: API key for the video-generation model; falls back to `MODEL_AGENT_API_KEY` and then to `model.api_key` from the config file when unset
 - `MODEL_AGENT_API_KEY`: API key for the agent's reasoning model
 - `MODEL_VIDEO_NAME`: video-generation model name
+- `MODEL_VIDEO_API_BASE`: video-generation model API endpoint; defaults to the ModelArk endpoint
 - `MODEL_IMAGE_NAME`: image-generation model name
+
+<Note>
+Credentials are resolved at tool execution time, not at import time. Importing the tool module does not initialize a client or require credentials to be present.
+</Note>
 
 `config.yaml` keys:
 
