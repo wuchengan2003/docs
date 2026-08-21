@@ -22,9 +22,15 @@ title: "视频生成"
 
 环境变量：
 
+- `MODEL_VIDEO_API_KEY`：视频生成模型的 API Key；未设置时依次回退到 `MODEL_AGENT_API_KEY` 和配置文件中的 `model.api_key`
 - `MODEL_AGENT_API_KEY`：智能体推理模型的 API Key
 - `MODEL_VIDEO_NAME`：视频生成模型名称
+- `MODEL_VIDEO_API_BASE`：视频生成模型 API 地址，默认为火山方舟端点
 - `MODEL_IMAGE_NAME`：图像生成模型名称
+
+<Note>
+凭证在工具执行时解析，而非导入时。导入工具模块不会触发客户端初始化，也不会要求凭证已配置。
+</Note>
 
 `config.yaml` 配置项：
 
