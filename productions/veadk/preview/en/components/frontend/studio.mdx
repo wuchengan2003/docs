@@ -2,7 +2,7 @@
 title: "Studio agent workbench"
 ---
 
-AgentKit Studio uses the same service and complete UI as VeADK Frontend. It provides chat, search, session history, the library hub, video creation, automation integrations, and agent creation, testing, deployment, and management, and opens on the chat view by default. The agent workspace renders multi-agent topologies as a canvas, surfaces deployed Runtime versions and deployment status, and supports iterating on the same Runtime.
+AgentKit Studio uses the same service and complete UI as VeADK Frontend. It provides chat, search, session history, the resource library hub, video creation, automation integrations, and agent creation, testing, deployment, and management, and opens on the chat view by default. The agent workspace renders multi-agent topologies as a canvas, surfaces deployed Runtime versions and deployment status, and supports iterating on the same Runtime.
 
 Intelligent development, custom configuration, code-package deployment, and existing-project migration are the available project-creation flows. You can preview and edit generated files, run them in a temporary test process, download a ZIP, or deploy to AgentKit. Studio also supports cloud Runtime selection, multiple skill sources, multimodal conversations, automation integrations, and centralized deployment task status and retries.
 
@@ -63,7 +63,7 @@ Optimization snapshots produced by automatic evaluation are stored at `veadk-stu
 
 ## Customize branding
 
-Use `--site-title` to set a system name of up to 16 characters and `--site-logo` to provide a local image or HTTP(S) image URL. The logo appears in the sidebar, login page, and browser favicon. The browser tab title changes dynamically with the active view: the new-conversation home shows only the system name; an open conversation shows the conversation name; other pages such as Automation, System info, Create agent, Library, and Search show the form "System name - Page name". Omitting `--site-title` uses the default `AgentKit Studio` name.
+Use `--site-title` to set a system name of up to 16 characters and `--site-logo` to provide a local image or HTTP(S) image URL. The logo appears in the sidebar, login page, and browser favicon. The browser tab title changes dynamically with the active view: the new-conversation home shows only the system name; an open conversation shows the conversation name; other pages such as Automation, System info, Create agent, Resource library, and Search show the form "System name - Page name". Omitting `--site-title` uses the default `AgentKit Studio` name.
 
 ```bash
 veadk studio \
@@ -1572,9 +1572,9 @@ Studio accesses the Runtime using the configured Volcengine or BytePlus credenti
 Click the "Delete" button on the corresponding record in the "Added websites" list and confirm to remove the integration. After deletion, embed code using that Token can no longer create new sessions. Existing sessions expire when their session token expires.
 
 
-## Library
+## Resource library
 
-The "Library" page in the sidebar consolidates skill, knowledge base, and artifact management into three tabs:
+The "Resource library" page in the sidebar consolidates skill, knowledge base, and artifact management into three tabs:
 
 | Tab | Description |
 | :--- | :--- |
