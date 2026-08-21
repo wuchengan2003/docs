@@ -256,6 +256,12 @@ if __name__ == "__main__":
 
 `execute_skills` 通过 A2A 协议在技能沙箱中执行工作流。调用时发送非阻塞的 `message/send` 请求，随后按指数递增的间隔轮询任务状态，直到任务达到终态或超时。支持的最长执行时间为 1800 秒（30 分钟）。
 
+调用 `execute_skills` 时，VeADK 会从凭证服务中读取当前请求的入站身份凭证（凭证键为 `inbound_auth`），并以 `inbound_auth` 请求头转发给技能沙箱，使沙箱中的工作流能够以原始用户身份执行。若当前请求未携带入站凭证，则不附加该请求头，沙箱以匿名方式执行。
+
+<Note>
+入站身份凭证的来源与配置方式参见[入站认证](/productions/veadk/preview/zh/components/security/inbound)。
+</Note>
+
 ### 参数
 
 `execute_skills` 的完整签名如下：
