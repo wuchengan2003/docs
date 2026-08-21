@@ -10,6 +10,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 界面 | 侧边栏导航按 Figma 设计重构，统一导航项图标与排版，「库」页面更名为「资源库」。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 网站集成 | 新增网站集成能力（Beta）：在「自动化」页面的「网站集成」卡片中选择已部署 Runtime 并输入网站域名，生成专属 Token 与嵌入代码片段；将 `<script>` 标签粘贴到网页 `</body>` 前即可在页面右下角渲染悬浮聊天窗口。访客通过 Studio 嵌入接口创建有效期一小时的会话并流式对话，不接触任何凭证或 Runtime 直连地址。使用自定义 JWT 鉴权的 Runtime 暂不支持。已配置持久化存储时集成记录保存在 TOS 中，否则使用进程内存。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Harness 扩展 | `HarnessExtension` 新增受管 Sidecar 模式：通过 `HarnessExtension.from_env()` 或 `sidecar` 参数启用，在独立的受控运行时中执行全部增强行为，应用进程不加载相关插件；同时新增 `HarnessSidecarConfig`、`ModelProxyConfig`、`MCPGatewayConfig` 等配置类与对应环境变量。进程内插件模式保持可用，两种模式互斥。 | [Harness](/productions/veadk/preview/zh/components/extensions/harness) |
 | Studio 创建 | 自定义创建新增「优化」步骤：在「调试」与「环境」之间为智能体启用 Harness Sidecar 优化项，按优化场景与组件选择上下文治理、回答校验与修复、上下文与结果压缩、Goal 任务控制或 MCP 稳定性治理；增强行为在受控运行时中执行，应用进程不加载相关插件。该能力仅支持火山引擎账号。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
