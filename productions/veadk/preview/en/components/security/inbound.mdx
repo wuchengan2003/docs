@@ -190,3 +190,13 @@ Bearer JWT. It falls back to an OAuth2 M2M token and retries once only when the
 downstream endpoint explicitly returns `401 Unauthorized`. Other status codes
 and call failures do not trigger M2M fallback, which prevents application or
 service failures from being treated as an expired identity token.
+
+### Identity propagation to the skills sandbox
+
+When `execute_skills` calls the skills sandbox, it likewise forwards the
+inbound identity credential. VeADK reads the credential stored under the
+`inbound_auth` credential key from the credential service and sends it in the
+`inbound_auth` request header to the sandbox's A2A endpoint, so the sandbox
+workflow runs under the original user identity. If the current request carries
+no inbound credential, the header is omitted. See the skill sandbox execution
+section in [Code sandboxes](/productions/veadk/preview/en/components/tools/code-sandbox).

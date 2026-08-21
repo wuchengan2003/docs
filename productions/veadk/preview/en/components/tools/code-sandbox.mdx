@@ -257,6 +257,12 @@ if __name__ == "__main__":
 
 `execute_skills` runs a workflow in the skills sandbox through the A2A protocol. It sends a non-blocking `message/send` request and then polls the task status at exponentially increasing intervals until the task reaches a terminal state or the timeout expires. The maximum execution time is 1800 seconds (30 minutes).
 
+When `execute_skills` is called, VeADK reads the inbound identity credential from the credential service (credential key `inbound_auth`) and forwards it to the skills sandbox in the `inbound_auth` request header, so the sandbox workflow runs under the original user identity. If the current request carries no inbound credential, the header is omitted and the sandbox executes anonymously.
+
+<Note>
+For the source and configuration of inbound identity credentials, see [Inbound authentication](/productions/veadk/preview/en/components/security/inbound).
+</Note>
+
 ### Parameters
 
 The full signature of `execute_skills`:

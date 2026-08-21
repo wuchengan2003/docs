@@ -40,6 +40,7 @@ title: "更新日志"
 | 远程技能代理 | 新增远程技能代理能力：通过 JSON 清单声明式地将 AgentKit Skills Sandbox 中的远端技能暴露为独立工具，支持按技能配置描述、输入 Schema 和超时时间，框架在调用时通过 `execute_skills` 将请求转发到远端沙箱执行。 | [远程技能代理](/productions/veadk/preview/zh/components/tools/remote-skills) |
 | 模型 | 使用火山方舟模型时，同一消息内的多个文本或多模态片段现在会被正确聚合为一条输入。此前，这些片段可能被拆分为多条输入，或末尾片段被遗漏。 | [模型](/productions/veadk/preview/zh/components/agent/model) |
 | 追踪 | 流式模型调用时，请求事件不再在每个流式分片上重复记录，仅在首个分片记录一次；span 事件中的 `None` 属性值被统一移除。 | [可观测概述](/productions/veadk/preview/zh/components/observability) |
+| 技能沙箱 | `execute_skills` 调用技能沙箱时，自动从凭证服务读取入站身份凭证（凭证键 `inbound_auth`）并以 `inbound_auth` 请求头转发给沙箱，使沙箱中的工作流能够以原始用户身份执行；当前请求未携带入站凭证时不附加该请求头。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) · [入站认证](/productions/veadk/preview/zh/components/security/inbound) |
 
 | Studio GitHub 交付 | 新增通过 GitHub 交付智能体的能力：在自定义创建的部署配置区选择「GitHub 代码同步」将生成的源码推送到目标分支（Runtime 仍由部署按钮发布），或选择「挂载持续交付」在目标分支写入 AgentKit Runtime 的 GitHub Actions 工作流，后续推送代码自动构建并发布到绑定的 Runtime；部署时新增「挂载 GitHub 持续交付」阶段并展示挂载日志。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 版本管理 | 绑定 GitHub 持续交付的 Runtime 详情页新增「版本」标签，列出目标分支提交历史与工作流运行记录及发布状态，支持选择历史版本创建回退：已挂载持续交付时自动合并回退 PR 并触发发布，仅代码同步时创建回退 PR 等待人工合并。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
