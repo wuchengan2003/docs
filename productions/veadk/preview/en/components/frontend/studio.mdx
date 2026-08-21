@@ -1734,6 +1734,67 @@ The following environment variables adjust artifact sync behavior:
 | `VEADK_ARTIFACT_MAX_FILE_BYTES` | `536870912` (512 MB) | Maximum number of bytes allowed for a single artifact. |
 | `VEADK_ARTIFACT_SOURCE_HOSTS` | `volces.com,volccdn.com,byteplus.com,bytepluses.com` | Comma-separated trusted source host suffixes; uses the default when empty. |
 
+## Scheduled tasks
+
+The Scheduled tasks workspace is accessible from the sidebar via the "Scheduled tasks" entry. It runs a fixed text prompt against a deployed Runtime Agent on a recurring schedule. Each trigger creates an independent session for that Runtime, and the task always follows the Runtime's currently active version. Scheduled tasks are a Beta capability.
+
+<Note>
+  Scheduled tasks rely on Studio persistent storage to persist task definitions, locks, execution history, and results. When persistent storage is not configured, the Scheduled tasks workspace is unavailable and shows "管理员未配置持久化存储". For configuration details, see [Studio persistent storage](#studio-persistent-storage).
+</Note>
+
+### Create and edit tasks
+
+Click "Create task" on the Scheduled tasks page to open the task form. Editing an existing task uses the same form. The form contains the following fields:
+
+| Field | Description |
+| :--- | :--- |
+| Task name | Display name of the task, up to 80 characters. |
+| Runtime Agent | Select a deployed Runtime Agent. The task always uses its currently active version. Cannot create a task when no Runtime is available. |
+| Execution text | The fixed text prompt sent to the Runtime Agent on each trigger, up to 20,000 characters. |
+| Schedule | Schedule type and corresponding time settings, see the table below. |
+| Timezone | The IANA timezone used for schedule times. Defaults to the browser timezone. |
+| Enable after creation | When enabled, execution starts from the next scheduled time. When disabled, the task is created but does not trigger automatically. |
+
+The following schedule types are supported:
+
+| Type | Configuration | Description |
+| :--- | :--- | :--- |
+| One-time | Execution time | Triggers once at the specified time. |
+| Daily | Daily execution time | Triggers every day at the specified time. |
+| Weekly | Day of week, execution time | Triggers at the specified time on the specified day of week. |
+| Cron | Cron expression | Triggers on a five-field Cron expression (minute, hour, day of month, month, day of week in order). |
+
+### Manage tasks
+
+The task list shows the name, associated Runtime, schedule, enabled status, next execution time, and latest result. Each task supports the following actions:
+
+| Action | Description |
+| :--- | :--- |
+| Run now | Trigger an immediate execution without waiting for the schedule. Unavailable when the task is running or paused. |
+| Pause / Enable | When paused, the task no longer triggers on schedule. Re-enabling resumes execution from the next scheduled time. |
+| Edit | Modify the task name, Runtime, execution text, schedule, or timezone. |
+| Delete | Requires confirmation before deletion. Cannot delete a task with a running execution. |
+
+Click a task name to open its detail page, which shows the task configuration and execution history.
+
+### Execution history
+
+Execution history records the status, duration, Runtime version used, and session identifier for each run, and retains the final answer and error details. Run statuses include queued, preparing, running, auto-retrying, succeeded, failed, cancelled, and skipped. Each run uses an independent session, and results and errors are retained permanently.
+
+Runs in queued or running state can be cancelled: queued runs can be dequeued, and running runs can be terminated. Failed runs can be re-executed. Execution history supports manual refresh.
+
+<Note>
+  Manually triggered runs are persisted with a "queued" status and placed in the next minute's processing queue, so they normally start within 60 seconds. This avoids losing a run when the current minute has already been scanned.
+</Note>
+
+### Execution mechanism
+
+Task definitions, run locks, execution history, and results are stored in the Studio private TOS bucket. In cloud deployments, `veadk studio deploy` creates or updates two additional stateless VeFaaS functions and corresponding minute timers: a scanner copies due tasks into a durable execution queue and advances each task's schedule once per minute, while an asynchronous worker drains the queue, invokes the Runtime, and writes terminal results. The scanner, worker, and Studio can restart independently without losing tasks.
+
+Duplicate timer deliveries are deduplicated with immutable run IDs and TOS conditional writes; an ETag lock prevents concurrent executions of the same task across instances. The worker uses the function IAM role to read the Runtime's current endpoint and version, and does not store user tokens or AK/SK credentials.
+
+When running Studio locally with `veadk studio --vite`, the Studio backend starts independent local scan and execution loops; no separate scheduler process is required.
+
 ## `veadk studio` options
 
 | Option | Type | Default | Description |
@@ -1793,6 +1854,8 @@ On success, the terminal prints the public URL, VeFaaS application ID, Identity 
 
 When the deployment automatically provisions an Identity user pool, a TOS bucket, or sandbox Tools (i.e., existing resources were not specified via `--user-pool-id` with `--allowed-client-id`, `VEADK_STUDIO_TOS_BUCKET`, or sandbox Tool ID options), the terminal additionally prints a summary of the configured cloud resources. The summary lists each sandbox Tool type and its ID, the private TOS storage address, the user pool ID, and the client ID, along with a link to the Identity console for the corresponding cloud provider. It also notes that password sign-in is disabled by default for security and that an SSO identity provider must be configured before inviting users.
 
+The deployment also creates or updates two stateless VeFaaS functions and corresponding minute timers for scheduled-task scheduling: a scanner copies due tasks into a durable execution queue and advances schedules once per minute, while an asynchronous worker drains the queue, invokes the Runtime, and writes results. After deployment, the terminal prints the scanner and worker function IDs and timer IDs.
+
 `--region` selects the Studio deployment region, defaults to `cn-beijing`, and also supports `cn-shanghai`; the VeFaaS Application, Function, API Gateway, and AgentKit resources use the selected deployment region. When both `--user-pool-id` and `--allowed-client-id` are provided, the command locates the existing VeIdentity user pool and client across the deployment region and the Beijing and Shanghai regions: it queries the deployment region first, then searches the other region on a miss, emitting a warning and continuing when matched cross-region. When these options are omitted, the user pool and client are created or reused in the deployment region without cross-region lookup. `--project` selects the VeFaaS function project and defaults to `default`.
 
 The deployer's long-lived access and secret keys are not written to the VeFaaS application environment. Deployed Studio uses temporary credentials from its bound IAM role. During deployment, a knowledge signing key is generated or reused and written to the `VEADK_STUDIO_KNOWLEDGE_SIGNING_KEY` environment variable to identify knowledge base ownership. If the variable already exists, the existing value is preserved; otherwise, a deterministic key is derived from the deployment secret and deployment identity, so the same deployment can verify previously created knowledge bases after updates.
@@ -1807,7 +1870,7 @@ The model, endpoint, and candidate regions for sandbox Tools differ by cloud pro
 
 ### IAM permission pre-check
 
-`veadk studio deploy` automatically runs a read-only IAM permission pre-check before creating any cloud resources. The pre-check reads the caller's attached IAM policies and evaluates each required IAM Action for the deployment. The required permission scope depends on the deployment configuration: when existing identity resources are not specified via `--user-pool-id` and `--allowed-client-id`, permissions for creating user pools are required; when `--iam-role` is not provided, role management permissions are required; when no existing bucket is specified via `VEADK_STUDIO_TOS_BUCKET`, bucket creation permissions are required; when sandbox Tool IDs are not specified, Tool creation permissions are required; when `--gateway-name` is not provided, gateway management permissions are required (including `apig:UpdateRoute` to enable the HTTP methods required by Studio APIs); when `--keep-failed-deploy` is not enabled, permissions for cleaning up failed resources are also required.
+`veadk studio deploy` automatically runs a read-only IAM permission pre-check before creating any cloud resources. The pre-check reads the caller's attached IAM policies and evaluates each required IAM Action for the deployment. The required permission scope depends on the deployment configuration: when existing identity resources are not specified via `--user-pool-id` and `--allowed-client-id`, permissions for creating user pools are required; when `--iam-role` is not provided, role management permissions are required; when no existing bucket is specified via `VEADK_STUDIO_TOS_BUCKET`, bucket creation permissions are required; when sandbox Tool IDs are not specified, Tool creation permissions are required; when `--gateway-name` is not provided, gateway management permissions are required (including `apig:UpdateRoute` to enable the HTTP methods required by Studio APIs); the deployment also requires VeFaaS permissions to create and update the scheduled-task scheduler functions and minute timers (`vefaas:ListFunctions`, `vefaas:GetFunction`, `vefaas:ListTriggers`, `vefaas:CreateTimer`, `vefaas:UpdateTimer`); when `--keep-failed-deploy` is not enabled, permissions for cleaning up failed resources are also required.
 
 After the pre-check completes, the terminal prints a permission table listing each IAM Action, its purpose, and whether it is satisfied. If any permission is missing, the deployment stops before creating cloud resources; the terminal also prints the IAM configuration URL for the corresponding cloud provider to help you add the missing permissions. The Volcengine URL is `https://console.volcengine.com/iam/policymanage` and the BytePlus URL is `https://console.byteplus.com/iam/policymanage`.
 
@@ -1829,6 +1892,8 @@ Studio reads new releases from the centrally maintained `veadk-studio` TOS sourc
 Studio checks for updates every three minutes and lists available versions with their change notes. After an administrator confirms an update, Studio verifies the complete release bundle, replaces the Python backend and frontend assets together, and re-releases the existing Application. The Application and Function IDs, public URL, SSO client, and server-side secrets are preserved.
 
 During the update, Studio checks the current VeFaaS Function for missing cloud resources and provisions them automatically: if persistent storage (`VEADK_STUDIO_TOS_BUCKET` and `VEADK_STUDIO_TOS_REGION`) is not configured, a TOS bucket is created or reused in the deployment region; if sandbox snapshot Tools (`SANDBOX_CHAT_CODEX_SNAPSHOT`, `SANDBOX_CHAT_OPENCLAW_SNAPSHOT`, `SANDBOX_CHAT_HERMES_SNAPSHOT`) are missing, they are created for the current cloud provider. The provisioned resources are written as environment variables into the Function configuration so that older Studio versions gain the new persistent-storage and sandbox capabilities after upgrading. The update progress panel shows a "Checking and provisioning Studio cloud resources" stage.
+
+The in-app update also creates or updates the scheduled-task scheduler functions and minute timers; the update progress panel shows a corresponding stage.
 
 The VeFaaS Function console link in the update status is provider-specific: Volcengine deployments point to `console.volcengine.com`, and BytePlus deployments point to `console.byteplus.com`.
 
@@ -1910,6 +1975,8 @@ veadk studio update --vefaas-app-name "veadk-studio"
 ```
 
 When `--region` and `--project` are omitted, the command searches Beijing, Shanghai, and all visible projects. If multiple Applications have the same name, add a region or project to narrow the scope. The update preserves the Application and Function IDs, public URL, SSO, IAM, gateway, and existing environment variables. Branding and the CodeEnv and DevEnv Tool IDs change only when their options are explicitly supplied. When the function uses the default Studio IAM role, the update also refreshes the role's managed policies to the latest version; custom roles are not modified. The update also registers the `/oauth2/callback` callback of the current Studio public URL on the bound VeIdentity user-pool client and enables skip-consent, so SSO login remains usable after the update; if registration fails, the terminal prints a warning and instructs you to add the URL to the client's allowed callback URLs manually. When querying existing deployments and submitting the code-bundle update, the command automatically retries transient server errors such as rate limiting and network jitter; if it still fails after retrying, the terminal notes that the cloud release may still be in progress and you can rerun the same update command shortly after.
+
+The update also creates or updates the scheduled-task scheduler functions and corresponding minute timers.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
