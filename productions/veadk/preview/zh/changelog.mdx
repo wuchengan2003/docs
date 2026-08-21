@@ -47,6 +47,8 @@ title: "更新日志"
 | 命令行 | 新增 `veadk github-cicd-pipeline` 命令，将 Studio 导出的 AgentProject JSON 推送到目标 GitHub 分支，对应代码同步模式。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | 依赖 | 新增 `github-cicd` 可选依赖组（PyNaCl），用于 Studio 挂载持续交付时加密写入 GitHub Actions Secret。 | [安装](/productions/veadk/preview/zh/get-started/installation) |
 | 依赖 | 放宽 `a2a-sdk` 版本约束为 `>=0.3.7,<1.0.0`，允许安装更高版本的 A2A 协议 SDK。 | [安装](/productions/veadk/preview/zh/get-started/installation) |
+| Studio 定时任务 | Studio 新增定时任务工作区（Beta）：在侧边栏「定时任务」入口创建和管理定时任务，按固定计划对一个已部署的 Runtime Agent 执行同一段文本提示词，支持一次性、每天、每周和五字段 Cron 表达式与 IANA 时区。任务定义、运行锁、执行历史与结果保存在 Studio 私有 TOS 存储桶中。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 现在额外创建或更新两个无状态 VeFaaS 函数与对应的分钟触发器，用于定时任务调度；`veadk studio update` 与应用内更新同步更新调度函数与触发器。IAM 权限预检新增 `vefaas:ListFunctions`、`vefaas:GetFunction`、`vefaas:ListTriggers`、`vefaas:CreateTimer`、`vefaas:UpdateTimer` 权限项。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.2
 
