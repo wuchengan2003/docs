@@ -1395,7 +1395,7 @@ VeADK 1.0.9 起，连接的 Runtime 暴露会话级能力叠加接口时，Studi
 
 ## 自动化集成
 
-Studio 侧边栏的「自动化」页面提供研发工具和消息渠道的自动化集成。自动化按分类组织，当前包括「研发」和「消息渠道」两个分类。Coding Agents 集成在本地检测并配置已安装的编程智能体客户端；GitHub 自动化通过浏览器直接调用 GitHub API 创建分支、文件和 Pull Request；飞书自动化在 Studio 中生成基础智能体并直接部署到 AgentKit Runtime。
+Studio 侧边栏的「自动化」页面提供研发工具和消息渠道的自动化集成。自动化按分类组织，当前包括「研发」和「消息渠道」两个分类。Coding Agents 集成在本地检测并配置已安装的编程智能体客户端；GitHub 自动化通过浏览器直接调用 GitHub API 创建分支、文件和 Pull Request；飞书自动化在 Studio 中生成基础智能体并直接部署到 AgentKit Runtime；网站集成将已部署 Runtime 以悬浮聊天窗口嵌入外部网站。
 
 ### 配置 Coding Agents
 
@@ -1517,6 +1517,56 @@ PR 评审工作流需要在仓库中配置以下 GitHub Secrets：
 <Note>
   飞书机器人的 App Secret 仅用于本次部署，不写入生成源码、工作流或日志。部署期间可取消部署，取消将停止任务并清理已创建的 Runtime。
 </Note>
+
+### 网站集成
+
+将已部署的 AgentKit Runtime 以悬浮聊天窗口嵌入外部网站，使网站访客无需登录即可与智能体对话。在 Studio 的「自动化」页面中打开「网站集成」卡片后，选择目标 Runtime、填写网站域名，Studio 会生成专属 Token 和嵌入代码片段。
+
+<Note>
+  网站集成当前标记为 Beta。
+</Note>
+
+#### 使用前提
+
+- 已部署至少一个 AgentKit Runtime，且该 Runtime 中存在可对话的智能体。
+- 目标 Runtime 的访问鉴权方式为 API Key。使用自定义 JWT 鉴权的 Runtime 暂不支持网站集成。
+- 已配置 Studio 持久化存储（`VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION`）时，网站集成记录持久化保存在 TOS 中；未配置时使用进程内存存储，Studio 重启后集成记录会丢失。
+
+#### 创建网站集成
+
+1. 在「添加网站」区域中选择目标 AgentKit Runtime，并输入要嵌入聊天窗口的网站域名。
+2. 点击「生成 Token」，Studio 会校验所选 Runtime 中可对话的智能体，并生成与域名绑定的集成记录和 Token。
+3. 在「已添加网站」列表中查看创建的集成，每条记录包含域名、Runtime 名称、智能体名称和创建时间。
+
+域名需为有效的 `http` 或 `https` 地址，支持带端口号（如 `localhost:5173` 或 `example.com:8080`），但不能包含路径、查询参数或登录信息。
+
+| 参数 | 说明 |
+| :--- | :--- |
+| AgentKit Runtime | 从当前账号可见的 Runtime 列表中选择目标 Runtime。 |
+| 网站域名 | 将嵌入聊天窗口的网站域名，如 `example.com` 或 `localhost:5173`。 |
+
+#### 嵌入聊天窗口
+
+在「引入方法」区域中复制生成的 `<script>` 标签，将其粘贴到目标网页的 `</body>` 标签之前。脚本会从 Studio 服务加载聊天组件，并在页面右下角渲染一个可展开的悬浮聊天窗口。
+
+```html
+<script async src="https://your-studio-url/website-integration.js" data-token="wsi_xxx"></script>
+```
+
+<Warning>
+  嵌入代码中的 `src` 地址需指向可公开访问的 Studio 服务地址。Studio 服务必须允许来自目标网站的跨域请求；网站集成的域名与 Token 绑定，Studio 会在运行时校验浏览器请求的 Origin 是否与配置的域名匹配，不匹配时拒绝请求。
+</Warning>
+
+#### 工作方式
+
+访客打开嵌入聊天窗口的网页后，聊天组件会向 Studio 的嵌入接口发起会话创建请求，获取一个有效期为一小时的会话令牌。此后每条消息通过会话令牌经由 Studio 转发到绑定的 Runtime，并以流式方式返回回复。会话令牌过期后需重新创建会话。
+
+Studio 使用配置的火山引擎或 BytePlus 凭证访问 Runtime，网站访客不接触任何凭证或 Runtime 直连地址。
+
+#### 删除网站集成
+
+在「已添加网站」列表中点击对应记录的「删除」按钮，确认后移除该集成。删除后，使用该 Token 的嵌入代码将无法再创建新会话，已打开的会话在令牌过期后失效。
+
 
 ## 库
 

@@ -1395,7 +1395,7 @@ The workspace's "Evaluation sets" tab shows all evaluation cases for the agent, 
 
 ## Automation integrations
 
-The "Automation" page in the Studio sidebar provides automation integrations for development tools and message channels. Automations are organized into "Development" and "Channels" categories. The Coding Agents integration detects and configures locally installed coding-agent clients; GitHub automations create branches, files, and Pull Requests directly through the browser using the GitHub API; the Feishu automation generates a basic agent and deploys it directly to an AgentKit Runtime from Studio.
+The "Automation" page in the Studio sidebar provides automation integrations for development tools and message channels. Automations are organized into "Development" and "Channels" categories. The Coding Agents integration detects and configures locally installed coding-agent clients; GitHub automations create branches, files, and Pull Requests directly through the browser using the GitHub API; the Feishu automation generates a basic agent and deploys it directly to an AgentKit Runtime from Studio; the website integration embeds a deployed Runtime as a floating chat window on external websites.
 
 ### Configure Coding Agents
 
@@ -1517,6 +1517,56 @@ Creates a Feishu agent powered by an AgentKit Runtime directly from Studio. Afte
 <Note>
   The Feishu bot's App Secret is used only for the current deployment and is not written to generated source, workflows, or logs. Deployment can be cancelled during the process; cancellation stops the task and cleans up the created Runtime.
 </Note>
+
+### Website integration
+
+Embeds a deployed AgentKit Runtime as a floating chat window on external websites, allowing visitors to chat with an agent without logging in. Open the "Website integration" card on the Automation page, select a target Runtime, and enter the website domain. Studio generates a dedicated Token and an embed snippet.
+
+<Note>
+  The website integration is currently marked as Beta.
+</Note>
+
+#### Prerequisites
+
+- At least one AgentKit Runtime is deployed and has a conversational agent.
+- The target Runtime uses API Key authentication. Runtimes using custom JWT authentication are not supported.
+- When Studio persistent storage is configured (`VEADK_STUDIO_TOS_BUCKET` and `VEADK_STUDIO_TOS_REGION`), website integration records are persisted in TOS. Without persistent storage, in-memory storage is used and integration records are lost when Studio restarts.
+
+#### Creating a website integration
+
+1. In the "Add website" area, select the target AgentKit Runtime and enter the domain of the website where the chat window will be embedded.
+2. Click "Generate Token". Studio validates the conversational agents on the selected Runtime and creates an integration record with a domain-bound Token.
+3. Review the created integration in the "Added websites" list. Each record shows the domain, Runtime name, agent name, and creation time.
+
+The domain must be a valid `http` or `https` address. It can include a port (for example, `localhost:5173` or `example.com:8080`) but must not contain a path, query parameters, or credentials.
+
+| Parameter | Description |
+| :--- | :--- |
+| AgentKit Runtime | Select the target Runtime from the list of runtimes visible to the current account. |
+| Website domain | The domain of the website where the chat window will be embedded, such as `example.com` or `localhost:5173`. |
+
+#### Embedding the chat window
+
+Copy the generated `<script>` tag from the "Embed method" area and paste it before the `</body>` tag on the target page. The script loads the chat component from the Studio server and renders an expandable floating chat window in the bottom-right corner of the page.
+
+```html
+<script async src="https://your-studio-url/website-integration.js" data-token="wsi_xxx"></script>
+```
+
+<Warning>
+  The `src` URL in the embed snippet must point to a publicly accessible Studio service address. The Studio service must allow cross-origin requests from the target website. The integration domain is bound to the Token, and Studio validates the browser request Origin against the configured domain at runtime; requests with a mismatched Origin are rejected.
+</Warning>
+
+#### How it works
+
+When a visitor opens a page with the embedded chat window, the chat component sends a session-creation request to the Studio embed endpoint and obtains a session token valid for one hour. Subsequent messages are forwarded through Studio to the bound Runtime using the session token, and replies are streamed back. A new session must be created after the session token expires.
+
+Studio accesses the Runtime using the configured Volcengine or BytePlus credentials. Website visitors never receive any credentials or direct Runtime addresses.
+
+#### Deleting a website integration
+
+Click the "Delete" button on the corresponding record in the "Added websites" list and confirm to remove the integration. After deletion, embed code using that Token can no longer create new sessions. Existing sessions expire when their session token expires.
+
 
 ## Library
 
