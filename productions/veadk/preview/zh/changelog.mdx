@@ -60,6 +60,7 @@ title: "更新日志"
 | VeADK Web | `veadk web` 启动时调整 ADK 开发服务器的智能体构建图序列化：模型字段以「提供方/模型名称」字符串呈现，运行时客户端对象不再出现在输出中，包含嵌套子智能体在内的整棵智能体树均可正常序列化。 | [VeADK Web](/productions/veadk/preview/zh/components/frontend/veadk-web) |
 | Studio 创建 | 自定义创建中编辑系统提示词时，若内容包含编辑器无法解析的 Markdown 语法，编辑器自动切换为纯文本模式继续编辑与保存，不再仅显示解析错误。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | 在 Windows 上执行 `veadk studio deploy`（含 `--from-source`）或 `veadk studio update` 与应用内更新时，部署包中的 `run.sh` 现在以 LF 换行写入，避免因 CRLF 换行导致云端函数启动失败。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 新增 `--allow-dangerous-login` 标志：在 Studio 托管的 Identity 用户池上显式启用本地密码登录、无密码登录、注册、找回与未确认用户登录流程，默认仍为仅 SSO 登录。通过 `--user-pool-id` 指定已有用户池时，部署保留该用户池的既有登录设置，不受此标志影响。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.2
 
