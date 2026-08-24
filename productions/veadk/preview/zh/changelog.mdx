@@ -10,6 +10,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 应用内更新 | 应用内更新在开始任何变更前新增 OTA 权限预检：以只读方式检查 Function 角色是否具备完成更新所需的全部 IAM 权限。存在缺失权限时更新被中断，对话框列出缺失项并提供 IAM 控制台链接，管理员完成授权后可重新发起更新。预检不修改 IAM 策略。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | `veadk studio deploy` 在 IAM 权限预检发现缺失权限时，不再直接终止部署，而是提示确认是否继续；默认为否（拒绝后终止），确认后继续创建云资源。`--precheck-only` 模式仍直接终止，不进入确认流程。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | AgentKit 集成 | `create_agentkit_app` 新增 `enable_studio_tools` 与 `enable_studio_routes` 参数：前者在 Runtime 侧挂载 Studio BFF 动态工具的通用宿主（`StudioExternalToolset`），后者挂载 Studio BFF 动态 HTTP 路由的通用宿主。工具执行器与路由处理器始终保留在 Studio BFF 侧，Runtime 通过反向通道接收工具目录和路由分发。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) |
 | AgentKit 集成 | 移除会话级能力叠加接口（`/harness/capabilities/tools`、`/harness/apps/{app_name}/users/{user_id}/sessions/{session_id}/capabilities` 和 `/harness/run_sse`），由 Studio BFF 动态工具机制替代。技能目录路由（`/harness/skills/findskill`、`/harness/skills/spaces`、`/harness/skills/spaces/{space_id}/skills`）未启用动态路由的 Runtime 保留原生处理器，启用的 Runtime 由 Studio BFF 通过反向路由通道处理。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) |
