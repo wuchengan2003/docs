@@ -10,6 +10,10 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 部署 | 构建镜像失败时，Studio 现在重试同步 CodePipeline 最终构建日志并标记为失败状态，提高在日志末尾定位真实失败原因的概率；构建日志篇幅上限同步提高。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 部署阶段的推进改为单调不可回退，构建日志事件不再把已进入部署阶段的任务回退为构建阶段。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 遥测 | 云账号 ID 解析失败时不再中断部署或更新；解析错误经脱敏后作为 `account_id_resolution_error` 写入埋点上下文。`veadk studio deploy` 和 `veadk studio update` 在直接解析失败时增加从 TOS 存储桶名称推断账号 ID 的回退。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 遥测 | 智能体部署失败事件新增经过脱敏与长度限制的 `error_message` 字段，构建阶段失败时优先取自构建日志文本，无构建日志时回退到部署接口返回的错误摘要。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 迁移 | 创建存量项目迁移任务时新增模型选择器：在压缩包上传区域旁选择目标模型，指定 Dev Sandbox 中 Codex 执行迁移分析与转换时使用的模型。模型列表来自当前账号已开通且可用的火山方舟模型，默认使用迁移能力返回的默认模型；所选模型的配置由 Studio 服务端注入迁移会话环境，不向浏览器下发凭据。任务创建后模型不可更改。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 技能库 | 查看技能文件与下载 ZIP 时，对使用旧版 SkillSpace 接口类型的技能现在能正确加载完整文件包与 `SKILL.md`；此前这类技能因版本接口类型不一致而加载失败。下载与解包技能文件包时自动忽略 `__MACOSX` 目录、`.DS_Store` 等 macOS 元数据文件，并按技能空间所在地域下载存储对象，失败时返回可重试的结构化错误。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 应用内更新 | 应用内更新在开始任何变更前新增 OTA 权限预检：以只读方式检查 Function 角色是否具备完成更新所需的全部 IAM 权限。存在缺失权限时更新被中断，对话框列出缺失项并提供 IAM 控制台链接，管理员完成授权后可重新发起更新。预检不修改 IAM 策略。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
