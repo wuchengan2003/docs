@@ -1930,7 +1930,9 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 `veadk studio deploy` 在创建任何云资源前，自动执行只读 IAM 权限预检。预检读取当前调用者已绑定的 IAM 策略，逐一评估部署所需 IAM Action 是否满足。所需权限范围取决于部署配置：当未通过 `--user-pool-id` 与 `--allowed-client-id` 指定已有身份资源时，需要创建用户池相关权限；未指定 `--iam-role` 时需要角色管理权限；未通过 `VEADK_STUDIO_TOS_BUCKET` 指定已有存储桶时需要存储桶创建权限；未指定沙箱 Tool ID 时需要 Tool 创建权限；未指定 `--gateway-name` 时需要网关管理权限（包括开放 Studio API 所需 HTTP 方法的 `apig:UpdateRoute` 权限）；部署还需要创建和更新定时任务调度函数与分钟触发器的 VeFaaS 权限（`vefaas:ListFunctions`、`vefaas:GetFunction`、`vefaas:ListTriggers`、`vefaas:CreateTimer`、`vefaas:UpdateTimer`）；未启用 `--keep-failed-deploy` 时还需要清理失败资源的删除权限。
 
-预检完成后，终端输出一张权限表格，列出每项 IAM Action 的作用及是否满足。若存在缺失权限，部署在创建云资源前终止；终端同时输出对应云服务商的 IAM 配置入口链接，便于前往补充权限。火山引擎入口为 `https://console.volcengine.com/iam/policymanage`，BytePlus 入口为 `https://console.byteplus.com/iam/policymanage`。
+预检完成后，终端输出一张权限表格，列出每项 IAM Action 的作用及是否满足。若存在缺失权限，终端同时输出对应云服务商的 IAM 配置入口链接，便于前往补充权限。火山引擎入口为 `https://console.volcengine.com/iam/policymanage`，BytePlus 入口为 `https://console.byteplus.com/iam/policymanage`。
+
+在正式部署中（未指定 `--precheck-only`），若存在缺失权限，命令会提示确认是否继续部署；默认为否，拒绝时部署终止，确认后继续创建云资源。使用 `--precheck-only` 时，缺失权限直接导致命令终止，不进入确认流程。
 
 使用 `--precheck-only` 可仅执行权限预检而不创建任何云资源，用于在正式部署前确认凭证权限是否完备：
 
