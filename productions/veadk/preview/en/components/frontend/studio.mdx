@@ -1645,6 +1645,10 @@ After entering a skill space, you can browse all skills within it and filter by 
   The skill name must be unique within the target skill space. If a skill with the same name already exists in the target space, the upload is rejected; rename the skill and re-upload, or use the optimize function to overwrite the existing skill.
 </Note>
 
+<Note>
+  When viewing files or downloading a ZIP, Studio downloads the skill package from the skill space's region and ignores macOS metadata files such as `__MACOSX` directories, `.DS_Store`, and `._`-prefixed files while extracting. For skills using the legacy SkillSpace interface type, Studio falls back to resolving the skill by name so their file list and `SKILL.md` still load. A download or parsing failure returns a structured retryable error; retry after verifying the region, credentials, and network.
+</Note>
+
 #### Generate skills with the Dev Sandbox
 
 Selecting "Create skill" on a skill space page opens the Dev Sandbox skill generation workbench. The workbench creates an independent development sandbox session via the DevEnv Tool and generates a `SKILL.md` and associated files in ADK skill format from a natural-language description.
