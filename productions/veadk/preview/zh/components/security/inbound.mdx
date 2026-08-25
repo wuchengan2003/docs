@@ -184,3 +184,7 @@ curl --location "https://userpool-${USER_POOL_ID}.userpool.auth.id.${REGION}.vol
 | `Authorization: Bearer <JWT>` | 当下游 AgentCard 声明 OAuth2 时，优先把 Bearer JWT 作为下游的 `Authorization` 请求头。其他认证方案不会作为用户 JWT 透传。 |
 
 对于声明 OAuth2 的下游智能体，VeADK 先使用透传的 Bearer JWT 发起请求。只有下游明确返回 `401 Unauthorized` 时，才会改用 OAuth2 M2M 令牌重试一次。其他状态码或调用错误不会触发 M2M 回退，避免把业务错误或服务故障误判为身份令牌失效。
+
+### 技能沙箱中的身份透传
+
+`execute_skills` 在调用技能沙箱时同样会将入站身份凭证转发给沙箱。VeADK 从凭证服务中读取凭证键为 `inbound_auth` 的入站凭证，并以 `inbound_auth` 请求头发送到沙箱的 A2A 端点，使沙箱中的工作流能够以原始用户身份执行。若当前请求未携带入站凭证，则不附加该请求头。详见[代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox)中的技能沙箱执行部分。

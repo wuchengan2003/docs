@@ -76,3 +76,9 @@ At startup `veadk web` makes two adjustments to the ADK web server:
 
 - **Disables the OpenAPI documentation routes.** It removes the `/openapi.json`, `/docs`, and `/redoc` routes from the server to simplify the UI and reduce the exposed surface.
 - **Trims the default log level.** If `--log_level` is not passed explicitly, the level defaults to `ERROR` to suppress noisy output from Google ADK and LiteLLM; when `--log_level` is passed, the provided value is respected.
+
+## Agent build graph serialization
+
+At startup `veadk web` adjusts how the ADK dev server serializes the agent build graph. This endpoint powers the agent topology and configuration view in the debugging UI; the original serialization rendered the VeADK agent's model field as a complex structure containing runtime client objects, which the UI could not parse correctly.
+
+After the adjustment, the model field in the build graph JSON is rendered as a `provider/model-name` string, runtime client objects are removed from the output, and the entire agent tree — including nested sub-agents — serializes correctly.
