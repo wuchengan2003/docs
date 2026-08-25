@@ -90,6 +90,9 @@ The logo can be up to 5 MB in PNG, JPEG, GIF, WebP, AVIF, or ICO format. The equ
   When deployment enters the build-image stage, Studio streams build logs in real time within the deployment progress card. Logs are redacted and length-bounded on the server before being sent to the browser. The panel shows the sync status (syncing, synced, or read failed) and line count, and can be expanded, collapsed, and copied; on a build failure Studio retries syncing the final build log and marks it as failed, so the real failure cause is visible at the end of the log. Log syncing depends on the Volcengine credentials used for deployment; if logs cannot be read, the panel shows a failed status without interrupting the deployment. Both custom creation and code-package deployment support this.
 </Note>
 <Note>
+  When a build has been submitted but its final status cannot be confirmed, Studio marks the stage as “Build status pending confirmation,” prompting you to check the result later in Code Pipeline and disabling the retry button to prevent duplicate deployments. Previously this situation was displayed as “Deploy failed.”
+</Note>
+<Note>
   While a deployment is in progress, the workspace detail page focuses on the deployment progress: it keeps the agent heading and a scrollable deployment panel visible and hides the other detail tabs and content; the normal detail tabs return after the deployment ends. Custom creation, code-package deployment, and updating a deployed agent all follow this behavior.
 </Note>
 
@@ -224,7 +227,7 @@ Selecting the Operations scenario automatically loads SQL read-only protection. 
 After enabling optimization items, the Publish step requires the runtime settings they depend on:
 
 - When Context governance, Context and result compression, Answer verification and repair, or Goal-task control is selected and a Volcengine Ark model is used, model-gateway settings are required. Studio fills in the model provider, model API base, and model name automatically; the Ark API Key is injected from the selected API Key and does not need to be entered manually.
-- When MCP-resilience governance is selected, provide the MCP unified gateway address (`MCP_URLS`) and API Key (`MCP_API_KEY`).
+- When MCP-resilience governance is selected, Studio injects `MCP_URLS` and `MCP_API_KEY` automatically from the HTTP MCP tools configured earlier in the Add MCP Tool step—no manual entry is needed. At least one MCP tool using HTTP transport must be configured with a valid service URL and Bearer Token; multiple HTTP MCP tools must share the same credential. If these conditions are not met, the Publish step directs you back to the Add MCP Tool step to complete the configuration before republishing. MCP tools using stdio transport are not supported for MCP-resilience governance.
 
 <Warning>
   After enabling Harness Sidecar optimizations, the related enhancement behavior runs in a managed runtime and accesses the model and MCP gateway. Confirm that the configured model credentials, MCP gateway address, and access scope meet your data-handling and security requirements.

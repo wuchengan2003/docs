@@ -10,6 +10,8 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 部署 | 构建镜像已提交但最终状态无法确认时，Studio 将该阶段标记为「构建状态待确认」，提示在 Code Pipeline 查看结果并禁用重试按钮以避免重复部署；此前此情况显示为「部署失败」。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 创建 | 勾选「MCP 稳定性治理」时，`MCP_URLS` 与 `MCP_API_KEY` 改为由先前在「添加 MCP 工具」中配置的 HTTP MCP 工具自动注入（只读），不再需要手动填写；要求至少一个 HTTP MCP 工具并提供有效服务地址与 Bearer Token，多个 HTTP MCP 工具须使用同一共享凭证。stdio MCP 工具不支持 MCP 稳定性治理。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | 云服务商 | `veadk studio`、`veadk frontend`、`veadk studio deploy` 和 `veadk studio update` 的 `--provider` 选项统一改为依次读取 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER` 环境变量确定云服务商，均未设置时使用 `volcengine`；此前 `--provider` 默认硬编码为 `volcengine`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
 | Studio 链路观测 | 调用链路面板区分加载中、采集中、未开启、权限不足和加载失败五种状态：采集中状态自动重试两次并提供手动重试按钮；权限不足时提示联系管理员补充 APMPlus 只读权限；加载失败时提供重新加载按钮。查询链路时优先按 `POST /run_sse` 入口 span 定位，未命中时回退到会话时间窗口的广泛扫描并选取最接近的链路。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 项目生成 | 生成项目的 `requirements.txt` 改为固定版本号（`veadk-python==1.1.5`、`agentkit-sdk-python==0.8.4`、`google-adk==2.1.0`、`starlette==0.52.1`），确保构建镜像可复现；启用飞书渠道时同时固定 `lark-channel-sdk` 与 `lark-oapi` 版本。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
