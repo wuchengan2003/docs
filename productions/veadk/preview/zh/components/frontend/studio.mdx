@@ -25,7 +25,7 @@ veadk studio --agents-dir ./agents --open
 
 火山引擎凭证用于工作台中的模型、云资源查询和 AgentKit 部署。生产环境应通过环境变量或密钥管理服务提供凭证，不要把凭证写入项目文件。
 
-使用 BytePlus 作为云服务商时，传入 `--provider byteplus`，并通过 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 环境变量提供凭证；Runtime 列表默认查询的地域为 `BYTEPLUS_REGION` 或 `ap-southeast-1`。未显式指定 `--provider` 时，本地 CLI 始终使用火山引擎。
+使用 BytePlus 作为云服务商时，传入 `--provider byteplus`，并通过 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 环境变量提供凭证；Runtime 列表默认查询的地域为 `BYTEPLUS_REGION` 或 `ap-southeast-1`。未显式指定 `--provider` 时，依次读取 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER` 环境变量确定云服务商，均未设置时使用火山引擎。
 
 
 ## Studio 持久化存储
@@ -87,7 +87,10 @@ Logo 最大 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF 和 ICO。也可以通�
 </Note>
 
 <Note>
-  部署进入构建镜像阶段时，Studio 会在部署进度卡片中实时展示构建日志。日志在服务端完成凭据脱敏与篇幅截断后下发到浏览器，面板显示同步状态（同步中、已同步或读取失败）与行数，可展开、收起并复制内容；构建失败时失败原因会追加到日志末尾。日志同步依赖部署所用的火山引擎凭证，无法读取时面板显示失败状态，不影响部署继续进行。自定义创建和代码包部署均支持该能力。
+  部署进入构建镜像阶段时，Studio 会在部署进度卡片中实时展示构建日志。日志在服务端完成凭据脱敏与篇幅截断后下发到浏览器，面板显示同步状态（同步中、已同步或读取失败）与行数，可展开、收起并复制内容；构建失败时，Studio 会重试同步最终构建日志并标记为失败状态，便于在日志末尾定位真实失败原因。日志同步依赖部署所用的火山引擎凭证，无法读取时面板显示失败状态，不影响部署继续进行。自定义创建和代码包部署均支持该能力。
+</Note>
+<Note>
+  构建镜像已提交但暂时无法确认最终状态时，Studio 将该阶段标记为「构建状态待确认」，提示稍后在 Code Pipeline 查看构建结果，并禁用重试按钮以避免重复部署。此前这种情况会显示为「部署失败」。
 </Note>
 <Note>
   部署进行期间，工作台详情页聚焦于部署进度：保留智能体标题并展示可滚动的部署进度面板，同时隐藏其余详情标签与内容；部署结束后恢复显示常规详情标签。自定义创建、代码包部署与更新已部署智能体均遵循该行为。
@@ -224,7 +227,7 @@ Logo 最大 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF 和 ICO。也可以通�
 启用优化项后，发布步骤会要求补充所依赖的运行时配置：
 
 - 勾选「上下文治理」「上下文与结果压缩」「回答校验与修复」或「Goal 任务控制」且使用火山方舟模型时，需要补充模型网关配置。Studio 自动填充模型提供方、模型 API 地址与模型名称，Ark API Key 由所选 API Key 注入，无需手动填写。
-- 勾选「MCP 稳定性治理」时，需要填写 MCP 统一网关地址（`MCP_URLS`）与 API Key（`MCP_API_KEY`）。
+- 勾选「MCP 稳定性治理」时，Studio 从先前在「添加 MCP 工具」中配置的 HTTP MCP 工具自动注入 `MCP_URLS` 与 `MCP_API_KEY`，无需手动填写。至少需要配置一个使用 HTTP 传输的 MCP 工具，并提供有效的服务地址与 Bearer Token；多个 HTTP MCP 工具须使用同一共享凭证。不满足上述条件时，发布步骤会提示返回「添加 MCP 工具」补充配置后再重新发布。stdio 传输的 MCP 工具不支持 MCP 稳定性治理。
 
 <Warning>
   启用 Harness Sidecar 优化后，相关增强行为在受控运行时中执行，会访问模型与 MCP 网关。请确认所配置的模型凭据、MCP 网关地址与访问范围符合业务的数据处理与安全要求。
@@ -385,6 +388,9 @@ Dockerfile 至多 64 KiB，且不能为空；内容为空或超长时无法进�
 </Note>
 <Note>
   分析与迁移过程中，Studio 在「Codex 执行动态」面板中以结构化形式展示 Codex 的执行进展：分析计划与迁移计划按条目显示完成状态与进度，命令执行、文件更新、外部工具调用、网络搜索和子任务协作分别显示输入、输出与退出码或错误信息，并在执行异常时展示错误详情。所有动态内容在发送到浏览器前均经过服务端脱敏，密钥、令牌等敏感字段会被移除。
+</Note>
+<Note>
+  迁移输入区在压缩包上传按钮旁提供模型选择器，用于指定 Dev Sandbox 中 Codex 执行迁移分析与转换时使用的模型。模型列表由 Studio 服务端从当前账号已开通的火山方舟模型中获取，仅展示可用或即将下线的模型，每项显示模型名称、ID、厂商和生命周期状态，支持搜索筛选。默认使用迁移能力返回的默认模型，未配置时选择列表中的首个可用模型。模型列表加载失败时可重试。任务创建后模型不可更改；所选模型的名称、提供方和 API 地址由 Studio 服务端注入迁移会话环境，不向浏览器下发模型凭据。
 </Note>
 
 | 校验项 | 限制 | 说明 |
@@ -677,7 +683,17 @@ Studio 不提供 `local` 后端，因为创建页面不能为进程内向量库�
 - 连接云端 Runtime 时，Studio 服务端使用自身配置的云服务商凭证向 APMPlus 查询该会话的链路，浏览器不接触凭证。查询使用的 APMPlus OpenAPI 接入地址按当前云服务商选择：火山引擎为 `open.volcengineapi.com`，BytePlus 为 `open.byteplusapi.com`。
 
 <Note>
-  云端 Runtime 的链路观测需在火山引擎控制台为对应智能体开启 APMPlus 链路观测。通过 Studio 部署的 Runtime 默认启用 APMPlus 链路观测；未开启链路观测的 Runtime 打开链路面板时会提示「该 Agent 暂未开启链路观测，请到控制台打开后使用」，链路查询失败时会提示稍后重试。
+  云端 Runtime 的链路观测需在火山引擎控制台为对应智能体开启 APMPlus 链路观测。通过 Studio 部署的 Runtime 默认启用 APMPlus 链路观测。打开链路面板时，Studio 根据查询结果显示不同状态：
+
+| 状态 | 说明 |
+| :--- | :--- |
+| 加载中 | 正在向 APMPlus 查询链路数据。 |
+| 采集中 | 链路数据尚未到达 APMPlus，面板显示采集中状态并提供重试按钮，Studio 会自动重试两次后仍无数据时需手动重试。 |
+| 未开启 | Runtime 未开启链路观测，提示到控制台开启后重试。 |
+| 权限不足 | Studio 运行角色缺少 APMPlus 只读权限，提示联系管理员补充权限。 |
+| 加载失败 | 链路查询发生其他错误，面板提供重新加载按钮。 |
+
+  查询链路时，Studio 服务端优先按 `POST /run_sse` 入口 span 定位目标链路；未命中时回退到对会话时间窗口的广泛扫描，选取与该轮回复结束时间最接近的链路。链路数据可能因采集延迟而短暂不可见，稍后重试即可恢复。
 </Note>
 
 ### 问题反馈
@@ -1645,6 +1661,10 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
   技能名称需在目标技能空间内唯一。如果目标技能空间中已存在同名技能，上传会被拒绝，可重命名后重新上传或使用优化功能覆盖。
 </Note>
 
+<Note>
+  查看文件与下载 ZIP 时，Studio 按技能空间所在地域从存储下载技能文件包，解包时自动忽略 `__MACOSX` 目录、`.DS_Store` 等以 `._` 开头的 macOS 元数据文件。对使用旧版 SkillSpace 接口类型的技能，Studio 会回退到按技能名称解析详情，确保这类技能的文件列表与 `SKILL.md` 也能正常加载。下载或解析失败时返回可重试的结构化错误，可在排查地域、凭证与网络后重试。
+</Note>
+
 #### 通过 Dev Sandbox 生成技能
 
 在技能空间页面中选择「创建技能」可进入 Dev Sandbox 技能生成工作台。该工作台通过 DevEnv Tool 创建独立的开发沙箱会话，根据自然语言描述生成符合 ADK 技能格式的 `SKILL.md` 及其相关文件。
@@ -1859,7 +1879,7 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
 | `--site-logo` | `str \| None` | `VEADK_SITE_LOGO` | 自定义 Logo，支持本地图片路径或 HTTP(S) URL。 |
 | `--host` | `str` | `127.0.0.1` | 监听地址。 |
 | `--port` | `int` | `8000` | 监听端口。 |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | 选择 AgentKit 服务的云服务商。BytePlus 仅在显式指定时启用，使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证。 |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`，然后 `volcengine` | 云服务商。未指定时依次读取 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER` 环境变量，均未设置时使用 `volcengine`；选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证。 |
 | `--dev` | `bool` 标志 | `false` | 在选择器中加载本地智能体，而不是云端 AgentKit Runtime。 |
 | `--vite` | `bool` 标志 | `false` | 只启动 API，并允许 `http://localhost:5173`（及回退端口 `http://localhost:5174`）的 Vite 开发服务器跨域访问。 |
 | `--oauth2-user-pool` | `str \| None` | `None` | VeIdentity 用户池名称。与客户端名称或 UID 配合启用 SSO。 |
@@ -1906,7 +1926,11 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 部署成功后，终端会输出公网 URL、VeFaaS 应用 ID，以及 Identity 地域、用户池 ID、用户池域名和客户端 ID。打开公网 URL 时，Studio 会先跳转到 VeIdentity 完成登录。
 
-当部署过程中自动创建了 Identity 用户池、TOS 存储桶或沙箱 Tool 时（即未通过 `--user-pool-id` 与 `--allowed-client-id` 指定已有用户池、未通过 `VEADK_STUDIO_TOS_BUCKET` 指定已有存储桶、或未通过沙箱 Tool ID 参数指定已有 Tool），终端会额外输出已配置的云资源清单，包括每个沙箱 Tool 的类型与 ID、私有 TOS 存储地址、用户池 ID 和客户端 ID，并给出对应云服务商的 Identity 控制台链接。该清单同时提示密码登录默认关闭，邀请用户前需先配置 SSO 身份提供者。
+当部署过程中自动创建了 Identity 用户池、TOS 存储桶或沙箱 Tool 时（即未通过 `--user-pool-id` 与 `--allowed-client-id` 指定已有用户池、未通过 `VEADK_STUDIO_TOS_BUCKET` 指定已有存储桶、或未通过沙箱 Tool ID 参数指定已有 Tool），终端会额外输出已配置的云资源清单，包括每个沙箱 Tool 的类型与 ID、私有 TOS 存储地址、用户池 ID 和客户端 ID，并给出对应云服务商的 Identity 控制台链接。当 Studio 托管用户池（即未通过 `--user-pool-id` 指定已有用户池）时，部署默认将该用户池配置为仅 SSO 登录：关闭密码登录、无密码登录、注册、找回与未确认用户登录，邀请用户前需先在 Identity 控制台配置 SSO 身份提供者。传入 `--allow-dangerous-login` 可在 Studio 托管用户池上显式启用上述本地登录流程；该标志仅对 Studio 托管的用户池生效。通过 `--user-pool-id` 指定已有用户池时，部署保留该用户池的既有登录设置，不受此标志影响。
+
+<Warning>
+  `--allow-dangerous-login` 会启用用户池的本地账号登录流程，降低登录安全强度。仅在受控环境或测试用途下使用，生产环境应保留默认的仅 SSO 配置。
+</Warning>
 
 部署时还会创建或更新用于定时任务调度的两个无状态 VeFaaS 函数与对应的分钟触发器：扫描器每分钟将到期任务复制到持久化执行队列并推进计划，异步工作器从队列中取出任务调用 Runtime 并写入结果。部署完成后，终端会输出扫描器与工作器的函数 ID 和触发器 ID。
 
@@ -1926,7 +1950,9 @@ Preview 中的未发布 Studio 能力需要从 VeADK 源码目录执行部署，
 
 `veadk studio deploy` 在创建任何云资源前，自动执行只读 IAM 权限预检。预检读取当前调用者已绑定的 IAM 策略，逐一评估部署所需 IAM Action 是否满足。所需权限范围取决于部署配置：当未通过 `--user-pool-id` 与 `--allowed-client-id` 指定已有身份资源时，需要创建用户池相关权限；未指定 `--iam-role` 时需要角色管理权限；未通过 `VEADK_STUDIO_TOS_BUCKET` 指定已有存储桶时需要存储桶创建权限；未指定沙箱 Tool ID 时需要 Tool 创建权限；未指定 `--gateway-name` 时需要网关管理权限（包括开放 Studio API 所需 HTTP 方法的 `apig:UpdateRoute` 权限）；部署还需要创建和更新定时任务调度函数与分钟触发器的 VeFaaS 权限（`vefaas:ListFunctions`、`vefaas:GetFunction`、`vefaas:ListTriggers`、`vefaas:CreateTimer`、`vefaas:UpdateTimer`）；未启用 `--keep-failed-deploy` 时还需要清理失败资源的删除权限。
 
-预检完成后，终端输出一张权限表格，列出每项 IAM Action 的作用及是否满足。若存在缺失权限，部署在创建云资源前终止；终端同时输出对应云服务商的 IAM 配置入口链接，便于前往补充权限。火山引擎入口为 `https://console.volcengine.com/iam/policymanage`，BytePlus 入口为 `https://console.byteplus.com/iam/policymanage`。
+预检完成后，终端输出一张权限表格，列出每项 IAM Action 的作用及是否满足。若存在缺失权限，终端同时输出对应云服务商的 IAM 配置入口链接，便于前往补充权限。火山引擎入口为 `https://console.volcengine.com/iam/policymanage`，BytePlus 入口为 `https://console.byteplus.com/iam/policymanage`。
+
+在正式部署中（未指定 `--precheck-only`），若存在缺失权限，命令会提示确认是否继续部署；默认为否，拒绝时部署终止，确认后继续创建云资源。使用 `--precheck-only` 时，缺失权限直接导致命令终止，不进入确认流程。
 
 使用 `--precheck-only` 可仅执行权限预检而不创建任何云资源，用于在正式部署前确认凭证权限是否完备：
 
@@ -1944,6 +1970,8 @@ veadk studio deploy \
 Studio 固定从维护在北京地域的 `veadk-studio` TOS 发布源读取新版本，客户部署地域无需额外配置；部署完成后管理员可在导航栏中把前端与 Python 后端一起升级。使用 `--studio-update-bucket` 与 `--studio-update-prefix`（或对应的 `VEADK_STUDIO_UPDATE_BUCKET`、`VEADK_STUDIO_UPDATE_PREFIX` 环境变量）可覆盖默认发布源，发布源地域始终为 `cn-beijing`。发布包不绑定云服务商，火山引擎与 BytePlus 部署共用同一发布源；更新时根据部署环境中的 `CLOUD_PROVIDER`（或 `AGENTKIT_CLOUD_PROVIDER`）自动选择对应的云服务商入口，BytePlus 部署在更新过程中同步写入 `BYTEPLUS_REGION`。
 
 Studio 每三分钟检查一次更新，列出可用版本及其变更说明。管理员确认升级后，Studio 会校验完整发布包，同时替换 Python 后端与前端资源并重新发布原 Application；Application 与 Function ID、访问 URL、SSO 客户端和服务端 Secret 保持不变。
+
+在开始更新前，Studio 会先预检当前 VeFaaS Function 角色是否具备完成 OTA 更新所需的全部 IAM 权限（包括读取发布包、创建和更新调度函数、发布应用与函数、安装依赖及管理定时任务触发器等权限）。预检以只读方式查询已绑定的 IAM 策略，不修改任何资源。若存在缺失权限，更新在开始任何变更前即被中断，更新对话框列出缺失的权限项并提供对应云服务商的 IAM 控制台链接，管理员完成授权后可重新发起更新。更新进度面板会显示「预检 Studio 更新权限」阶段。
 
 更新过程中，Studio 会检查当前 VeFaaS Function 缺失的云资源并自动补齐：若未配置持久化存储（`VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION`），则按部署地域创建或复用 TOS 存储桶；若缺少沙箱快照 Tool（`SANDBOX_CHAT_CODEX_SNAPSHOT`、`SANDBOX_CHAT_OPENCLAW_SNAPSHOT`、`SANDBOX_CHAT_HERMES_SNAPSHOT`），则按当前云服务商自动创建。补齐的资源以环境变量形式写入 Function 配置，使旧版本 Studio 在升级后也能使用新增的持久化存储和沙箱能力。更新进度面板会显示「检查并补齐 Studio 云资源」阶段。
 
@@ -1975,8 +2003,9 @@ veadk studio deploy \
 | `--user-pool-id` | `str \| None` | `None` | 已有的 VeIdentity 用户池 UID。省略时在部署地域自动创建或复用同名用户池。 |
 | `--allowed-client-id` | `str \| None` | `None` | 已有的用户池客户端 UID。省略时在用户池中自动创建或复用同名 Web 客户端；传入时须同时指定 `--user-pool-id`。 |
 | `--client-secret` | `str` | `""` | 无法通过客户端 UID 读取密钥时显式提供。直接传参可能进入 shell 历史，能够读取时应省略。 |
+| `--allow-dangerous-login` | `bool` 标志 | `false` | 在 Studio 托管的 Identity 用户池上启用本地密码登录、无密码登录、注册、找回与未确认用户登录流程。仅当未通过 `--user-pool-id` 指定已有用户池时生效；指定已有用户池时部署保留其既有登录设置。 |
 | `--vefaas-app-name` | `str` | 必填 | VeFaaS 应用名称，长度 4–64，只能包含字母、数字和连字符，不能包含下划线。 |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | 部署使用的云服务商。选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证，默认地域为 `ap-southeast-1`。 |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`，然后 `volcengine` | 部署使用的云服务商。未指定时依次读取 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER` 环境变量，均未设置时使用 `volcengine`；选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证，默认地域为 `ap-southeast-1`。 |
 | `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | 由 `--provider` 推导 | Studio 部署地域，同时决定 VeFaaS、API Gateway 等资源所在区域。传入 `--user-pool-id` 与 `--allowed-client-id` 时跨北京、上海查找已有用户池。 |
 | `--project` | `str` | `default` | VeFaaS 函数所属项目。 |
 | `--iam-role` | `str \| None` | `None` | 绑定到函数的既有 IAM Role TRN；省略时创建或复用默认 Role。 |
@@ -2015,10 +2044,10 @@ veadk studio deploy \
 
 Studio 前端的产品行为数据通过 TEA 上报，用于统计 Studio 实例访问量、登录使用情况，以及智能体部署、沙箱创建、智能体连接、对话发送、调试测试和源码下载的结果。运行 `veadk studio`（包括本地启动和 `veadk studio deploy` 部署的实例）时自动启用，无需任何配置；`veadk frontend` 不启用。上报失败时不影响 Studio 正常使用。页面加载后，Studio 会在用户登录前记录一次匿名的页面访问；用户身份确认后再关联用户信息，用于区分匿名访问与登录访问。
 
-部署时 Studio 会自动通过 `/web/ui-config` 接口下发部署 ID、用户池 ID、应用 ID、函数 ID、部署地域、项目和云账号 ID 等上下文供前端关联事件，无需手动设置。云账号 ID 由 `veadk studio deploy` 和 `veadk studio update` 在部署或更新时自动解析并写入运行时环境，不涉及用户个人身份。
+部署时 Studio 会自动通过 `/web/ui-config` 接口下发部署 ID、用户池 ID、应用 ID、函数 ID、部署地域、项目和云账号 ID 等上下文供前端关联事件，无需手动设置。云账号 ID 由 `veadk studio deploy` 和 `veadk studio update` 在部署或更新时自动解析并写入运行时环境，不涉及用户个人身份。解析失败时不中断部署或更新，解析错误经脱敏后作为 `account_id_resolution_error` 记录到埋点上下文。
 
 <Note>
-  埋点仅采集使用统计维度，包括部署 ID、云账号 ID、用户 ID、角色、地域、来源、创建方式、是否使用智能生成，以及智能体部署、沙箱创建、智能体连接、对话发送、调试测试和源码下载的成功或失败结果与失败阶段。匿名入口访问不包含用户 ID，仅在登录后关联。失败事件仅保留稳定的错误类别和错误码，不采集错误堆栈、错误正文或自由文本。埋点不采集对话内容、提示词、生成代码、环境变量值或任何密钥。
+  埋点仅采集使用统计维度，包括部署 ID、云账号 ID、用户 ID、角色、地域、来源、创建方式、是否使用智能生成，以及智能体部署、沙箱创建、智能体连接、对话发送、调试测试和源码下载的成功或失败结果与失败阶段。匿名入口访问不包含用户 ID，仅在登录后关联。失败事件保留稳定的错误类别和错误码；智能体部署失败事件额外上报经过脱敏与长度限制的错误消息，构建阶段失败时优先取自构建日志文本。埋点不采集对话内容、提示词、生成代码、环境变量值或任何密钥。
 </Note>
 
 <Note>
@@ -2042,7 +2071,7 @@ veadk studio update --vefaas-app-name "veadk-studio"
 
 | 选项 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | 已部署 Studio 的云服务商。选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证。 |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`，然后 `volcengine` | 已部署 Studio 的云服务商。未指定时依次读取 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER` 环境变量，均未设置时使用 `volcengine`；选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证。 |
 | `--vefaas-app-name` | `str` | 必填 | 要更新的 VeFaaS Application 名称。 |
 | `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | 查询两个地域 | 将查找范围限制到一个地域。BytePlus 模式下默认查询 `ap-southeast-1`。 |
 | `--project` | `str \| None` | 查询全部可见项目 | 将查找范围限制到一个项目。 |
@@ -2090,6 +2119,18 @@ Studio 根据登录账号限制 Runtime 的可见范围；没有创建者记录�
 <Warning>
   本地用户名保存在浏览器中，可被用户修改或冒充，仅适用于本地开发与功能验证。生产环境必须使用 OAuth 或 gateway 认证，以经过验证的登录信息确定身份与权限。
 </Warning>
+
+### 本地会话归属
+
+当 Studio 启用 OAuth 或 gateway 认证后，对本地 ADK 会话的读取、创建、更新与删除操作，以及智能体运行请求，均绑定到登录身份。用户只能访问属于自己身份标识的会话；身份匹配不区分大小写，可匹配登录令牌中的用户名、邮箱等标识。
+
+未携带可信登录身份时，访问本地会话会返回 401。非管理员用户访问其他用户的会话会返回 403。
+
+<Note>
+  即使未配置 `--admin` 与 `--developer`（此时所有登录用户拥有全部 Studio 能力），跨用户会话访问仍要求显式出现在管理员名单中。该限制独立于角色权限，不会因「全部用户为管理员」的遗留模式而放开。
+</Note>
+
+列在 `--admin` 管理员名单中的身份可以访问其他用户的本地会话，用于排查与支持；此类访问会记录审计日志，包含操作者、目标用户、请求方法与路径。
 
 
 ## 查看系统信息

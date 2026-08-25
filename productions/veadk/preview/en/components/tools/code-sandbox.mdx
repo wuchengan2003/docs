@@ -12,6 +12,8 @@ VeADK provides a set of tools that run tasks remotely in an [AgentKit sandbox](h
 | `execute_skills` | Run an `agent.py` workflow in a prebuilt skills sandbox |
 | `coding` | Run a code-generation workflow in an OpenCode sandbox |
 | `run_sandbox_agent` | Run `agent.py` in a remote sandbox under any `tool_id` |
+| `invoke_skill` | Create a skill task non-blockingly and return the initial task object |
+| `poll_skill` | Fetch the current status snapshot of a skill task |
 
 Import paths:
 
@@ -19,6 +21,8 @@ Import paths:
 - `from veadk.tools.builtin_tools.execute_skills import execute_skills`
 - `from veadk.tools.builtin_tools.coding import coding`
 - `from veadk.tools.builtin_tools.run_sandbox_agent import run_sandbox_agent`
+- `from veadk.tools.builtin_tools.invoke_skill import invoke_skill`
+- `from veadk.tools.builtin_tools.poll_skill import poll_skill`
 
 ## Environment & prerequisites
 

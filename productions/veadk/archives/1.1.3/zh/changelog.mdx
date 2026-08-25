@@ -1,0 +1,359 @@
+---
+title: "更新日志"
+---
+
+本更新日志累计记录 VeADK 1.0.0 至当前版本的全部公开用户能力变化，已发布版本按从新到旧排列。
+
+## 1.1.3
+
+VeADK 1.1.3 发布于 2026 年 8 月 20 日。下表列出该版本的公开用户能力变化；完整提交记录见 [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.1.3)。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| Harness 扩展 | `HarnessExtension` 新增受管 Sidecar 模式：通过 `HarnessExtension.from_env()` 或 `sidecar` 参数启用，在独立的受控运行时中执行全部增强行为，应用进程不加载相关插件；同时新增 `HarnessSidecarConfig`、`ModelProxyConfig`、`MCPGatewayConfig` 等配置类与对应环境变量。进程内插件模式保持可用，两种模式互斥。 | [Harness](/productions/veadk/preview/zh/components/extensions/harness) |
+| Studio 创建 | 自定义创建新增「优化」步骤：在「调试」与「环境」之间为智能体启用 Harness Sidecar 优化项，按优化场景与组件选择上下文治理、回答校验与修复、上下文与结果压缩、Goal 任务控制或 MCP 稳定性治理；增强行为在受控运行时中执行，应用进程不加载相关插件。该能力仅支持火山引擎账号。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 导航 | 移除侧边栏中的「添加智能体」入口，智能体创建统一通过「智能体」页面中的「创建智能体」按钮进入。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 导航 | 侧边栏新增 AgentKit 控制台与文档入口，按当前云服务商跳转对应的 AgentKit 控制台与文档站点。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 工作台 | 在工作台中选择智能体时，Studio 现在先完成会话列表、智能体信息、能力和自动评测状态的加载，再切换可见选中项，避免切换过程中出现中间加载状态。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 IAM | `veadk studio deploy` 在 VeFaaS 服务角色 `ServerlessApplicationRole` 已存在时，现在对火山引擎与 BytePlus 均补齐缺失的自定义策略与系统策略；此前该同步仅对 BytePlus 生效。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 记忆 | 自定义创建中选择 VikingDB Memory 长期记忆后端时，新增记忆库选择器：通过服务端凭证列出当前账号可见的 VikingDB 记忆库集合，选择已有集合后将其名称作为集合索引，并自动填充项目、地域和记忆类型对应的环境变量（不展示在创建页）；未选择时集合名称根据智能体名称自动生成，运行时若集合不存在会自动创建。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [使用 VikingDB 存储](/productions/veadk/preview/zh/components/memory/vikingdb) |
+| 区域配置 | 火山引擎模式下，TOS、TOS 向量、TOS Context、VikingDB 知识库与记忆、VeIdentity、AgentKit Tools 与沙箱等组件在未显式设置地域时，新增对 `REGION` 环境变量的回退，仍为空时再使用各组件默认地域（通常为 `cn-beijing`）；BytePlus 模式不读取 `REGION`，行为不变。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) · [使用 VikingDB 存储](/productions/veadk/preview/zh/components/knowledge/viking) · [使用 TOS 向量存储](/productions/veadk/preview/zh/components/knowledge/tos-vector) · [使用 TOS Context 存储](/productions/veadk/preview/zh/components/memory/tos-context) · [使用 VikingDB 记忆](/productions/veadk/preview/zh/components/memory/vikingdb) · [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 迁移 | 存量项目迁移的分析与迁移过程中，「Codex 执行动态」面板改为以结构化形式展示执行进展：分析与迁移计划按条目显示完成状态，命令执行、文件更新、外部工具调用、网络搜索和子任务协作分别显示输入、输出与退出码或错误信息，执行异常时展示错误详情；所有动态内容在发送到浏览器前经服务端脱敏。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 沙箱 | 沙箱会话创建时，显示名称的 UTF-8 编码超出会话元数据字节上限时不再导致创建失败，Studio 会按字符边界截断并追加省略号。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 系统信息 | 系统信息页面新增 Codex Sandbox 模型环境变量修复：检测 Codex Sandbox（`SANDBOX_CHAT_CODEX`）与快照版（`SANDBOX_CHAT_CODEX_SNAPSHOT`）的 Tool 环境变量是否缺失 `MODEL_AGENT_API_KEY` 或 `MODEL_AGENT_BASE_URL`；缺失且 Tool 中存在 `CODEX_API_KEY` 与 `CODEX_BASE_URL` 时，管理员可在 Tool ID 旁点击更新按钮，由 Studio 服务端回填缺失的变量，密钥不下发浏览器。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 系统信息 | 系统信息页面的沙箱信息列表新增 DeepSeek Harness Sandbox（`SANDBOX_CHAT_CODEX`），它与 Codex Sandbox 共用同一个 AgentKit CodeEnv Tool，因此显示相同的 Tool ID；沙箱 Tool 按固定顺序排列。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 导航 | 系统信息、智能体详情和沙箱智能体详情页现在以浮层形式在当前页面上方打开，保留来源页面，左上角的返回按钮可回到打开前的页面；此前打开这些页面会离开当前视图。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能库 | 新建技能空间时支持选择地域：火山引擎可选 `cn-beijing` 与 `cn-shanghai`（默认 `cn-beijing`），BytePlus 为 `ap-southeast-1`；技能空间卡片同时展示其所属地域，未显式记录地域的空间显示当前云服务商的默认地域。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 更新 | 编辑已部署的智能体时，Studio 从 Runtime 读取的智能体名称和模型配置现在以实际部署状态为准：模型名称不再包含提供方前缀，模型来源（Ark 或自定义）根据火山方舟模型目录正确分类。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 更新 | 编辑已部署的智能体时，Studio 现在以该 Runtime 当前部署的配置为唯一来源重建可编辑草稿，不再混入本地保存的旧草稿内容。当因网络或服务端错误无法读取 Runtime 的 Agent 配置时，更新入口暂时禁用并提示稍后重试。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 视频创作 | 视频任务对话框在生成阶段区分任务排队与模型生成状态并显示已等待时长；生成过程中可关闭对话框，任务会继续在后台运行。失败时对话框显示服务端返回的错误详情（已自动脱敏密钥与签名信息），可从失败阶段重试。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 对话 | 助手回复中的 Mermaid 与 ECharts 代码块现在渲染为交互式图表，可在预览与源码之间切换；流式输出期间先显示源码，生成完成后再渲染图表，`echart` 等别名同样受支持。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 创建 | 生成智能体的系统提示词（`instruction`）长度上限由 20,000 个字符提高到 40,000 个字符。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 知识库 | 导入网页时先展示提取内容的渲染预览，确认后才会存入知识库；取消或预览失败不会创建任何数据。网页文档自动以页面标题命名，未获取到标题时使用域名。当主要提取方式无法获取正文时尝试备用提取；页面依赖 JavaScript 动态渲染而无可见内容时提示无法导入。已导入的网页文档在知识库中预览时显示原始 Markdown 原文。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 沙箱 | 管理员打开沙箱会话列表时，自动恢复当前智能体类型的可恢复快照（后台并发，至多 3 个），恢复后直接展示就绪会话，不再需要手动唤醒。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 创建 | 自定义创建新增「环境」步骤：在调试与发布之间选择需要预装到云端 Runtime 镜像的命令行工具（Lark CLI、GitHub CLI、Pandoc），或通过高阶配置自定义构建镜像使用的 Dockerfile；不选择工具且不自定义时使用默认镜像构建。生成的 Dockerfile 基于云服务商对应的基础镜像，按 amd64 与 arm64 架构校验 SHA-256 安装工具，且不包含任何凭据。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 应用内更新 | 应用内更新不再修改 Function 的 IAM 角色策略；如需更新 IAM 权限，请使用 `veadk studio update` 命令。当 Function 角色缺少 `vefaas:GetApplicationRevisionLog` 权限时，日志面板替换为权限提示并显示对应云服务商的 IAM 控制台链接，管理员可据此前往补充权限，更新不受影响。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 创建 | 新增智能模式创建方式：在「添加智能体」中选择「智能模式」，用自然语言描述目标后，沙箱中的 Codex 自动判断意图，完成项目构建、调试和临时云端验证，生成可部署的源码产物。构建完成后在对话中展示交付物卡片，可查看源码、下载 ZIP 或直接部署到 AgentKit Runtime；部署时源码由服务端从已验证交付物物化，仅支持创建新 Runtime。智能开发会话保留至多 8 小时，出现在侧边栏历史中并支持恢复和删除。该功能需要已配置开发沙箱 Tool（`SANDBOX_DEV`）。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能开发会话 | 恢复或重新打开智能开发会话时，对话历史仅展示用户消息和助手回复，内部的意图判断与任务调度过程不再显示。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能开发进度 | 构建过程中的进度消息以独立的进度指示器形式显示在对话中，与助手回复文本区分开；进度指示器在当前轮次结束后自动消失。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能开发交付 | 交付物说明采用统一的结构化格式：先给出一句话结果摘要，随后按「已完成」「验证」「遗留问题」分节列出具体内容。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 安全 | 智能开发过程中的工具调用、思考内容和进度消息在发送到浏览器前经过服务端脱敏，任务凭据和私有路径被移除。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能上传 | 上传技能 ZIP 包时自动忽略 `__MACOSX` 目录中的 macOS 元数据文件，这些文件不会写入技能空间。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 远程技能代理 | 新增远程技能代理能力：通过 JSON 清单声明式地将 AgentKit Skills Sandbox 中的远端技能暴露为独立工具，支持按技能配置描述、输入 Schema 和超时时间，框架在调用时通过 `execute_skills` 将请求转发到远端沙箱执行。 | [远程技能代理](/productions/veadk/preview/zh/components/tools/remote-skills) |
+| 模型 | 使用火山方舟模型时，同一消息内的多个文本或多模态片段现在会被正确聚合为一条输入。此前，这些片段可能被拆分为多条输入，或末尾片段被遗漏。 | [模型](/productions/veadk/preview/zh/components/agent/model) |
+| 追踪 | 流式模型调用时，请求事件不再在每个流式分片上重复记录，仅在首个分片记录一次；span 事件中的 `None` 属性值被统一移除。 | [可观测概述](/productions/veadk/preview/zh/components/observability) |
+| Studio 登录 | 浏览器会话有效期不再固定为 1 小时：当 VeIdentity 用户池客户端配置了刷新令牌有效期时，Studio 据此延长会话时长，并在访问令牌过期时透明刷新，避免会话中途被登出。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+
+## 1.1.2
+
+VeADK 1.1.2 发布于 2026 年 8 月 17 日。下表列出该版本的公开用户能力变化；完整提交记录见 [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.1.2)。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| Studio 界面 | 浏览器页面标题随当前界面动态变化：新会话首页只显示系统名称；进入对话后显示会话名称；进入自动化、系统信息、创建智能体、库、搜索等功能页时，标题为「系统名称 - 页面名称」。此前标题固定为系统名称。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 内置智能体 | 内置 Codex 会话在连接空闲超时或传输层断开后自动恢复：下一次发送消息或请求时，Studio 重建连接并恢复当前 Thread，保留对话历史、工作空间锁定状态与上下文用量，无需手动新建会话。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 在创建或查找 VeIdentity 用户池与客户端、注册 SSO 回调时，仅使用部署者提供的凭证，不再回退到运行环境中的 VeFaaS IAM 凭证，避免部署期间误用非预期的临时凭证。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 端云接力 | 新增端云接力能力：在「管理智能体」的 Codex 标签下点击「接力」打开引导对话框，按顺序复制插件安装提示词与接力提示词（含 Studio 地址和一次性配对码，默认有效期 20 分钟），本地 Codex 插件即可将项目代码、Git 元数据和可见会话历史（含用户消息图片）迁移到一个临时云端 Codex Sandbox Session，并在云端继续执行任务。接力进度按「等待端侧请求」「创建云端 Session」「恢复项目」「发送续跑任务」展示，完成后可直接进入云端会话。会话历史至多 100 条消息、单条 20,000 字符、总计 100,000 字符；图片至多 10 张（PNG/JPEG/GIF/WebP），单张 4 MB、总计 8 MB。该入口仅对 `admin` 与 `developer` 可见。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio Sandbox | 新增 `STUDIO_EXPOSE_SANDBOX_ENDPOINT` 环境变量（默认关闭）。启用后 Codex 会话编辑器输入框旁显示「复制 Sandbox Endpoint」按钮，可将当前 Sandbox 公开端点复制到剪贴板；本地启动与云端部署均通过环境变量配置。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 更新 | `veadk studio update` 更新时向已绑定的 VeIdentity 用户池客户端注册当前 Studio 公网地址的 `/oauth2/callback` 回调并启用免确认，确保更新后 SSO 登录回调可用；注册失败时输出 warning 并提示手动添加。查询已有部署与提交代码包更新时对限流、网络抖动等服务端临时故障自动重试，重试仍失败时提示云端发布可能仍在进行、可稍后重试。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 库 | 侧边栏新增「库」页面，集中管理技能、知识库和产物三个标签页。原有「技能」入口合并为库的技能库标签页。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 知识库 | 库页面新增知识库标签页：创建和管理用户拥有的 AgentKit 知识库，知识库名称需以字母开头、仅含字母数字和下划线（1–48 字符），描述至多 80 字符。支持上传图片（PNG/JPG/JPEG）和文档（PDF/PPTX/DOCX/XLSX/TXT，单个文件不超过 200 MB），也支持导入公开网页：Studio 服务端抓取网页并提取正文为 Markdown，包含 SSRF 防护、重定向与大小限制。文件通过私有 TOS 中转后导入 AgentKit 知识库。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 产物 | 库页面新增产物标签页：集中展示对话中生成的文档、图片和视频，按会话来源分组，支持按类型筛选和搜索。图片和视频产物持久化保存到 Studio 持久化存储，刷新或切换会话后仍然可用；持久化产物支持编辑名称、描述和标签，以及下载和删除。同步仅处理图片和视频，并通过来源地址校验（仅接受受信任生成服务的 HTTPS 地址）防止写入不可信内容。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 部署时自动生成或复用 `VEADK_STUDIO_KNOWLEDGE_SIGNING_KEY` 环境变量，用于标识知识库归属；`veadk studio update` 更新时检查并补齐该变量。IAM 权限预检新增 `apig:UpdateRoute` 权限项，用于开放 Studio API 所需的 HTTP 方法。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 创建 | 新增存量项目迁移功能：在「添加智能体」中选择「从存量项目迁移」，上传已有的智能体项目压缩包（至多 50 MB），Studio 创建用户独占的 Dev Sandbox Session（1 小时有效期），由 Codex 进行只读框架、入口和迁移边界分析。用户确认框架、入口和开放问题后开始迁移；Structured 框架（LangChain、LangGraph、Google ADK、Strands、AgentCore）运行 `ak migrate`，Dify 和 Any 框架运行 `ak migrate --execution in-place`。迁移完成后可预览、下载或部署到 AgentKit，部署时服务端从 Session 校验产物。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 代码包部署的启动入口支持 `agentkit.yaml`：压缩包根目录存在 `agentkit.yaml` 且声明了 `common.entry_point` 时，以该配置指定的文件作为启动入口；未声明时仍使用根目录的 `app.py`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 创建新 Runtime 时，Runtime 名称支持手动编辑，并在部署前校验名称格式（4–64 个字符，仅含英文字母、数字、下划线和连字符）和检查是否与当前地域已有 Runtime 重名；名称重复时提示修改后重试。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 内置智能体 | 新增 DeepSeek Harness 内置智能体：在新会话的内置智能体子菜单中选择 DeepSeek Harness，可在独立的 AgentKit CodeEnv Session 中打开 DeepSeek Harness 工作区。该智能体与 Codex 智能体共用同一个 CodeEnv Tool（`SANDBOX_CHAT_CODEX`），会话通过 agent 类型标识区分。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 埋点 | Studio 前端埋点新增匿名入口访问统计：页面加载后在用户登录前记录一次匿名页面访问，登录后再关联用户身份，用于区分匿名访问与登录访问。`veadk studio deploy` 和 `veadk studio update` 在部署或更新时自动解析云账号 ID 并写入运行时环境，通过 `/web/ui-config` 下发供前端埋点关联使用，无需手动配置。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 应用内更新 | 应用内更新的部署日志经过服务端过滤，去除 curl 进度条、配置 JSON 导出、ANSI 转义序列和重复行，仅保留部署相关内容。当部署凭证缺少 VeFaaS 日志查询权限时，日志面板自动隐藏而不显示错误，不影响更新继续进行。更新完成后 Studio 自动刷新页面加载新版本；刷新前如有未关闭的更新对话框，重新打开页面后自动恢复。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 系统信息 | 系统信息页面中的 TOS 存储桶地址、沙箱 Tool ID 和用户池名称新增跳转到对应云服务商控制台的链接。用户池显示字段由 UID 改为 ID。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | `VEIDENTITY_REGION` 的默认值由固定 `cn-beijing` 改为当前云服务商的默认地域（火山引擎为 `cn-beijing`，BytePlus 为 `ap-southeast-1`）。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 更新 | `veadk studio update` 在函数使用默认 Studio IAM Role 时，同步刷新该角色的托管策略至最新版本；使用自定义 Role 时不做修改。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 内置智能体 | 与内置 Codex 智能体对话时，若 Codex app-server 返回错误或连接中断，Studio 现在在对话中展示完整的错误详情，包括 JSON-RPC 错误码、错误消息、附加数据和底层原因，而非仅显示截断的错误消息；错误信息仍经过凭据脱敏处理。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 创建 | 「从 0 快速创建」入口不再显示模式选择子菜单，点击后直接进入自定义创建流程；智能模式、模板和工作流子选项已移除。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 模型选择 | 在自定义创建中配置 LLM 智能体时，可通过模型选择器浏览当前账号在火山方舟已开通的模型并选择目标模型：模型列表由 Studio 服务端获取，仅展示支持智能体调用的 LLM 和 VLM 模型，包含模型名称、展示名称、厂商和开通状态，已停用的模型不显示；列表有服务端缓存，支持手动刷新。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 模型凭据 | 使用 Ark 模型时，Studio 服务端从当前账号的火山方舟 API Key 列表中选择 API Key 用于调试运行和部署：默认选择与 `MODEL_AGENT_API_KEY_NAME` 匹配的 Key，未匹配时使用第一个 Key；可在部署配置区手动选择指定 Ark API Key，所选 Key 的明文由服务端解析并注入运行环境，不会下发到浏览器。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 自定义模型 | 使用自定义模型地址时，生成的项目代码新增 `CUSTOM_MODEL_<智能体名称>_PROVIDER` 和 `CUSTOM_MODEL_<智能体名称>_API_BASE` 环境变量，分别传递模型提供方和模型 API 地址；模型 API Key 仍通过 `CUSTOM_MODEL_<智能体名称>_API_KEY` 环境变量读取。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 创建新 Runtime 时，Studio 根据根智能体名称自动生成 Runtime 名称（由英文字母、数字、下划线和连字符组成，长度 4–64 个字符），确保智能体与 Runtime 命名一致；部署结果同时返回智能体名称和 Runtime 名称。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 品牌 | `--site-title` 的最大长度由 6 个字符增加到 16 个字符，影响 `veadk studio`、`veadk studio deploy` 和 `veadk studio update` 命令。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 模型凭据 | Studio 将模型凭据绑定到可信端点：模型 API 地址留空或使用当前云的官方 Ark 地址时，Studio 自动提供 Ark API Key 用于调试运行和部署；使用自定义模型地址时，Studio 不提供凭据，调试运行不支持自定义地址，发布页要求为每个使用自定义地址的智能体填写 API Key（仅用于本次发布），生成的项目代码通过 `CUSTOM_MODEL_<智能体名称>_API_KEY` 环境变量读取。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 评测 | 在与已部署智能体的对话中，可在助手回复中选中一段文字并添加批注，将该轮回复保存为 Bad Case 评测案例：选中片段与批注说明组合保存为案例备注，标注案例在评测集中显示评分与批注理由。该能力仅在连接已部署火山引擎 Runtime 且回复生成结束后可用，BytePlus 部署和本地调试会话不支持。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 和 `veadk studio update` 在创建沙箱 Tool 时增强可靠性：自动重试限流、网络错误和服务端临时故障，并发创建时错开请求以避免限流，每次创建携带幂等令牌防止重复创建。Tool 创建失败时的错误信息新增 Tool ID 和云服务错误码、状态码、请求 ID。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 在创建云资源前自动执行只读 IAM 权限预检：读取当前调用者已绑定的 IAM 策略，逐一评估部署所需 IAM Action 是否满足，并在终端输出权限表格。存在缺失权限时部署在创建资源前终止，同时输出对应云服务商的 IAM 配置入口链接。新增 `--precheck-only` 选项，可仅执行预检而不创建任何资源。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 前端对话 | 每条助手回复旁新增「分享为图片」按钮，可将截至该轮回复的全部输入与输出导出为一张 PNG 图片：图片在浏览器本地生成，包含从会话开始到当前回复的所有消息并在底部附加导出说明，支持下载 PNG 或复制到剪贴板。该能力在 `veadk frontend` 与 `veadk studio` 的对话页面均生效。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| Studio 应用内更新 | 新会话页面「本次更新」提示改为显示当前构建版本的实际变更说明，而非固定内容；版本更新对话框中的变更说明以要点形式按条目分行展示。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 沙箱 | 管理员在沙箱会话列表中可查看并恢复可唤醒的智能体快照：内置智能体会话结束后留下的可恢复快照以「可唤醒」状态出现在列表中，支持唤醒恢复为就绪会话或删除快照，详情页展示快照状态、原因、Snapshot ID 和来源 Session ID。该能力仅对 `admin` 角色开放，需要已配置沙箱快照 Tool。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 埋点 | Studio 前端产品行为埋点从 APMPlus Web SDK 迁移至 TEA：运行 `veadk studio`（含本地启动与 `veadk studio deploy` 部署实例）时自动启用，不再需要配置。`veadk studio deploy` 移除 `--apmplus-aid`、`--apmplus-token`、`--apmplus-domain` 和 `--apmplus-env` 选项及对应的 `VEADK_STUDIO_APMPLUS_AID`、`VEADK_STUDIO_APMPLUS_TOKEN`、`VEADK_STUDIO_APMPLUS_DOMAIN` 和 `VEADK_STUDIO_APMPLUS_ENV` 环境变量。埋点仅采集使用统计维度，失败事件仅保留错误类别与错误码。VeADK 运行时的 APMPlus 链路观测不受影响。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 用量统计 | 已部署智能体新增「用量统计」标签页：每次 Studio `run_sse` 流式调用成功结束后记录一次调用，失败、取消、直接调用 API Server 或直接 A2A 调用不计入。标签页展示总调用次数、独立登录用户数、各用户调用次数和最近一次成功调用时间。用量数据存储在 Studio 私有 TOS 存储桶（`VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION`），云端部署自动创建并注入该存储；每次调用以不可变对象写入，多实例并发不会互相覆盖。仅管理员和可访问该 Runtime 的开发者可查看用户列表；存储失败不中断智能体响应，标签页改为提示用量统计暂时不可用。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 前端对话 | 智能体回复过程中，输入框的发送按钮变为停止按钮，点击后中断当前回复：已接收的内容保留在对话中，停止后可立即在同一会话中发送下一条消息。该能力在 `veadk frontend` 与 `veadk studio` 的对话页面（含沙箱会话）均生效。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| 前端对话 | 输入框发送按钮旁新增上下文用量指示器：显示当前模型的上下文窗口用量构成，悬停或聚焦时展开 100 格用量图，将占用分为系统与工具（估算）、输入与历史、输出与思考、剩余容量。系统与工具占用为估算值，因为模型使用量统计未单独报告该部分。上下文窗口大小按云服务商和模型名称确定。该能力在 `veadk frontend` 与 `veadk studio` 的智能体对话页面均生效。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| 代码沙箱 | `execute_skills` 移除 `invocation_mode` 参数和 `AGENTKIT_SKILL_INVOCATION_MODE` 环境变量，统一通过 A2A 协议执行技能工作流。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
+| 代码沙箱 | `execute_skills` 不再支持 `env_vars` 参数，传入非 `None` 值会报错。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
+| 代码沙箱 | `run_code` 的 `timeout` 默认值由 30 秒调整为 300 秒，并增加取值范围校验（1–300 秒）；`hard_timeout` 同样增加 1–300 秒校验。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
+| 飞书渠道 | `FeishuChannelExtension` 新增优雅关停能力：`start()` 在运行中的事件循环内启动后台重连循环，`shutdown()` 关闭 WebSocket 并等待已接收消息处理完成后再返回，`drain()` 等待在途消息任务完成，`is_draining` 表示关停状态。新增 `TOOL_FEISHU_CHANNEL_RECONNECT_INTERVAL`（默认 3 秒）与 `TOOL_FEISHU_CHANNEL_DRAIN_TIMEOUT`（默认 300 秒）环境变量。适用于 ASGI 应用的启动与关闭钩子。 | [飞书](/productions/veadk/preview/zh/components/extensions/feishu-channel) |
+| 飞书渠道 | 修复流式回复在部分增量片段首字符与已累积内容尾部相同时被错误去重导致字符丢失或截断的问题，流式输出现在按增量片段直接拼接。 | [飞书](/productions/veadk/preview/zh/components/extensions/feishu-channel) |
+| 知识库 | `byteplus` 模式下，VikingDB 知识库后端的 TOS 区域与接入点不再固定为 `ap-southeast-1`，而是自动与知识库区域对齐（如 `cn-hongkong` → `tos-cn-hongkong.bytepluses.com`）；显式配置 `tos_config` 或 `DATABASE_TOS_REGION` / `DATABASE_TOS_ENDPOINT` 时仍使用用户设置的值。 | [使用 VikingDB 知识库存储](/productions/veadk/preview/zh/components/knowledge/viking) |
+
+## 1.1.1
+
+VeADK 1.1.1 发布于 2026 年 8 月 12 日。下表列出该版本的公开用户能力变化；完整提交记录见 [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.1.1)。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| Studio 模型 | BytePlus 沙箱 Tool 的默认模型由 `seed-2-0-lite-260228` 更改为 `dola-seed-2-1-turbo-260628`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 代码沙箱 | `execute_skills` 新增 `timeout` 参数控制最大执行时间，默认 1800 秒（30 分钟），取值范围 1–1800 秒。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
+| Studio 技能中心 | 技能上传与发布的名称冲突检查范围从项目级别收窄到目标技能空间：同名技能仅在同一技能空间内冲突时被拒绝，不同技能空间中存在同名技能不再阻止上传或发布。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能中心 | 技能发布存储桶新增回退逻辑：未配置专用发布桶时，优先复用 Studio 持久化存储桶（`VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION`），其次使用 AgentKit 全局配置中的存储桶，最后自动生成。回退到 Studio 持久化存储桶时会校验地域与技能发布地域是否一致，不一致则发布失败。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 应用内更新 | 应用内更新支持 BytePlus 部署：发布包不再绑定云服务商，火山引擎与 BytePlus 共用同一发布源，更新时根据部署环境中的 `CLOUD_PROVIDER`（或 `AGENTKIT_CLOUD_PROVIDER`）自动选择对应的入口，BytePlus 部署同步写入 `BYTEPLUS_REGION`。更新过程中，Studio 自动检查并补齐缺失的云资源（TOS 持久化存储和沙箱快照 Tool），使旧版本 Studio 升级后即可使用新增能力；更新状态中的 VeFaaS 控制台链接按云服务商区分。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 知识库 | 自定义创建智能体时，知识库新增 OpenViking 后端，可在创建页配置服务地址、API Key、知识库归属 ID、资源目录和资源索引，并写入生成项目的环境变量。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [使用 OpenViking 存储](/productions/veadk/preview/zh/components/knowledge/openviking) |
+| Studio 调用链路 | 对话页面的云端 Runtime 调用链路查询改为按当前云服务商选择 APMPlus OpenAPI 接入地址：火山引擎使用 `open.volcengineapi.com`，BytePlus 使用 `open.byteplusapi.com`，避免 BytePlus 模式下因使用错误入口导致链路查询失败。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 技能 | 通过 Harness、CLI 生成的智能体代码或 AgentKit 会话能力服务加载技能时，VeADK 自动为 `SkillToolset` 配置本地代码执行器，技能中的脚本可直接运行，无需额外配置。 | [技能](/productions/veadk/preview/zh/components/agent/skills) |
+| Studio 评测 | 自动评测生成的优化项快照改为持久化到 Studio 持久化存储：配置 `VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION`（部署时自动创建存储桶）时，优化项快照保存在 TOS 中，进程重启后仍然可见并在多个实例间共享；未配置持久化存储时，快照仅保留在进程内存中，重启后丢失。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 在自动创建 Identity 用户池、TOS 存储桶或沙箱 Tool 时，部署成功后额外输出已配置的云资源清单，包括每个沙箱 Tool 的类型与 ID、私有 TOS 存储地址、用户池 ID、客户端 ID 和对应云服务商的 Identity 控制台链接，并提示密码登录默认关闭、需先配置 SSO 身份提供者。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 的 `--user-pool-id` 和 `--allowed-client-id` 改为可选。省略时，部署命令会在 `--region` 指定的地域自动创建或复用同名 VeIdentity 用户池（`veadk-studio-{vefaas-app-name}`）和 Web 客户端（`veadk-studio-{vefaas-app-name}-web`），并在部署完成后回显 Identity 地域、用户池 ID、用户池域名和客户端 ID。同时传入两个参数时仍使用已有资源并按原逻辑跨地域查找。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 创建新 Runtime 部署到 AgentKit 时，支持配置镜像构建使用的云资源：TOS 存储桶、容器镜像仓库（CR）和 CodePipeline。每类资源可选自动创建（默认）、指定名称或选择已有；选择已有时由 Studio 服务端加载当前账号的可用资源列表。所选资源记录在 Runtime 标签中，更新已有 Runtime 时保留原有选择。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能中心 | 侧边栏新增「技能」页面，提供技能空间管理：按地域和名称浏览技能空间，支持新建、编辑和删除空间。管理员可见全部空间，非管理员仅可见自己创建的空间。每个空间中可上传 ZIP 技能包（至多 20 MiB）、浏览文件树、下载 ZIP 和删除技能。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能生成 | 技能中心新增 Dev Sandbox 技能生成：通过 DevEnv Tool 创建独立开发沙箱会话，从自然语言描述生成符合 ADK 格式的技能。支持至多 3 组并行候选方案、模型与风格选择、格式校验自动修复（至多 2 次）、迭代调整以及直接发布到技能空间；还支持对已有技能进行优化并覆盖发布。该能力仅对 `developer` 和 `admin` 角色开放，需要管理员配置 DevEnv Tool。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 对话模式 | 新会话模式选择器移除「创建 Skill」模式，技能创建统一通过技能中心使用 Dev Sandbox 完成。`veadk frontend`、`veadk studio`、`veadk studio deploy` 和 `veadk studio update` 移除 `--sandbox-skill-creator-tool-id`（`--skill-creator-tool-id`）选项和 `SANDBOX_SKILL_CREATOR` 环境变量。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 系统信息 | 账号菜单中的「系统信息」从弹窗改为独立页面，除 Studio 版本外，新增沙箱信息（展示已配置的 Codex、OpenClaw、Hermes 和 Dev Sandbox Tool ID）和用户池信息（展示当前 Studio 关联的 VeIdentity 用户池名称、UID、域名和地域）。该页面仅对具有智能体管理权限的用户开放，资源标识为只读。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 登录 | 使用 BytePlus 作为云服务商并启用 VeIdentity 登录时，登录按钮默认文案改为「BytePlus Identity」；火山引擎模式下仍为「火山引擎 Identity」。显式设置 `--oauth2-provider-label`（或 `OAUTH2_PROVIDER_LABEL`）时始终优先使用自定义文案。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 部署进行期间，工作台详情页聚焦于部署进度：保留智能体标题并展示可滚动的部署进度面板，隐藏其余详情标签与内容；部署结束后恢复显示常规详情标签。自定义创建、代码包部署与更新已部署智能体均遵循该行为。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 自动化 | 「配置 Coding Agents」卡片改为仅在通过 `http://127.0.0.1` 访问 Studio 时启用；通过其他主机名（包括 `localhost` 或已部署的 VeFaaS 公网地址）访问时，卡片显示为禁用状态并提示「仅本地部署可用」。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 部署成功后，Studio 在自动连接 Runtime 时最多等待 60 秒重试探测端点，减少「部署完成，暂未连接」状态的出现频率。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 部署失败或取消后，进度卡片新增「返回编辑」按钮，可直接回到草稿调整配置后重新发起部署。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能生成 | 技能生成工作台改进界面布局：新增「基本信息」分区，「目标」字段标记为必填；「生成配置」改为「生成方案」（优化时为「优化方案」），各方案中的模型与风格标记为必填项。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能中心 | 技能中心创建入口由「Dev Sandbox 创建」改为「自动创建」，空状态提示同步更新。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 沙箱 | `--sandbox-dev-tool-id` 和 `SANDBOX_DEV` 环境变量不再限于火山引擎部署，BytePlus 部署和更新现在同样支持 Dev Sandbox：部署时自动创建 DevEnv Tool，更新时检测缺失并自动修复。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 视频创作 | 新会话页面新增「视频创作」工作区模式：根据文本提示和可选的参考素材生成视频，支持文生视频、参考素材生视频、视频编辑、视频续写和首尾帧生成等任务模式，可配置画面比例、分辨率和时长；生成过程分为提示词优化和视频生成两个阶段，完成后可预览和下载。火山引擎使用 `doubao-seedance-2-5-260628` 生成模型与 `doubao-seed-2-1-pro-260628` 增强模型，BytePlus 使用 `dreamina-seedance-2-5-260628` 与 `dola-seed-2-1-turbo-260628`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能定制 | 新会话页面新增「技能定制」工作区模式，提供技能生成和技能优化的快捷入口，复用技能中心 Dev Sandbox 技能生成能力。该模式仅对 `developer` 和 `admin` 角色开放，且仅在管理员配置可用 Dev Sandbox 后显示。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 持久化存储 | 视频创作等能力新增 Studio 持久化存储：`veadk studio deploy` 部署时自动创建或复用名为 `veadk-studio-<账号 ID>` 的私有 TOS 存储桶；本地启动通过 `VEADK_STUDIO_TOS_BUCKET` 与 `VEADK_STUDIO_TOS_REGION` 环境变量配置。参考素材上传和生成结果保存依赖该存储。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 系统信息 | 系统信息页面访问权限由「智能体管理权限」收紧为仅 `admin` 角色可访问，并新增「存储」分区展示 Studio 持久化存储的 TOS 地址。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+
+## 1.1.0
+
+VeADK 1.1.0 发布于 2026 年 8 月 7 日。下表列出该版本的公开用户能力变化；完整提交记录见 [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.1.0)。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| Studio 云服务商 | `veadk studio`、`veadk frontend`、`veadk studio deploy` 和 `veadk studio update` 新增 `--provider` 选项，可选择 `volcengine`（默认）或 `byteplus`；选择 BytePlus 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证，Runtime 列表默认地域为 `BYTEPLUS_REGION` 或 `ap-southeast-1`。`veadk studio deploy` 和 `veadk studio update` 新增 `--byteplus-access-key`、`--byteplus-secret-key` 和 `--byteplus-session-token` 选项。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| Studio 部署 | `veadk studio deploy` 新增 `--vefaas-application-template-id` 选项覆盖内置 VeFaaS Application Center 模板 ID，以及 `--keep-failed-deploy` 标志在部署失败时保留已创建资源便于排查；`--region` 新增 `ap-southeast-1`。`veadk studio update` 新增 `--volcengine-session-token` 选项，`--region` 同样新增 `ap-southeast-1`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 品牌 | `veadk studio` 和 `veadk frontend` 的默认系统名称由 `VeADK Studio` 改为 `AgentKit Studio`，默认 Logo 更新为 AgentKit 品牌 Logo；未通过 `--site-title`、`--site-logo` 或对应环境变量自定义时使用新默认值。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 更新已有 Runtime 时保留其当前网络配置（网络模式、VPC、子网和共享公网），不再丢失。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 草稿 | 自定义创建的未发布智能体草稿保存在当前浏览器并按登录用户隔离；草稿在管理列表显示草稿与部署中标识，支持编辑和删除；草稿将 MCP 鉴权 Token 转换为环境变量引用保存，Token 值保留在部署环境变量中，YAML 导出与浏览器草稿均保留对应值。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio MCP 鉴权 | MCP 工具的鉴权 Token 转换为环境变量引用：生成源码仅保留 `${ENV_NAME}` 引用并通过 `os.environ` 读取，Token 值写入部署环境变量；更新已部署 Runtime 时重新加载已有环境变量值，在部署表单中输入新 Token 覆盖原有值。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio Runtime 环境变量 | 更新已部署 Runtime 时保留已有环境变量值；选择 Runtime 目标进行调试测试时，将该 Runtime 的环境变量注入测试进程。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio MCP Endpoint | MCP 工具的 HTTP Endpoint 不再自动补充 `/mcp` 路径；Studio 保留输入地址原样使用，地址不以 `/mcp` 结尾时显示提示。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 问题反馈 | 对话页面每条助手回复新增「问题反馈」入口，可针对单轮回复选择问题类型（执行速度慢、运行崩溃、结果不准确、工具调用失败或其他）并补充描述后上报，提交时携带该轮输入、输出、工具调用记录和链路信息并做凭据脱敏；侧边栏底部新增「问题反馈」入口（Beta），用于按所属模块反馈 Studio 整体使用问题。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 调用链路 | 对话页面助手回复旁的调用链路观测面板支持查看云端 Runtime 的链路：Studio 服务端使用自身火山引擎凭证向 APMPlus 查询会话链路，浏览器不接触凭证；通过 Studio 部署的 Runtime 默认启用 APMPlus 链路观测，未开启链路观测时打开面板会提示先在控制台开启。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 应用内更新 | Studio 固定从维护在北京地域的 `veadk-studio` TOS 发布源读取新版本，不再随部署地域变化；`veadk studio deploy` 移除 `--studio-update-region` 选项与 `VEADK_STUDIO_UPDATE_REGION` 环境变量，`--studio-update-bucket` 与 `--studio-update-prefix` 仍可覆盖发布源。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 自动化 | 侧边栏「自动化」页面新增「配置 Coding Agents」本地集成：检测本机已安装的 Trae、Claude Code 和 Codex 客户端，并将内置的 VeADK 开发与 AgentKit 平台操作 Skills 全局安装到对应客户端的 Skills 目录；浏览器只能选择固定标识，不接受任意命令或 Skill 内容。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 埋点 | `veadk studio deploy` 新增 `--apmplus-aid`、`--apmplus-token`、`--apmplus-domain` 与 `--apmplus-env` 选项（及对应环境变量）配置 APMPlus 前端埋点；同时提供 aid 与 token 后启用，默认关闭，上报失败不影响 Studio 使用；埋点仅采集使用统计维度，不采集对话内容、提示词、代码或密钥。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 埋点 | 扩展前端埋点覆盖范围：在实例加载、登录、智能体部署和沙箱创建之外，新增智能体连接、对话发送、调试测试和源码下载的成功与失败事件，并记录创建方式和是否使用智能生成；失败事件的错误摘要会自动脱敏密钥、令牌和密码后截取上报。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 创建 | 「添加智能体」菜单新增「从存量迁移」入口，用于将 LangChain、Dify 等存量项目迁移至 AgentKit Runtime，当前标记为「敬请期待」并禁用，暂不可用。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 自动化 | 侧边栏「自动化」页面新增模板项目导入、AgentKit Runtime 持续交付和 PR 自动评审三种 GitHub 自动化集成：通过浏览器直接调用 GitHub API 创建分支、文件和 Pull Request，为仓库添加持续交付工作流或自动评审工作流；GitHub Token 仅用于当前请求，不持久化。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 自动化 | 侧边栏「自动化」页面新增飞书机器人自动化（Beta）：填写飞书应用凭据后，Studio 生成基础智能体并直接部署到 AgentKit Runtime，启用飞书消息长连接；App Secret 仅用于本次部署，不写入生成源码或浏览器存储。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 记忆 | 自定义创建智能体时，长期记忆新增 OpenViking 后端，可在创建页配置服务地址、API Key、记忆归属 ID 和记忆策略，并写入生成项目的环境变量。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [使用 OpenViking 存储](/productions/veadk/preview/zh/components/memory/openviking) |
+| 长期记忆 | OpenViking 长期记忆未配置 `memory_policy` 时不再使用 VeADK 内置默认策略，改为不向 OpenViking 发送策略，由服务端应用其官方默认策略。 | [使用 OpenViking 存储](/productions/veadk/preview/zh/components/memory/openviking) |
+| Studio 评测 | 部署智能体时新增「自动创建评测集」开关（默认开启），部署成功后自动为该智能体创建 Good Case 和 Bad Case 评测集；创建失败时在部署结果中显示警告，不影响已部署的 Runtime。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 评测 | 会话结束后自动评估每轮对话质量，调用模型从任务完成度、事实可靠性等维度评分（0–1），按评分归入 Good Case 或 Bad Case 评测集；自动评测案例标记为「自动回流」并展示评分与评分理由，可与手动反馈案例一起筛选和删除。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 评测 | 智能体工作台新增「优化项」标签，基于累计评测案例自动生成优化建议，按优先级和模块分组展示；评测模型可通过 `VEADK_STUDIO_EVALUATION_MODEL` 环境变量覆盖。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 创建新 Runtime 时支持选择访问鉴权方式：默认使用 API Key，也可改用 VeIdentity 用户池；Studio 服务端加载当前账号可见的用户池并标记当前登录所用用户池，选择该用户池时由 Studio 转发登录 JWT，选择其他用户池时调用方需使用该用户池签发的 JWT；更新已有 Runtime 时保留其当前鉴权方式。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 沙箱 | `veadk studio deploy` 和 `veadk studio update` 新增 `--sandbox-dev-tool-id` 选项（及 `SANDBOX_DEV` 环境变量），用于指定或自动创建开发沙箱使用的 AgentKit DevEnv Tool；仅支持火山引擎部署，BytePlus 部署中传入会报错。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 沙箱 | 沙箱 Tool 的模型、接入地址和候选地域改为按云服务商区分：火山引擎使用 `doubao-seed-2-1-pro-260628` 模型与 `https://ark.cn-beijing.volces.com/api/v3`、候选地域 `cn-beijing` 与 `cn-shanghai`；BytePlus 使用 `seed-2-0-lite-260228` 模型与 `https://ark.ap-southeast.bytepluses.com/api/v3`、候选地域 `ap-southeast-1`。BytePlus 部署不再跳过沙箱 Tool 自动创建，改为与火山引擎一致地按服务商自动配置。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio Codex 会话 | Codex 智能体对话中上传的图片附件现在会在对话中正确渲染预览，点击后通过共享图片查看器打开，不再出现重复预览。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 创建 | 使用 BytePlus 作为云服务商时，`web_search` 和 `parallel_web_search` 不出现在自定义创建和智能生成的内置工具列表中；火山引擎模式下不受影响。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 网页搜索 | `web_search` 和 `parallel_web_search` 在 `CLOUD_PROVIDER` 设为 `byteplus` 时改用 BytePlus SearchInfinity API，通过 `BYTEPLUS_WEB_SEARCH_API_KEY` 提供凭证，可选 `BYTEPLUS_WEB_SEARCH_URL` 覆盖搜索端点。 | [网页搜索](/productions/veadk/preview/zh/components/tools/web-search) |
+| 长期记忆 | VikingDB 记忆后端 BytePlus 模式下区域固定为 `cn-hongkong`，不再受 `DATABASE_VIKING_REGION` 环境变量或显式传入值影响；凭证解析依次检查 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER`，设为 `byteplus` 时从 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和 `BYTEPLUS_SESSION_TOKEN` 读取。 | [使用 VikingDB 存储](/productions/veadk/preview/zh/components/memory/vikingdb) |
+| 知识库 | VikingDB 知识库后端 BytePlus 模式下区域改为按映射规则确定：未设置或中国大陆地域（`cn-beijing`、`cn-shanghai`、`cn-guangzhou`）自动映射为 `cn-hongkong`，其他地域保持原样；凭证解析依次检查 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER`，设为 `byteplus` 时从 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和 `BYTEPLUS_SESSION_TOKEN` 读取；新增 `resource_id` 构造参数与 `DATABASE_VIKING_RESOURCE_ID` 环境变量用于多资源场景请求路由。 | [使用 VikingDB 知识库存储](/productions/veadk/preview/zh/components/knowledge/viking) |
+| 代码沙箱 | `run_code` 执行代码或 Shell 命令时，调用 AgentKit 的请求超时随 `timeout` 与 `hard_timeout` 自动延长，避免长耗时任务在固定超时下被提前中断。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
+| 代码沙箱 | `execute_skills` 新增 `invocation_mode` 参数与环境变量 `AGENTKIT_SKILL_INVOCATION_MODE`，支持在 `execute`（默认）、`run_sse`、`a2a` 和 `python_agent` 四种调用模式之间切换技能沙箱后端；原 `prefer_stream` 参数已移除。 | [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
+| 模型 | `CLOUD_PROVIDER` 设为 `byteplus` 时，默认推理模型由 `dola-seed-2-1-turbo-260628` 改为 `seed-2-0-lite-260228`。 | [模型](/productions/veadk/preview/zh/components/agent/model) |
+| 模型 | `CLOUD_PROVIDER` 设为 `byteplus` 时，默认向量模型由 `doubao-embedding-vision-250615` 改为 `skylark-embedding-vision-250615`，接入地址改为 BytePlus 方舟。 | [模型](/productions/veadk/preview/zh/components/agent/model) |
+
+## 1.0.10
+
+VeADK 1.0.10 发布于 2026 年 8 月 4 日。下表列出该版本的公开用户能力变化；完整提交记录见 [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.0.10)。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| Studio 智能体目录 | 智能体目录改为按类型标签切换并支持按名称搜索，跨全部地域加载当前用户的 Runtime 并在滚动时自动加载下一页；智能体卡片简化为名称与创建时间，已连接的智能体置顶显示，加载失败时可重新加载。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 部署 | 部署构建阶段在部署进度卡片中实时展示构建日志，支持展开、收起和复制；日志在服务端完成凭据脱敏与篇幅截断，构建失败时追加失败原因。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 沙箱会话 | 创建内置智能体或 Skill 的 Session、查找对应 Tool 时，优先使用 `AGENTKIT_SANDBOX_REGION` 指定的地域（默认 `cn-beijing`）；当该地域返回资源不存在时，自动回退到另一个支持地域（北京 ↔ 上海）继续操作，其他错误不触发回退。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 部署 | 部署到 AgentKit 时，根智能体描述会自动整理为符合 Runtime 规范的单行描述（至多 255 字节，去除换行、控制字符与不安全符号），完整描述保留在项目中；若整理后的描述被 Runtime 拒绝，会去掉描述后重试创建。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 部署与调试 | 构建或部署阶段失败时，工作台展示服务端返回的完整错误信息并默认展开，可复制；构建错误改用与部署错误一致的可展开错误面板呈现。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 角色权限 | 「管理智能体」页面与智能体选择器统一按登录账号的角色限制 Runtime 可见范围；管理员可见全部 Runtime，开发者与普通用户仅可见自己创建的。管理员浏览全部 Runtime 时，自己创建的 Runtime 标注「我创建的」。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 测试运行 MCP 端点 | 测试运行时自动规范化生成智能体中 HTTP MCP 工具的端点：URL 未以 `/mcp` 结尾时自动补全，并通过 Streamable HTTP 验证工具发现；连接失败时返回错误提示确认 URL 与 Token，画布中保存的原始 URL 不受影响。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 接入方式 | 智能体详情页新增「接入方法」标签，探测 Runtime 暴露的 API Server 与 A2A 协议端点，显示鉴权方式与 API Key（默认掩码，按需显式显示），并提供对应的 Python 调用示例。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 草稿 | 自定义创建的未发布智能体草稿保存在当前浏览器并按登录用户隔离；草稿在管理列表显示草稿与部署中标识，支持编辑和删除；草稿不保存 MCP 鉴权 Token 与部署环境变量值，刷新后需重新填写。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 支持通过 `--volcengine-session-token` 传入 STS 临时凭证的 Session Token，部署凭据解析依次读取命令参数、`VOLCENGINE_SESSION_TOKEN` / `VOLC_SESSIONTOKEN` 环境变量和 `~/.volc/credentials` 中 `[default]` 配置的 `session_token` 字段。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| 知识库 | OpenViking 知识库默认资源目录改为 `viking://user/<openviking_user_id>/resources/<index>/`，新增 `openviking_user_id` 构造参数与 `DATABASE_OPENVIKING_USER_ID` 环境变量用于隔离不同应用的资源；`KnowledgeBase` 新增 `close()` 方法用于释放后端客户端。 | [使用 OpenViking 存储](/productions/veadk/archives/1.0.10/zh/components/knowledge/openviking) |
+| 长期记忆 | OpenViking 长期记忆新增 `openviking_user_id` 作为 owner/context 标识并区分于 `Runner.user_id`（peer ID），新增 `memory_policy` 构造参数与 `DATABASE_OPENVIKING_MEMORY_POLICY` 环境变量用于覆盖默认记忆提取策略。 | [使用 OpenViking 存储](/productions/veadk/archives/1.0.10/zh/components/memory/openviking) |
+| Studio Codex 会话 | 内置 Codex 智能体对话新增专用会话控件：快捷命令、模型切换、Skill 调用、工作空间选择、Codex 权限设置、操作审批、终端与浏览器工具，以及每轮 Token 用量和历史会话恢复。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 部署 | 创建新 Runtime 时支持配置最小和最大实例数；使用 in-memory 短期记忆时默认为 1～1 并提示改用持久化存储。实例范围非默认值时在部署进度中增加「更新实例配置」阶段。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 会话 | 列举会话时跳过已不存在的会话，不再导致整个列表加载失败。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 沙箱会话 | 沙箱会话列表的「创建者」改为显示创建者的显示名称（OAuth 邮箱或本地用户名），不再显示内部用户标识；未获取到显示名称时回退为内部标识。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 错误提示 | `run_sse` 失败时区分会话不存在和 Runtime 版本不兼容，分别给出改用持久化存储或检查 Runtime 版本的排查建议。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 云服务商 | `veadk studio` 和 `veadk frontend` 新增 `--provider` 选项，可选择 `volcengine`（默认）或 `byteplus`；选择 BytePlus 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证，Runtime 列表默认地域为 `BYTEPLUS_REGION` 或 `ap-southeast-1`。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) · [VeADK Frontend](/productions/veadk/archives/1.0.10/zh/components/frontend/veadk-frontend) |
+| Studio 智能生成 | 智能生成的草稿不再配置记忆、知识库与链路观测，这些能力始终关闭并使用默认后端，生成后可在画布中手动启用；生成可选内置工具移除 `web_scraper`、`text_to_speech`、`vesearch`。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 智能生成 | 智能生成优先使用 LLM 智能体作为根智能体，不再始终使用顺序编排型根智能体；仅在需要严格控制执行流程时才使用编排型作为根。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 智能体选择 | 云端模式下不再自动选择第一个可用智能体；开始新会话前需手动连接 Runtime，未选择时提示先选择智能体并打开管理页。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 智能体删除 | 删除前弹出确认对话框并列出待删除项；删除过程中从列表暂时隐藏；若当前对话使用被删除的智能体则清除选择并返回管理页。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 消息反馈 | 反馈按 Runtime 实际 app 名称关联评测集，首选地域查询失败时自动回退另一地域；赞/踩旁新增「查看评测案例」入口，可预览当前消息对应的评测样本。 | [VeADK Frontend](/productions/veadk/archives/1.0.10/zh/components/frontend/veadk-frontend) |
+| AgentKit 集成 | 动态 A2A 运行接口在会话不存在时自动创建会话，不再返回 404。 | [部署到 AgentKit](/productions/veadk/archives/1.0.10/zh/deploy/agentkit) |
+| AgentKit 集成 | `create_agentkit_app` 新增可选 `identity` 参数，传入后 AgentKit 在 VeADK 智能体或工具代码执行前验证并绑定入站用户身份；`/ping` 健康检查端点排除在身份绑定之外。使用该参数需要 `agentkit-sdk-python>=0.8.2`。 | [部署到 AgentKit](/productions/veadk/archives/1.0.10/zh/deploy/agentkit) |
+| Studio 新会话体验 | 新会话模式选择器对所有用户可见；智能体选择器移至页面顶部；原「临时会话」更名为「内置智能体」，可选择 Codex 智能体；空输入时显示快捷提示。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| 开发服务器 | `veadk studio` 和 `veadk frontend` 的 `--vite` 模式允许 `http://localhost:5174` 作为端口 5173 的回退来源。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) · [VeADK Frontend](/productions/veadk/archives/1.0.10/zh/components/frontend/veadk-frontend) |
+| Studio 代码包部署 | 新增「从代码包添加和部署」创建方式，可上传、检查并编辑包含根目录 `app.py` 的 ZIP 项目后部署到 AgentKit；压缩包最大 50 MB、800 个文件，并执行路径安全校验。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| VeADK Frontend | SSO 登录态在使用过程中过期时，可在独立窗口重新登录，保留当前编辑内容并自动重试原操作。 | [VeADK Frontend](/productions/veadk/archives/1.0.10/zh/components/frontend/veadk-frontend) |
+| Studio 对话 | 根智能体向子智能体移交任务时，子智能体回复显示在独立的「智能体移交」卡片中。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 技能 | SkillSpace 浏览改由 Studio 服务端凭证完成；本地技能在导入阶段只做轻量安全校验；云端提供完整技能包时会下载脚本、参考文档和资源，并移除单个智能体的固定技能数量上限。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Codex 运行时 | 新增 `codex` 可选依赖组和 `CodexRuntimeConfig` 安全配置；默认采用会话隔离工作区、`workspace_write` 沙箱、禁用网络并拒绝提权操作，同时将工具、状态、鉴权和 Token 用量转换为标准 ADK Event。 | [运行时](/productions/veadk/archives/1.0.10/zh/components/agent/runtime) |
+| Studio 部署 | VeFaaS Application 与 Function、API Gateway 和 AgentKit 资源统一使用所选部署地域。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 智能体工作台 | 新增画布式多智能体工作台，集中展示 Runtime 版本和部署状态；已部署智能体可在同一 Runtime 上编辑并发布递增版本，取消更新不影响已有 Runtime。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 智能生成 | 可根据自然语言目标生成经过校验的递归智能体配置草稿，并列出需要用户补充的资源；生成会替换当前画布并消耗 Token。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio Runtime | Runtime 启动期间会重试只读就绪探测；私网 Runtime 不可达时提供 VPC 排查建议；部署完成后自动连接，暂时不可达时保留任务并允许重试。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 调试 | Runtime 创建或更新后立即刷新智能体详情和版本；生成智能体测试进程按用户限制为最多 3 个，并自动清理刷新页面后遗留的进程。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| Studio 测试运行 | 单次临时测试运行最多接受 300 个项目文件。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.10/zh/components/frontend/studio) |
+| 模型 | 启用 Responses API 所需的 `google-adk` 最低版本提升至 `1.34.0`。 | [模型](/productions/veadk/archives/1.0.10/zh/components/agent/model) |
+| APMPlus 追踪 | 模型输出中的推理内容以 `reasoning` 类型标注，与普通文本内容区分，便于在 APMPlus 中单独查看推理过程。 | [APMPlus](/productions/veadk/archives/1.0.10/zh/components/observability/apmplus) |
+| APMPlus 追踪 | `OpentelemetryTracer` 初始化时若检测到已存在的全局 `TracerProvider`，将复用该 provider 而不再覆盖，并自动移除 `APMPlusExporter`；新增只读属性 `apmplus_managed_externally` 用于查询此状态。 | [可观测概述](/productions/veadk/archives/1.0.10/zh/components/observability) · [APMPlus](/productions/veadk/archives/1.0.10/zh/components/observability/apmplus) |
+
+## 1.0.9
+
+VeADK 1.0.9 发布于 2026 年 7 月 26 日。下表列出该版本的公开用户能力变化；完整提交记录见 [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.0.9)。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| 长期记忆 | 新增 TOS ContextBucket 后端，由托管服务完成记忆推理与检索，并按 `user_id` 隔离记忆。 | [使用 TOS ContextBucket 存储](/productions/veadk/preview/zh/components/memory/tos-context) |
+| Studio 知识库 | 创建智能体时默认使用 VikingDB Knowledge，不再提供本地向量库选项，并可选择北京地域 `default` 项目中当前账号可见的已有知识库集合。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 远程智能体 | 远程智能体配置支持按地域选择并刷新 AgentKit 智能体中心，远程智能体仍只能作为子智能体使用。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 消息反馈 | 连接 AgentKit Runtime 后可使用赞/踩评分，反馈幂等写入按智能体区分的评测集；标准名称被占用但不可见时使用稳定的备用名称。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| Studio 发布与自更新 | `veadk studio deploy` 默认使用部署地域的 `veadk-studio` TOS Bucket 作为发布渠道，管理员可在 Studio 内更新前后端；账号菜单可查看当前系统版本。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 会话能力叠加 | AgentKit 应用支持为单个会话增减内置工具和远程技能，无需修改已部署智能体。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) · [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能体信息 | 对话页面新增智能体信息栏，展示当前智能体的描述、模型、工具、技能和协作拓扑。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| Studio 创建工作台 | 自定义创建新增代码执行工具配置和资源选择器搜索，支持设置 `AGENTKIT_TOOL_ID` 与 `AGENTKIT_TOOL_REGION`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
+
+## 1.0.8
+
+VeADK 1.0.8 发布于 2026 年 7 月 23 日。下表列出该版本的公开用户能力变化；完整提交记录见 [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.0.8)。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| Studio 远程智能体 | 自定义创建支持远程智能体子节点；通过 AgentKit 智能体中心 ID、召回数量、地域和 OpenAPI 地址配置，每轮任务按需发现匹配能力。远程智能体不能作为根智能体。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.8/zh/components/frontend/studio) |
+| Studio Runtime | Runtime 连接失败时区分权限不足、Agent Server 不可连接和鉴权失败，并给出对应排查建议。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.8/zh/components/frontend/studio) |
+| Studio 会话 | 修复后续消息发送时历史上下文丢失的问题；临时会话和 Skill 创建在 Tool、地域或模型凭据准备失败时显示不包含凭据的错误信息。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.8/zh/components/frontend/studio) |
+| Studio 部署凭据 | `veadk studio deploy` 依次从命令参数、`VOLCENGINE_ACCESS_KEY` / `VOLCENGINE_SECRET_KEY` 环境变量和 `~/.volc/credentials` 的 `[default]` 配置解析部署凭据。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.8/zh/components/frontend/studio) |
+| Studio 部署资源 | 上海部署时，Function、API Gateway、AgentKit CodeEnv Tool 和 Session 使用一致的地域；临时会话与 Skill 创建的模型凭据配置在各自 Tool 中，VeFaaS Function 只接收 Tool ID。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.8/zh/components/frontend/studio) |
+
+## 1.0.7
+
+VeADK 1.0.7 发布于 2026 年 7 月 23 日。下表列出该版本的公开用户能力变化；完整提交记录见 [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.0.7)。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| 代码沙箱 | `run_code` 新增 `bash` 语言支持，可在 AgentKit 沙箱中执行 Shell 脚本，并提供 `exec_dir`、`env`、`hard_timeout` 与 `max_output_length` 参数，分别控制工作目录、环境变量、硬超时与输出长度上限。 | [代码沙箱](/productions/veadk/archives/1.0.7/zh/components/tools/code-sandbox) |
+| Studio 创建模式 | 新增 Skill 创建模式：在两个独立的 AgentKit CodeEnv Session 中并行生成候选技能方案，完成后可对比、下载 ZIP 或发布到 AgentKit；该模式仅限 developer 与 admin 使用。同时新增临时会话模式，退出后自动清理 Session，且不写入普通历史会话。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.7/zh/components/frontend/studio) |
+| Studio 智能搜索 | 新增基于当前智能体的智能搜索：可在会话历史中做全文检索，或通过智能体挂载的联网搜索工具、知识库与长期记忆实时检索；智能体元数据声明已挂载的检索源，Studio 据此提前置灰不可用的来源。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.7/zh/components/frontend/studio) |
+| Studio 角色与访问 | 新增基于角色的访问控制：`veadk studio`、`veadk frontend` 与 `veadk studio deploy` 支持 `--admin` 与 `--developer`；登录后显示用户邮箱与角色徽标，并展示 OAuth 头像。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.7/zh/components/frontend/studio) |
+| Studio 更新命令 | 新增 `veadk studio update --vefaas-app-name <name>`，从本地 VeADK 源码重新构建前端并更新已有的 VeFaaS Application 与 Function，保留原 URL、SSO、IAM、网关、环境变量、标题与 Logo；未指定 `--region` 与 `--project` 时跨北京、上海及全部可见项目查找。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.7/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 自动创建临时会话与 Skill 创建专用的两个 AgentKit CodeEnv Tool，也可通过 `--sandbox-chat-codex-tool-id` 与 `--sandbox-skill-creator-tool-id` 指定已有 Tool；部署后客户端登录时跳过重复的 OAuth 授权确认。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.7/zh/components/frontend/studio) |
+| 飞书渠道 | `FeishuChannelExtension` 支持通过飞书 OpenAPI 拉取话题历史与引用消息，新增 `include_parent_message`、`include_thread_history` 与 `thread_history_limit` 配置，并将引用或话题内容拼接到入站消息之前。 | [飞书渠道](/productions/veadk/archives/1.0.7/zh/components/extensions/feishu-channel) |
+| Studio 工作台 | 改进自定义创建工作台：本地技能支持拖入文件夹或 ZIP 并自动识别格式，可按地域和项目浏览 AgentKit Skill Space 及其中技能；部署页展示智能体拓扑、支持导出配置与下载源码；并改进运行时管理与响应式布局、新会话启动、智能体运行时选择器、视频消息渲染与工具调用状态展示。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.7/zh/components/frontend/studio) |
+| 依赖 | 放宽 `psycopg2-binary` 版本约束为 `>=2.9.10`；要求 AgentKit SDK 提供默认 CORS 配置。 | [安装](/productions/veadk/archives/1.0.7/zh/get-started/installation) |
+
+## 1.0.6
+
+VeADK 1.0.6 发布于 2026 年 7 月 20 日。下表列出该版本的公开用户能力变化；完整提交记录见 [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.0.6)。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| Studio 品牌 | `veadk studio` 和 `veadk frontend` 新增 `--site-title`（至多 6 个字符）和 `--site-logo`（本地图片或 HTTP(S) URL，至多 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF、ICO），分别设置系统名称与 Logo。Logo 同时用于侧边栏、登录页和浏览器 favicon，系统名称也作为浏览器页面标题；不传 `--site-title` 时保留默认 `VeADK Studio`。对应环境变量为 `VEADK_SITE_TITLE` 与 `VEADK_SITE_LOGO`。云上部署使用相同参数，网络图片在部署时下载并打包进 VeFaaS。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.6/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 支持 `--region` 选择部署地域（`cn-beijing` 默认，`cn-shanghai`），VeFaaS、API Gateway 等资源创建在所选地域；新增 `--project` 指定 VeFaaS 函数所属项目，默认为 `default`。部署时自动跨北京、上海查找 VeIdentity 用户池与客户端，跨地域命中时输出 warning 并继续。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.6/zh/components/frontend/studio) |
+| Studio 部署 IAM | `veadk studio deploy` 部署前自动检查 `ServerlessApplicationRole`，缺失时创建该 Role 并绑定 `vefaas_full_access` 自定义策略及所需系统策略；该检查即使指定 `--iam-role` 也会执行。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.6/zh/components/frontend/studio) |
+| Studio 创建与调试 | 系统提示词支持所见即所得的 Markdown 编辑，提供标题、列表等快捷输入；初始化、会话或对话失败时展示经过凭据脱敏的错误详情和 Runner 日志，可展开与复制。新增智能体名称校验，须符合 Google ADK 规则：以英文字母或下划线开头，仅含英文字母、数字和下划线，不能使用保留名 `user`，且在智能体结构中唯一。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.6/zh/components/frontend/studio) |
+| AgentKit 部署 | 飞书、知识库、短期/长期记忆和观测配置显示在各自配置区域，填写的值仅在部署时转换为运行时环境变量；选择观测 exporter 后对应 `ENABLE_*` 开关自动启用，这些值不写入生成源码或导出的 YAML，部署页同步显示便于核对。多实例部署应使用数据库持久化短期记忆；`run_sse` 返回 404 时界面提示检查会话是否落在不同实例。通过内置 Web UI 部署时，云端镜像构建失败会显示经过凭据脱敏的构建日志片段，便于定位依赖或 Dockerfile 错误。 | [部署到 AgentKit](/productions/veadk/archives/1.0.6/zh/deploy/agentkit) |
+| Studio 运行时管理 | 改进运行时管理视图与响应式布局。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.6/zh/components/frontend/studio) |
+| 飞书渠道 | 在部署页打开或关闭飞书渠道时，Studio 自动重新生成项目，确保 `app.py`、`extensions` 依赖和运行时环境变量在部署前保持一致。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.6/zh/components/frontend/studio) |
+
+## 1.0.5
+
+VeADK 1.0.5 发布于 2026 年 7 月 19 日。下表列出该版本的公开用户能力变化；完整提交记录见 [GitHub Release](https://github.com/volcengine/veadk-python/releases/tag/1.0.5)。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| Studio 与 Frontend | Studio 启用与 Frontend 相同的完整界面并默认进入对话页面；新增云端 Runtime 选择、Skill Hub/本地上传/AgentKit SkillSpace、多模态会话、结构化技能与子智能体调用；重构自定义创建流程，智能模式、模板和工作流入口当前显示为「敬请期待」；并完善部署区域、环境变量、任务状态、失败重试和 OAuth Token 转发。 | [VeADK Frontend](/productions/veadk/archives/1.0.5/zh/components/frontend/veadk-frontend) · [Studio 智能体工作台](/productions/veadk/archives/1.0.5/zh/components/frontend/studio) |
+| 模型 | 默认推理模型更新为 `doubao-seed-2-1-pro-260628`；Responses API 支持回退模型与方舟上下文管理。 | [模型](/productions/veadk/archives/1.0.5/zh/components/agent/model) |
+| 运行时 | `Agent.runtime` 新增 `piagent`，支持通过 PiAgent 执行智能体并桥接函数工具、MCP 工具与技能；安装包不再内置 PiAgent 二进制文件。 | [运行时](/productions/veadk/archives/1.0.5/zh/components/agent/runtime) |
+| Studio 测试 | 生成的智能体项目可在服务端受限临时进程中测试；测试进程默认保留 1800 秒，可通过命令参数调整。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.5/zh/components/frontend/studio) |
+| Studio 部署 | 使用默认 IAM Role 部署 Studio 时，自动补充访问模型、日志、追踪、知识库、记忆与身份资源所需的系统策略；显式指定的自定义 Role 不会被修改。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.5/zh/components/frontend/studio) |
+| AgentKit 集成 | Studio 生成的智能体应用统一通过公开函数 `create_agentkit_app` 构建，集中提供 AgentKit 接口、健康检查、拓扑、Web UI 和短期记忆配置。 | [部署到 AgentKit](/productions/veadk/archives/1.0.5/zh/deploy/agentkit) |
+| 飞书渠道 | 改进文本、卡片和合并转发消息的内容提取，并兼容飞书 Channel SDK 的同步生命周期。 | [飞书渠道](/productions/veadk/archives/1.0.5/zh/components/extensions/feishu-channel) |
+
+## 1.0.4
+
+VeADK 1.0.4 发布于 2026 年 7 月 14 日。下表列出该版本的公开用户能力变化。
+
+| 模块 | 变更细节 | 链接 |
+| :--- | :--- | :--- |
+| Studio | 新增 `veadk studio`，提供专注于创建和管理智能体的工作台；支持智能生成、自定义和模板创建，工作流入口显示为「敬请期待」；并分阶段展示 AgentKit 部署进度。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.4/zh/components/frontend/studio) |
+| 智能体管理 | Frontend 与 Studio 新增 AgentKit Runtime 管理视图，按当前用户列出由工作台部署的 Runtime，可查看 Runtime 详情与主智能体信息，并删除 Runtime。 | [Studio 智能体工作台](/productions/veadk/archives/1.0.4/zh/components/frontend/studio) |
+| VeFaaS 部署 | 新增 `veadk studio deploy`，可将 Studio 部署到 VeFaaS，接入 VeIdentity 登录，并创建或复用 Serverless API Gateway 与 IAM Role。 | [Studio 部署说明](/productions/veadk/archives/1.0.4/zh/components/frontend/studio) |
+| VeADK Frontend | 新增智能体拓扑和转移路径展示；项目部署按构建镜像、部署、发布三个阶段展示实时进度。 | [VeADK Frontend](/productions/veadk/archives/1.0.4/zh/components/frontend/veadk-frontend) |
+| Harness 技能 | Harness 的 `skills` 支持 `space:<技能空间 ID>`，可以加载 AgentKit 技能中心的整个技能空间，并继续与 Skill Hub 名称或 slug 混用。 | [技能](/productions/veadk/archives/1.0.4/zh/components/agent/skills) |
+| 前端安全 | 移除直接执行浏览器提交代码的测试入口；限制 AgentKit 代理的协议、域名与凭证要求；限制部署文件和静态文件的可访问路径。 | [VeADK Frontend](/productions/veadk/archives/1.0.4/zh/components/frontend/veadk-frontend) |
+| 日志 | 日志实现迁移到 Python 标准库 `logging`，保留追踪 ID 关联；非交互式输出不再包含颜色转义序列，流式思考内容不再逐 token 记录。 | [应用日志](/productions/veadk/archives/1.0.4/zh/components/observability/logging) |
+| 存储配置 | 完善 Milvus 与 OpenViking 的环境变量和配置示例；1.0.4 继续提供 1.0.3 已加入的 Milvus 知识库、OpenViking 知识库与 OpenViking 长期记忆后端。 | [Milvus](/productions/veadk/archives/1.0.4/zh/components/knowledge/milvus) · [OpenViking 知识库](/productions/veadk/archives/1.0.4/zh/components/knowledge/openviking) · [OpenViking 长期记忆](/productions/veadk/archives/1.0.4/zh/components/memory/openviking) |
+
+## 1.0.3
+
+VeADK 1.0.3 包含以下公开用户能力变化。
+
+| 模块 | 变更细节 | 链接 |
+| :--- | :--- | :--- |
+| 知识库 | 新增 `milvus` 后端，支持 Milvus 服务和 Milvus Lite URI、Token 或用户名密码鉴权、数据库名称、初始化覆盖、超时和额外返回字段。 | [使用 Milvus 存储](/productions/veadk/archives/1.0.3/zh/components/knowledge/milvus) |
+| 知识库 | 新增 `openviking` 后端，支持向 OpenViking 导入文件、目录和文本，并按资源 URI 检索与读取结果。 | [使用 OpenViking 存储](/productions/veadk/archives/1.0.3/zh/components/knowledge/openviking) |
+| 长期记忆 | 新增 `openviking` 后端，按用户保存实体、事件与偏好记忆，并在跨会话检索时保持用户隔离。 | [使用 OpenViking 存储](/productions/veadk/archives/1.0.3/zh/components/memory/openviking) |
+| A2A | 调用 AgentKit A2A Registry 中的下游智能体时，可传递入站 `X-Ve-TIP-Token` 和 Bearer JWT；下游使用入站 JWT 返回 `401` 时，可回退到 M2M OAuth2 并重试一次。 | [入站认证](/productions/veadk/archives/1.0.3/zh/components/security/inbound) |
+| 依赖 | 合并重复的项目依赖声明，并把 OpenViking SDK 加入基础依赖、把 Milvus 集成加入 `extensions`。 | [安装](/productions/veadk/archives/1.0.3/zh/get-started/installation) |
+
+## 1.0.2
+
+VeADK 1.0.2 包含以下公开用户能力变化。
+
+| 模块 | 变更细节 | 链接 |
+| :--- | :--- | :--- |
+| 模型 | 新增 `MODEL_AGENT_API_KEY_NAME` 和 `Agent.model_api_key_name`，可按火山方舟 API Key 名称解析密钥；显式 Key 值仍具有更高优先级。 | [模型配置](/productions/veadk/archives/1.0.2/zh/components/agent/model) |
+| 短期记忆 | PostgreSQL 新增 `schema` 配置，可在一个数据库内为不同部署隔离会话表；VeADK 会创建不存在的 schema 并固定连接的 `search_path`。 | [使用 PostgreSQL 存储](/productions/veadk/archives/1.0.2/zh/components/session/postgresql) |
+| MCP | MCP Server 会话过期、服务重启或连接中断后，自动清理失效会话、重连并重试工具加载或调用一次。 | [自定义 MCP Server](/productions/veadk/archives/1.0.2/zh/components/tools/custom-mcp) |
+| 前端 | VeADK Frontend 新增工具 OAuth 授权卡片：打开身份提供方授权页，接收回调后提交凭证并继续原工具调用；同时优化账号入口、登录页、会话列表、空回复提示与默认智能体选择。 | [VeADK Frontend](/productions/veadk/archives/1.0.2/zh/components/frontend/veadk-frontend) |
+| 网络请求 | VeSearch 与网页抓取请求使用 30 秒超时，避免无响应服务持续阻塞。 | [火山引擎搜索](/productions/veadk/archives/1.0.2/zh/components/tools/vesearch) · [网页抓取](/productions/veadk/archives/1.0.2/zh/components/tools/web-fetch) |
+| 安全 | 网页抓取会校验 TLS 证书；内容安全护栏的调试日志不会记录 API Key 值。 | [网页抓取](/productions/veadk/archives/1.0.2/zh/components/tools/web-fetch) · [内容安全护栏](/productions/veadk/archives/1.0.2/zh/components/security/content-safety) |
+
+## 1.0.1
+
+VeADK 1.0.1 发布于 2026 年 7 月 7 日，主要新增 Harness、A2A 注册和 ADK 技能集成，并增强 Codex 运行时与 Frontend。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| Codex 运行时 | 随包提供沙箱、网络访问与操作审核的默认配置：允许完整主机与网络访问，且不要求交互式确认。 | [运行时安全](/productions/veadk/archives/1.0.1/zh/components/agent/runtime#切换执行后端) |
+| Harness | 新增 VeADK Harness 扩展，可为每轮调用准备上下文、压缩大体积工具结果并验证最终回答；同时支持在初始化时应用智能体描述。 | [Harness 插件](/productions/veadk/archives/1.0.1/zh/components/execution-engine/index#使用-harness-增强执行) |
+| A2A | 新增 Harness A2A 注册能力并修正注册行为。 | [远程智能体发现](/productions/veadk/archives/1.0.1/zh/components/execution-engine/index#从-agentkit-智能体中心发现远程智能体) |
+| A2A | A2A 调用支持 OAuth 认证。 | [A2A 鉴权](/productions/veadk/archives/1.0.1/zh/components/security/outbound#a2a-远程智能体鉴权) |
+| Codex 运行时 | 对临时后端错误提供可配置重试，并恢复经 Responses 适配层使用网页搜索的能力。 | [Codex 后端请求](/productions/veadk/archives/1.0.1/zh/components/agent/runtime#codex-后端请求) |
+| 技能 | 新增与 Google ADK `SkillToolset` 配合使用的 `VeSkillRegistry`，支持 SkillHub 与技能空间；本地技能推荐迁移到 ADK `SkillToolset`，旧的 `Agent(skills=..., skills_mode="local")` 入口保持兼容但已废弃。 | [云端技能](/productions/veadk/archives/1.0.1/zh/components/agent/skills#使用云端技能) |
+| VeADK Frontend | 新增网关认证模式，并在创建智能体时提示缺失的火山引擎访问凭证。 | [Frontend 认证](/productions/veadk/archives/1.0.1/zh/components/frontend/veadk-frontend#认证) |
+| Codex 运行时 | 支持将智能体技能传递给 Codex 运行时。 | [Codex 技能与工具](/productions/veadk/archives/1.0.1/zh/components/agent/runtime#codex-运行时中的技能与工具) |
+| Codex 运行时 | 支持在 Codex 运行时中调用智能体的 MCP 工具和函数工具。 | [Codex 技能与工具](/productions/veadk/archives/1.0.1/zh/components/agent/runtime#codex-运行时中的技能与工具) |
+| 示例 | 新增同时使用本地技能和 MCP 工具的 Codex 运行时示例。 | [Codex 技能与工具](/productions/veadk/archives/1.0.1/zh/components/agent/runtime#codex-运行时中的技能与工具) |
+
+完整发布信息参见 [VeADK 1.0.1 Release](https://github.com/volcengine/veadk-python/releases/tag/1.0.1)。
+
+## 1.0.0
+
+VeADK 1.0.0 发布于 2026 年 6 月 22 日。下表依据公开 Release 整理；该版本相对 0.5.40 的公开变更集中在文档入口文案。
+
+| 模块 | 变更细节 | 链接 |
+| --- | --- | --- |
+| 文档 | 对齐中英文快速开始入口文案，中文入口明确说明可构建并运行第一个智能体。 | [快速开始](/productions/veadk/archives/1.0.0/zh/get-started/quickstart) |
+
+完整发布信息参见 [VeADK 1.0.0 Release](https://github.com/volcengine/veadk-python/releases/tag/1.0.0)。

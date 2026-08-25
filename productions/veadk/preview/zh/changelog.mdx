@@ -44,9 +44,32 @@ VeADK 1.1.3 发布于 2026 年 8 月 20 日。下表列出该版本的公开用�
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 部署 | 构建镜像已提交但最终状态无法确认时，Studio 将该阶段标记为「构建状态待确认」，提示在 Code Pipeline 查看结果并禁用重试按钮以避免重复部署；此前此情况显示为「部署失败」。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 创建 | 勾选「MCP 稳定性治理」时，`MCP_URLS` 与 `MCP_API_KEY` 改为由先前在「添加 MCP 工具」中配置的 HTTP MCP 工具自动注入（只读），不再需要手动填写；要求至少一个 HTTP MCP 工具并提供有效服务地址与 Bearer Token，多个 HTTP MCP 工具须使用同一共享凭证。stdio MCP 工具不支持 MCP 稳定性治理。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 云服务商 | `veadk studio`、`veadk frontend`、`veadk studio deploy` 和 `veadk studio update` 的 `--provider` 选项统一改为依次读取 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER` 环境变量确定云服务商，均未设置时使用 `volcengine`；此前 `--provider` 默认硬编码为 `volcengine`。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
+| Studio 链路观测 | 调用链路面板区分加载中、采集中、未开启、权限不足和加载失败五种状态：采集中状态自动重试两次并提供手动重试按钮；权限不足时提示联系管理员补充 APMPlus 只读权限；加载失败时提供重新加载按钮。查询链路时优先按 `POST /run_sse` 入口 span 定位，未命中时回退到会话时间窗口的广泛扫描并选取最接近的链路。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 项目生成 | 生成项目的 `requirements.txt` 改为固定版本号（`veadk-python==1.1.5`、`agentkit-sdk-python==0.8.4`、`google-adk==2.1.0`、`starlette==0.52.1`），确保构建镜像可复现；启用飞书渠道时同时固定 `lark-channel-sdk` 与 `lark-oapi` 版本。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 本地链路导出 | Studio 本地调试链路导出器不再仅索引 `call_llm` span，改为索引全部 span；会话 ID 属性新增 `gen_ai.session.id` 与 `session.id`，提升会话内链路的完整性。 | [内存导出器](/productions/veadk/preview/zh/components/observability/inmemory) |
+| Studio 安全 | Studio 启用 OAuth 或 gateway 认证后，本地 ADK 会话的读取、创建、更新、删除与智能体运行请求均绑定到登录身份：用户只能访问自己的会话，未携带可信身份返回 401，非管理员跨用户访问返回 403。即使未配置角色名单（遗留「全部用户为管理员」模式），跨用户会话访问仍要求显式出现在管理员名单中；管理员访问其他用户会话会记录审计日志。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 构建镜像失败时，Studio 现在重试同步 CodePipeline 最终构建日志并标记为失败状态，提高在日志末尾定位真实失败原因的概率；构建日志篇幅上限同步提高。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | 部署阶段的推进改为单调不可回退，构建日志事件不再把已进入部署阶段的任务回退为构建阶段。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 遥测 | 云账号 ID 解析失败时不再中断部署或更新；解析错误经脱敏后作为 `account_id_resolution_error` 写入埋点上下文。`veadk studio deploy` 和 `veadk studio update` 在直接解析失败时增加从 TOS 存储桶名称推断账号 ID 的回退。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 遥测 | 智能体部署失败事件新增经过脱敏与长度限制的 `error_message` 字段，构建阶段失败时优先取自构建日志文本，无构建日志时回退到部署接口返回的错误摘要。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 迁移 | 创建存量项目迁移任务时新增模型选择器：在压缩包上传区域旁选择目标模型，指定 Dev Sandbox 中 Codex 执行迁移分析与转换时使用的模型。模型列表来自当前账号已开通且可用的火山方舟模型，默认使用迁移能力返回的默认模型；所选模型的配置由 Studio 服务端注入迁移会话环境，不向浏览器下发凭据。任务创建后模型不可更改。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 技能库 | 查看技能文件与下载 ZIP 时，对使用旧版 SkillSpace 接口类型的技能现在能正确加载完整文件包与 `SKILL.md`；此前这类技能因版本接口类型不一致而加载失败。下载与解包技能文件包时自动忽略 `__MACOSX` 目录、`.DS_Store` 等 macOS 元数据文件，并按技能空间所在地域下载存储对象，失败时返回可重试的结构化错误。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 应用内更新 | 应用内更新在开始任何变更前新增 OTA 权限预检：以只读方式检查 Function 角色是否具备完成更新所需的全部 IAM 权限。存在缺失权限时更新被中断，对话框列出缺失项并提供 IAM 控制台链接，管理员完成授权后可重新发起更新。预检不修改 IAM 策略。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 部署 | `veadk studio deploy` 在 IAM 权限预检发现缺失权限时，不再直接终止部署，而是提示确认是否继续；默认为否（拒绝后终止），确认后继续创建云资源。`--precheck-only` 模式仍直接终止，不进入确认流程。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| AgentKit 集成 | `create_agentkit_app` 新增 `enable_studio_tools` 与 `enable_studio_routes` 参数：前者在 Runtime 侧挂载 Studio BFF 动态工具的通用宿主（`StudioExternalToolset`），后者挂载 Studio BFF 动态 HTTP 路由的通用宿主。工具执行器与路由处理器始终保留在 Studio BFF 侧，Runtime 通过反向通道接收工具目录和路由分发。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) |
+| AgentKit 集成 | 移除会话级能力叠加接口（`/harness/capabilities/tools`、`/harness/apps/{app_name}/users/{user_id}/sessions/{session_id}/capabilities` 和 `/harness/run_sse`），由 Studio BFF 动态工具机制替代。技能目录路由（`/harness/skills/findskill`、`/harness/skills/spaces`、`/harness/skills/spaces/{space_id}/skills`）未启用动态路由的 Runtime 保留原生处理器，启用的 Runtime 由 Studio BFF 通过反向路由通道处理。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) |
+| Studio BFF | Studio 可通过反向通道将本地或内网工具暴露给兼容的 Runtime，无需暴露 BFF 公网地址。兼容 Runtime 的智能体信息栏新增「在此对话中添加 Studio 工具」入口，新会话默认禁用所有 Studio 工具，浏览器在每次运行时发送选中的工具 ID 列表。 | [部署到 AgentKit](/productions/veadk/preview/zh/deploy/agentkit) |
+| 内置工具 | `image_edit`、`image_generate` 和 `video_generate` 的模型凭证改为在工具执行时解析，而非模块导入时。导入工具模块不再触发客户端初始化或要求凭证已配置。各工具独立 API Key 环境变量（`MODEL_EDIT_API_KEY`、`MODEL_IMAGE_API_KEY`、`MODEL_VIDEO_API_KEY`）的解析优先级不变。 | [图像编辑](/productions/veadk/preview/zh/components/tools/image-edit) · [图像生成](/productions/veadk/preview/zh/components/tools/image-generate) · [视频生成](/productions/veadk/preview/zh/components/tools/video-generate) |
+| 依赖 | 新增核心依赖 `jsonschema>=4.23,<5`，用于校验 Studio BFF 动态工具参数。 | [安装](/productions/veadk/preview/zh/get-started/installation) |
+| Studio 界面 | 侧边栏导航按 Figma 设计重构，统一导航项图标与排版，「库」页面更名为「资源库」。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 网站集成 | 新增网站集成能力（Beta）：在「自动化」页面的「网站集成」卡片中选择已部署 Runtime 并输入网站域名，生成专属 Token 与嵌入代码片段；将 `<script>` 标签粘贴到网页 `</body>` 前即可在页面右下角渲染悬浮聊天窗口。访客通过 Studio 嵌入接口创建有效期一小时的会话并流式对话，不接触任何凭证或 Runtime 直连地址。使用自定义 JWT 鉴权的 Runtime 暂不支持。已配置持久化存储时集成记录保存在 TOS 中，否则使用进程内存。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Harness 扩展 | `HarnessExtension` 新增受管 Sidecar 模式：通过 `HarnessExtension.from_env()` 或 `sidecar` 参数启用，在独立的受控运行时中执行全部增强行为，应用进程不加载相关插件；同时新增 `HarnessSidecarConfig`、`ModelProxyConfig`、`MCPGatewayConfig` 等配置类与对应环境变量。进程内插件模式保持可用，两种模式互斥。 | [Harness](/productions/veadk/preview/zh/components/extensions/harness) |
 | Studio 创建 | 自定义创建新增「优化」步骤：在「调试」与「环境」之间为智能体启用 Harness Sidecar 优化项，按优化场景与组件选择上下文治理、回答校验与修复、上下文与结果压缩、Goal 任务控制或 MCP 稳定性治理；增强行为在受控运行时中执行，应用进程不加载相关插件。该能力仅支持火山引擎账号。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 导航 | 移除侧边栏中的「添加智能体」入口，智能体创建统一通过「智能体」页面中的「创建智能体」按钮进入。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 导航 | 侧边栏新增 AgentKit 控制台与文档入口，按当前云服务商跳转对应的 AgentKit 控制台与文档站点。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 工作台 | 在工作台中选择智能体时，Studio 现在先完成会话列表、智能体信息、能力和自动评测状态的加载，再切换可见选中项，避免切换过程中出现中间加载状态。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 IAM | `veadk studio deploy` 在 VeFaaS 服务角色 `ServerlessApplicationRole` 已存在时，现在对火山引擎与 BytePlus 均补齐缺失的自定义策略与系统策略；此前该同步仅对 BytePlus 生效。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 记忆 | 自定义创建中选择 VikingDB Memory 长期记忆后端时，新增记忆库选择器：通过服务端凭证列出当前账号可见的 VikingDB 记忆库集合，选择已有集合后将其名称作为集合索引，并自动填充项目、地域和记忆类型对应的环境变量（不展示在创建页）；未选择时集合名称根据智能体名称自动生成，运行时若集合不存在会自动创建。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [使用 VikingDB 存储](/productions/veadk/preview/zh/components/memory/vikingdb) |
@@ -60,6 +83,7 @@ VeADK 1.1.3 发布于 2026 年 8 月 20 日。下表列出该版本的公开用�
 | Studio 更新 | 编辑已部署的智能体时，Studio 从 Runtime 读取的智能体名称和模型配置现在以实际部署状态为准：模型名称不再包含提供方前缀，模型来源（Ark 或自定义）根据火山方舟模型目录正确分类。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 更新 | 编辑已部署的智能体时，Studio 现在以该 Runtime 当前部署的配置为唯一来源重建可编辑草稿，不再混入本地保存的旧草稿内容。当因网络或服务端错误无法读取 Runtime 的 Agent 配置时，更新入口暂时禁用并提示稍后重试。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 视频创作 | 视频任务对话框在生成阶段区分任务排队与模型生成状态并显示已等待时长；生成过程中可关闭对话框，任务会继续在后台运行。失败时对话框显示服务端返回的错误详情（已自动脱敏密钥与签名信息），可从失败阶段重试。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 对话 | 助手回复中的 Mermaid 与 ECharts 代码块现在渲染为交互式图表，可在预览与源码之间切换；流式输出期间先显示源码，生成完成后再渲染图表，`echart` 等别名同样受支持。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 创建 | 生成智能体的系统提示词（`instruction`）长度上限由 20,000 个字符提高到 40,000 个字符。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 知识库 | 导入网页时先展示提取内容的渲染预览，确认后才会存入知识库；取消或预览失败不会创建任何数据。网页文档自动以页面标题命名，未获取到标题时使用域名。当主要提取方式无法获取正文时尝试备用提取；页面依赖 JavaScript 动态渲染而无可见内容时提示无法导入。已导入的网页文档在知识库中预览时显示原始 Markdown 原文。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 沙箱 | 管理员打开沙箱会话列表时，自动恢复当前智能体类型的可恢复快照（后台并发，至多 3 个），恢复后直接展示就绪会话，不再需要手动唤醒。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
@@ -72,8 +96,10 @@ VeADK 1.1.3 发布于 2026 年 8 月 20 日。下表列出该版本的公开用�
 | Studio 安全 | 智能开发过程中的工具调用、思考内容和进度消息在发送到浏览器前经过服务端脱敏，任务凭据和私有路径被移除。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 技能上传 | 上传技能 ZIP 包时自动忽略 `__MACOSX` 目录中的 macOS 元数据文件，这些文件不会写入技能空间。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | 远程技能代理 | 新增远程技能代理能力：通过 JSON 清单声明式地将 AgentKit Skills Sandbox 中的远端技能暴露为独立工具，支持按技能配置描述、输入 Schema 和超时时间，框架在调用时通过 `execute_skills` 将请求转发到远端沙箱执行。 | [远程技能代理](/productions/veadk/preview/zh/components/tools/remote-skills) |
+| 内置工具 | 新增 `invoke_skill` 和 `poll_skill` 内置工具：`invoke_skill` 以非阻塞方式通过 A2A 协议创建技能任务并返回初始任务对象，`poll_skill` 根据任务 ID 获取任务状态快照。两者配合实现非阻塞的技能任务执行，与 `execute_skills` 的阻塞式轮询互补。 | [技能任务](/productions/veadk/preview/zh/components/tools/skill-tasks) · [代码沙箱](/productions/veadk/preview/zh/components/tools/code-sandbox) |
 | 模型 | 使用火山方舟模型时，同一消息内的多个文本或多模态片段现在会被正确聚合为一条输入。此前，这些片段可能被拆分为多条输入，或末尾片段被遗漏。 | [模型](/productions/veadk/preview/zh/components/agent/model) |
 | 追踪 | 流式模型调用时，请求事件不再在每个流式分片上重复记录，仅在首个分片记录一次；span 事件中的 `None` 属性值被统一移除。 | [可观测概述](/productions/veadk/preview/zh/components/observability) |
+| Studio 登录 | 浏览器会话有效期不再固定为 1 小时：当 VeIdentity 用户池客户端配置了刷新令牌有效期时，Studio 据此延长会话时长，并在访问令牌过期时透明刷新，避免会话中途被登出。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.2
 
