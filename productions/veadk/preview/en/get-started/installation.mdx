@@ -4,7 +4,7 @@ title: "Installation"
 
 ## Prerequisites
 
-- Python 3.10 or later.
+- Python 3.10 through 3.13.
 - A Volcengine Ark API key for calling models, created in the [Ark console](https://console.volcengine.com/ark).
 
 ## Install the released baseline
@@ -30,6 +30,7 @@ pip install "veadk-python[extensions]"
 
 | Extra | Purpose |
 | --- | --- |
+| `github-cicd` | Encryption dependency required by Studio "Attach continuous delivery" to write GitHub Actions Secrets |
 | `extensions` | Feishu channel, Cozeloop, LlamaIndex, and related integrations |
 | `codex` | OpenAI Codex SDK and Codex CLI binary, used by the Codex runtime |
 | `database` | Redis, MySQL, Viking DB, mem0, and other storage backends |

@@ -12,6 +12,8 @@ VeADK provides a set of tools that run tasks remotely in an [AgentKit sandbox](h
 | `execute_skills` | Run an `agent.py` workflow in a prebuilt skills sandbox |
 | `coding` | Run a code-generation workflow in an OpenCode sandbox |
 | `run_sandbox_agent` | Run `agent.py` in a remote sandbox under any `tool_id` |
+| `invoke_skill` | Create a skill task non-blockingly and return the initial task object |
+| `poll_skill` | Fetch the current status snapshot of a skill task |
 
 Import paths:
 
@@ -19,6 +21,8 @@ Import paths:
 - `from veadk.tools.builtin_tools.execute_skills import execute_skills`
 - `from veadk.tools.builtin_tools.coding import coding`
 - `from veadk.tools.builtin_tools.run_sandbox_agent import run_sandbox_agent`
+- `from veadk.tools.builtin_tools.invoke_skill import invoke_skill`
+- `from veadk.tools.builtin_tools.poll_skill import poll_skill`
 
 ## Environment & prerequisites
 
@@ -256,6 +260,12 @@ if __name__ == "__main__":
 ## Skill sandbox execution
 
 `execute_skills` runs a workflow in the skills sandbox through the A2A protocol. It sends a non-blocking `message/send` request and then polls the task status at exponentially increasing intervals until the task reaches a terminal state or the timeout expires. The maximum execution time is 1800 seconds (30 minutes).
+
+When `execute_skills` is called, VeADK reads the inbound identity credential from the credential service (credential key `inbound_auth`) and forwards it to the skills sandbox in the `inbound_auth` request header, so the sandbox workflow runs under the original user identity. If the current request carries no inbound credential, the header is omitted and the sandbox executes anonymously.
+
+<Note>
+For the source and configuration of inbound identity credentials, see [Inbound authentication](/productions/veadk/preview/en/components/security/inbound).
+</Note>
 
 ### Parameters
 

@@ -64,128 +64,95 @@ app = create_agentkit_app(
   运行接口在指定会话不存在时会自动创建会话，不再返回 404。
 </Note>
 
-## 会话级能力叠加
+## Studio BFF 动态工具
 
-VeADK 1.0.9 起，通过 `create_agentkit_app` 构建的应用会在 `/harness` 前缀下挂载一组会话级能力叠加接口。调用方可为某个会话临时挂载内置工具或远程技能，再通过 `/harness/run_sse` 运行应用了叠加内容的智能体。叠加内容仅对指定会话生效，不修改根智能体定义，也不会写入其他会话。
+Studio 可以将本地或内网工具通过反向通道暴露给兼容的 AgentKit Runtime，而无需将 BFF 的公网地址暴露给 Runtime。工具目录与执行器始终保留在 Studio BFF 侧，Runtime 不接触执行器实现或凭证。
 
-能力分为两类：
+在 Runtime 侧通过 `create_agentkit_app(..., enable_studio_tools=True)` 挂载一个通用的 `StudioExternalToolset`。该 Toolset 不包含任何具体执行器，且对智能体内省不可见。在 Studio-channel 运行期间，一次异步局部的不可变快照仅提供该次运行选中的工具；普通 `/run_sse` 请求看到空快照。未启用该选项（默认）时，Runtime 对外声明 `enabled=false`，不挂载 Toolset 或工具通道执行端点。
 
-- **内置工具**：来自 VeADK 内置工具目录，按工具名称引用。
-- **远程技能**：来自公域 Skill Hub 或 AgentKit Skill 中心，按技能名称与技能来源标识引用。
-
-根智能体自身已挂载的工具与技能在返回列表中标记为基础能力（`custom` 为 `false`）且不可移除；通过叠加接口挂载的能力标记为会话能力（`custom` 为 `true`），可单独移除。
+<Warning>
+此前版本的会话级能力叠加接口（`/harness/capabilities/tools`、`/harness/apps/{app_name}/users/{user_id}/sessions/{session_id}/capabilities` 和 `/harness/run_sse`）已移除，由 Studio BFF 动态工具机制替代。
+</Warning>
 
 ### 何时使用
 
-- 需要在不重新部署 Runtime 的前提下，为单个会话临时启用额外工具或技能。
-- 需要按会话隔离不同的能力组合，避免互相影响。
+- 需要在不重新部署 Runtime 的前提下，为单个 Studio 会话临时启用额外工具。
+- 需要将工具代码和凭证保留在 Studio BFF 侧，不暴露给 Runtime。
 
-### 依赖
+### 工作机制
 
-- 智能体需具备 `tools` 属性；当叠加内容非空但根智能体没有 `tools` 时，挂载会失败。
-- 列举与挂载远程技能需要火山引擎凭证；本地通过 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY` 提供，部署到 VeFaaS 时使用绑定的 IAM Role。
+Studio BFF 为每次远程 `run_sse` 请求首先尝试通过出站 WSS 连接到 `/harness/studio-channel/v1`。如果公共网关不支持 WebSocket Upgrade，则自动回退到 HTTP/SSE 下行流加上 HTTP 工具结果回传。BFF 发布当前工具目录，在本地执行 `tool.call` 消息，并返回 `tool.result`，不暴露 BFF 端点。Runtime 看到的是普通工具，但既不接收执行器实现，也不接收其凭证。
 
-### 端点
+在 Studio 界面中，兼容的远程 Runtime 的智能体信息栏会在智能体静态工具下方显示「在此对话中添加 Studio 工具」。新会话默认禁用所有 Studio 工具；浏览器在每次 Runtime 运行时发送显式的 `platform_tools` 列表，空列表或省略时使用普通 `/run_sse` 路径。BFF 验证提交的工具 ID，并为该次运行冻结一个不可变的目录与执行器快照，因此同时使用的不同用户和会话无法互相添加工具。
 
-| 端点 | 方法 | 作用 |
-| --- | --- | --- |
-| `/harness/capabilities/tools` | `GET` | 列出可挂载的内置工具。 |
-| `/harness/skills/spaces` | `GET` | 列出当前账号可见的 AgentKit Skill 中心。 |
-| `/harness/skills/spaces/{space_id}/skills` | `GET` | 列出指定 Skill 中心内的技能。 |
-| `/harness/skills/findskill` | `GET` | 搜索公域 Skill Hub 中的技能。 |
-| `/harness/apps/{app_name}/users/{user_id}/sessions/{session_id}/capabilities` | `GET` | 查询该会话当前的能力列表与版本。 |
-| `/harness/apps/{app_name}/users/{user_id}/sessions/{session_id}/capabilities` | `POST` | 为该会话挂载一个内置工具或远程技能。 |
-| `/harness/apps/{app_name}/users/{user_id}/sessions/{session_id}/capabilities/{capability_id}` | `DELETE` | 移除该会话中已挂载的能力。 |
-| `/harness/run_sse` | `POST` | 以 SSE 流方式运行应用了会话叠加内容的智能体。 |
+Studio 始终将 `veadk/tools/builtin_tools` 中的规范函数注册到其 BFF 目录中。BFF 提供 ADK `ToolContext`，按 Runtime、应用、用户和会话隔离状态，并通过 Studio 媒体存储发布生成的 ADK 工件，使执行移出 Runtime 后下载仍然可用。不在 VeADK 内置目录中的 Studio 专属工具放在 Studio 的 `studio_tools/extensions` 目录中，Studio 在启动时自动发现该目录中的每个公开 Python 模块并调用其 `register_tools(registry)` 函数。添加此类工具无需环境变量或 Runtime 变更，修改模块后重启 Studio 即可生效。
 
 ### 使用示例
 
-为会话挂载一个内置工具：
+```python title="app.py"
+from agents.customer_support.agent import root_agent
+from veadk.integrations.agentkit import create_agentkit_app
 
-```bash
-curl -X POST "$RUNTIME_URL/harness/apps/customer_support/users/u-1/sessions/s-1/capabilities" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "kind": "tool",
-    "name": "web_search",
-    "expected_revision": 0
-  }'
+app = create_agentkit_app(
+    root_agent,
+    {root_agent.name: "客户支持"},
+    enable_studio_tools=True,
+)
 ```
-
-返回示例：
-
-```json
-{
-  "schema_version": 1,
-  "revision": 1,
-  "tools": [
-    {"id": "base:tool:get_weather", "kind": "tool", "name": "get_weather", "custom": false},
-    {"id": "session:tool:web_search", "kind": "tool", "name": "web_search", "custom": true}
-  ],
-  "skills": []
-}
-```
-
-挂载一个来自 AgentKit Skill 中心的远程技能：
-
-```bash
-curl -X POST "$RUNTIME_URL/harness/apps/customer_support/users/u-1/sessions/s-1/capabilities" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "kind": "skill",
-    "name": "order-lookup",
-    "skill_source_id": "ss-xxxxxxxx",
-    "description": "查询订单状态",
-    "expected_revision": 1
-  }'
-```
-
-运行应用了叠加内容的智能体：
-
-```bash
-curl -N -X POST "$RUNTIME_URL/harness/run_sse" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "app_name": "customer_support",
-    "user_id": "u-1",
-    "session_id": "s-1",
-    "new_message": {"role": "user", "parts": [{"text": "查询我的订单"}]},
-    "streaming": true
-  }'
-```
-
-`/harness/run_sse` 返回的事件格式与标准 `/run_sse` 一致，每个事件以 `data: ` 前缀的 JSON 行发送。
 
 ### 参数
 
-`POST /capabilities` 请求体：
-
 | 参数 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `kind` | `"tool"` \| `"skill"` | — | 要挂载的能力类型。 |
-| `name` | `str` | — | 工具名称或技能名称；工具须为内置工具，技能须在所选来源中存在。 |
-| `skill_source_id` | `str \| None` | `None` | 技能来源标识。挂载技能时必填；以 `findskill:` 开头表示公域 Skill Hub，否则为 AgentKit Skill 中心 ID。 |
-| `description` | `str` | `""` | 技能描述，仅挂载技能时使用。 |
-| `version` | `str` | `""` | 技能版本，仅挂载技能时使用。 |
-| `expected_revision` | `int \| None` | `None` | 乐观并发控制；传入当前 `revision`，不匹配时返回 409。 |
-
-`GET /harness/skills/spaces` 与 `GET /harness/skills/spaces/{space_id}/skills` 通过 `region` 查询参数指定地域：`spaces` 默认 `all`（合并北京、上海两个地域），技能列表默认 `cn-beijing`。
-
-`GET /harness/skills/findskill` 支持以下查询参数：
-
-| 参数 | 类型 | 默认值 | 说明 |
-| :--- | :--- | :--- | :--- |
-| `query` | `str` | `""` | 搜索关键词，为空时返回热门技能。 |
-| `page_number` | `int` | `1` | 页码，从 1 开始。 |
-| `page_size` | `int` | `20` | 每页数量，范围 1–50。 |
+| `enable_studio_tools` | `bool` | `False` | 是否在 Runtime 侧挂载 Studio BFF 动态工具的通用宿主。启用后挂载 `StudioExternalToolset`，在 Studio-channel 运行期间通过反向通道接收工具目录并执行工具调用。 |
 
 ### 限制
 
-- 基础能力不可移除；`capability_id` 以 `base:` 开头时返回 409。
-- 同名工具或技能不可重复挂载；与根智能体已有能力重名时返回 409。
-- `expected_revision` 不匹配当前 `revision` 时返回 409，调用方应重新查询后重试。
-- 会话能力仅在挂载后会话的运行中生效；运行结束后不会持久化到根智能体。
-- 公域 Skill Hub 搜索地址默认为 `https://skills.volces.com/v1/skills`，可通过环境变量 `FINDSKILL_SEARCH_URL` 覆盖。
+- HTTP/SSE 回退模式目前要求 Runtime 仅有一个实例，使下行流和结果回传到达同一进程。
+- 工具执行器和凭证始终保留在 Studio BFF 侧，不会下发到 Runtime 或浏览器。
+
+## Studio BFF 动态路由
+
+兼容的 Runtime 还可以在不加载 Python 处理器的情况下暴露 Studio 专属的 HTTP 路由。在 Runtime 侧通过 `create_agentkit_app(..., enable_studio_routes=True)` 启用，并在 Studio 侧设置环境变量 `VEADK_STUDIO_ROUTE_CHANNEL=skill-catalog`（`demo` 仍作为兼容别名）。
+
+启用后，Studio BFF 维护一条独立的持久反向路由通道，并发布以下 Studio 专属只读路由：
+
+| 端点 | 方法 | 作用 |
+| --- | --- | --- |
+| `/harness/skills/findskill` | `GET` | 搜索公域 Skill Hub 中的技能。 |
+| `/harness/skills/spaces` | `GET` | 列出当前账号可见的 AgentKit Skill 中心。 |
+| `/harness/skills/spaces/{space_id}/skills` | `GET` | 列出指定 Skill 中心内的技能。 |
+
+未启用动态路由的 Runtime 保留其原生技能目录处理器。启用的 Runtime 将这三个只读查询处理器交给 Studio BFF 通过反向通道执行：请求仍经由 Runtime URL 进入，其动态分发器发出 `route.call`，本地 BFF 执行处理器后返回 `route.result` 作为 Runtime HTTP 响应。
+
+### 使用示例
+
+```python title="app.py"
+from agents.customer_support.agent import root_agent
+from veadk.integrations.agentkit import create_agentkit_app
+
+app = create_agentkit_app(
+    root_agent,
+    {root_agent.name: "客户支持"},
+    enable_studio_routes=True,
+)
+```
+
+### 参数
+
+| 参数 | 类型 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `enable_studio_routes` | `bool` | `False` | 是否在 Runtime 侧挂载 Studio BFF 动态 HTTP 路由的通用宿主。启用后，三个只读技能目录路由由 Studio BFF 通过反向通道处理。 |
+
+| 环境变量 | 默认值 | 说明 |
+| :--- | :--- | :--- |
+| `VEADK_STUDIO_ROUTE_CHANNEL` | — | Studio 反向路由通道模式。设为 `skill-catalog` 或 `demo` 启用技能目录路由。未设置时 Studio 不建立反向路由通道。 |
+
+### 限制
+
+- WSS 连接优先；不支持的网关自动使用长连接 HTTP/SSE 下行流加 HTTP 结果回传。
+- 当前实现为单实例：持久流和任意路由请求必须到达同一 Runtime 进程。
+- BFF 断开连接时，已知的 Studio 专属路由返回 HTTP 503；智能体运行不受影响。
 
 ## 初始化与部署
 
