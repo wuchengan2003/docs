@@ -83,7 +83,7 @@ Logo 最大 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF 和 ICO。也可以通�
 2. 配置模型、系统提示词、工具、记忆和知识库，并从 Skill Hub、本地上传或 AgentKit SkillSpace 添加技能。多智能体项目还可以配置顺序、并行、循环或 A2A 节点，并在画布中查看和编排智能体拓扑。
 3. 检查生成的项目文件，并在受限的临时进程中测试运行；需要离线使用时下载 ZIP。
 4. 在「优化」步骤中按需为智能体启用 Harness Sidecar 优化项；该步骤为可选，不勾选时不启动优化。
-5. 在「环境」步骤中选择需要预装到云端运行时镜像的命令行工具，或自定义构建镜像使用的 Dockerfile；该步骤为可选。
+5. 在「环境」步骤中选择预构建的运行环境镜像，或使用 AgentKit 默认运行环境；该步骤为可选。
 6. 选择部署到 AgentKit，在工作台中观察构建镜像、部署和发布进度。部署完成后，智能体以已发布状态出现在工作台，后续可在同一 Runtime 上更新。
 
 <Note>
@@ -239,40 +239,90 @@ Logo 最大 5 MB，支持 PNG、JPEG、GIF、WebP、AVIF 和 ICO。也可以通�
 
 ### 配置云上环境
 
-自定义创建的生命周期依次为「架构」「调试」「优化」「环境」「发布」五个步骤。「环境」步骤位于优化与发布之间，用于选择需要预装到云端 Runtime 镜像的命令行工具，或自定义构建镜像使用的 Dockerfile。该步骤为可选：不选择任何工具且未自定义 Dockerfile 时，部署使用 AgentKit 默认镜像构建，生成的项目中不包含 `Dockerfile`。
+自定义创建的生命周期依次为「架构」「调试」「优化」「环境」「发布」五个步骤。「环境」步骤位于优化与发布之间，用于选择预构建的运行环境镜像。该步骤为可选：选择「默认环境」时，部署使用 AgentKit 默认镜像构建，生成的项目中不包含 `Dockerfile`。
 
-#### 选择命令行工具
+在「环境」步骤的下拉列表中选择已构建成功的运行环境。列表展示环境名称、操作系统、Python 版本和构建状态（准备中、排队中、构建中、扫描中、可用或构建失败）；仅构建状态为「可用」的环境可选。选中后，部署时以该环境镜像作为基础镜像构建智能体镜像，所选环境版本固定到此次部署。未选择环境时使用 AgentKit 默认运行环境。
 
-可在「环境」步骤中选择以下官方命令行工具，所选工具会被预装到部署镜像中：
+<Note>
+  运行环境需要在「环境」页面中预先创建并完成镜像构建。构建状态为「可用」后，该环境会出现在「环境」步骤的下拉列表中。详见[管理运行环境](#管理运行环境)。
+</Note>
+
+## 管理运行环境
+
+Studio 侧边栏提供「环境」页面，用于创建、管理和构建可复用的运行环境。运行环境是一份包含操作系统、Python 版本、命令行工具、技能和 Dockerfile 的配置定义，构建后生成容器镜像，可在部署智能体时作为基础镜像选择。环境定义、生成的 Dockerfile、构建版本、日志元数据和镜像地址保存在 Studio 私有 TOS 存储桶中。
+
+<Note>
+  「环境」页面需要管理员配置持久化存储后才能使用。未配置持久化存储时，环境相关功能不可用。
+</Note>
+
+### 创建运行环境
+
+在「环境」页面中点击「创建环境」，填写以下配置：
+
+| 配置项 | 可选值 | 说明 |
+| :--- | :--- | :--- |
+| 环境名称 | 自由文本，至多 128 个字符 | 环境的唯一标识名称。 |
+| 描述 | 自由文本，至多 2000 个字符 | 环境用途说明。 |
+| 操作系统 | Ubuntu 22.04、Ubuntu 24.04 | 基础镜像的操作系统版本。 |
+| Python 版本 | Python 3.10、Python 3.12 | 镜像中的 Python 版本。 |
+| 命令行工具 | 见下表 | 预装到镜像中的官方工具，按需勾选。 |
+| 技能 | Skill Hub、本地上传、AgentKit SkillSpace | 预装到镜像中的技能，至多 20 个。 |
+| Dockerfile | 自动生成或自定义 | 构建镜像使用的 Dockerfile 内容。 |
+
+选择命令行工具时，可从以下官方工具中按需勾选，所选工具会被预装到环境镜像中：
 
 | 工具 | 分类 | 说明 |
 | :--- | :--- | :--- |
-| Lark CLI | 效率 | 在云端调用飞书开放平台的开发与管理命令。 |
-| GitHub CLI | 研发 | 在云端使用 GitHub 仓库、Issue 与 Pull Request 命令。 |
-| Pandoc | 效率 | 转换 Markdown、HTML、Word 等文档格式。 |
+| lark-cli | 工具 | 飞书开放平台命令行工具。 |
+| pandoc | 工具 | 文档格式转换工具。 |
+| opencli | 工具 | 将网站与桌面应用转换为命令行工具。 |
+| uv | 效率 | 快速 Python 包与项目管理器。 |
+| ripgrep | 效率 | 高性能文本检索工具。 |
+| jq | 效率 | JSON 查询与转换工具。 |
+| GitHub CLI | 效率 | 在终端中管理 GitHub 工作流。 |
+| Playwright | 浏览器自动化 | 浏览器自动化与端到端测试。 |
+| Chromium | 浏览器自动化 | 无头浏览器运行时。 |
+| Git | 系统与媒体 | 代码版本管理。 |
+| curl | 系统与媒体 | 网络请求与文件下载。 |
+| FFmpeg | 系统与媒体 | 音视频转码与处理。 |
+| ImageMagick | 系统与媒体 | 图片转换与批处理。 |
 
-选择任一工具后，Studio 会生成一份与云服务商对应的 Dockerfile 并加入生成的项目（文件路径为 `Dockerfile`）。该 Dockerfile 基于 AgentKit 提供的基础镜像（火山引擎使用北京地域镜像，BytePlus 使用新加坡地域镜像），安装所选工具所需的系统依赖，并从官方 GitHub Release 归档下载二进制文件，按 amd64 与 arm64 架构分别校验 SHA-256 后安装；Pandoc 通过系统包安装。镜像随后安装 Python 依赖、复制应用代码，入口为 `python -m app`。
+创建或保存环境时，Studio 根据操作系统、Python 版本和所选工具自动生成 Dockerfile。未提供自定义 Dockerfile 时，使用自动生成的版本。镜像基于所选操作系统的官方 Ubuntu 镜像，安装 Python 运行时、所选工具的系统依赖，并预装 VeADK 运行时依赖。火山引擎构建使用阿里云 PyPI 镜像、华为云 Python 源码镜像和 npmmirror 的 Playwright 浏览器镜像；BytePlus 构建使用对应的官方源。跨版本 Python 组合（如 Ubuntu 22.04 + Python 3.12）使用固定补丁版本的源码编译，不依赖 GitHub 托管的二进制文件。
 
 <Note>
   生成的 Dockerfile 不包含任何访问密钥或凭据。工具所需的令牌等凭据应在部署后通过运行时环境变量提供，不要写入 Dockerfile。
 </Note>
 
-#### 自定义 Dockerfile
-
-通过「环境」步骤底部的「高阶配置」可打开 Dockerfile 编辑器，直接编辑构建镜像使用的内容。
-
-| 操作 | 说明 |
-| :--- | :--- |
-| 编辑 Dockerfile | 编辑器初始展示根据云服务商和工具选择自动生成的内容；保存自定义内容后，再次调整工具选择不会覆盖已编辑的内容。 |
-| 恢复自动生成 | 将 Dockerfile 还原为根据当前云服务商和工具选择生成的版本。 |
-
-Dockerfile 至多 64 KiB，且不能为空；内容为空或超长时无法进入发布步骤，Studio 会提示并停留在「环境」步骤。
-
 <Warning>
   请勿在 Dockerfile 中写入访问密钥、令牌或其他凭据。Dockerfile 会随项目一起提交到云端构建服务，任何能访问构建产物的人都可能读取其中的内容。
 </Warning>
 
-只要选择了工具或填写了自定义 Dockerfile，生成的项目就会包含 `Dockerfile`，部署时由云端构建服务使用。仅自定义 Dockerfile 而不选择任何工具时，同样会生成 `Dockerfile` 并原样使用。
+### 构建环境镜像
+
+创建或保存环境后，点击「构建」启动异步镜像构建。Studio 将构建上下文上传到 TOS 存储桶，通过 CodePipeline 执行构建流水线，并将结果镜像推送到 Container Registry。构建过程分为准备、排队、构建、扫描等阶段，最终状态为「可用」或「构建失败」。
+
+构建完成后，环境列表中展示最新版本的构建状态和镜像地址。可在环境详情页查看构建步骤、进度和日志。构建失败时，日志末尾展示错误信息，便于定位失败原因。
+
+<Note>
+  首次构建环境镜像时，Studio 自动创建或复用托管的 CodePipeline Workspace、Pipeline 和 Container Registry 资源。使用账号级默认 TOS 存储桶时，Container Registry 复用账号的 `agentkit-cli-<账号 ID>` 实例，并在其中创建 `runtime-environments/base-images` 仓库。
+</Note>
+
+### 环境构建资源
+
+部署 Studio 时，可通过以下标志指定已有的环境构建资源：
+
+```bash
+veadk studio deploy \
+  --vefaas-app-name <app-name> \
+  --environment-cp-workspace <workspace-id-or-name> \
+  --environment-cr-repository <registry/namespace/repository>
+```
+
+两项可独立使用。`--environment-cr-repository` 须使用 `registry/namespace/repository` 格式，各段不能包含空格或 `.`、`..`。未指定时，Studio 创建或复用托管资源。这些配置不从环境变量读取，仅在部署命令中生效。部署后的「系统信息」页面展示最终使用的 CodePipeline 和 Container Registry 名称、来源及控制台链接，这些值为资源标识，不包含凭证。
+
+<Note>
+  环境构建资源与智能体部署构建资源独立管理。环境镜像构建使用上述 CodePipeline 和 Container Registry；智能体部署使用「配置构建资源」中管理的资源。当智能体选择了预构建环境时，部署会将智能体镜像构建到环境镜像所在的 Container Registry 命名空间下，确保构建凭证可同时拉取基础镜像和推送智能体镜像。
+</Note>
 
 ### 智能模式
 
@@ -2013,6 +2063,8 @@ veadk studio deploy \
 | `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | 由 `--provider` 推导 | Studio 部署地域，同时决定 VeFaaS、API Gateway 等资源所在区域。传入 `--user-pool-id` 与 `--allowed-client-id` 时跨北京、上海查找已有用户池。 |
 | `--project` | `str` | `default` | VeFaaS 函数所属项目。 |
 | `--iam-role` | `str \| None` | `None` | 绑定到函数的既有 IAM Role TRN；省略时创建或复用默认 Role。 |
+| `--environment-cp-workspace` | `str \| None` | `None` | 环境镜像构建使用的已有 CodePipeline Workspace ID 或名称。省略时 Studio 创建或复用托管的 Workspace。该选项不从环境变量读取。 |
+| `--environment-cr-repository` | `str \| None` | `None` | 环境镜像构建使用的已有 Container Registry 仓库，格式为 `registry/namespace/repository`。省略时 Studio 创建或复用托管的 CR 资源。该选项不从环境变量读取。 |
 | `--vefaas-application-template-id` | `str \| None` | 内置模板 | 覆盖 VeFaaS Application Center 的内置模板 ID。也可通过 `VEFAAS_APPLICATION_TEMPLATE_ID` 设置。 |
 | `--admin` | `str \| None` | `None` | 逗号分隔的管理员名单（用户名或 OAuth 邮箱）。省略 `--admin` 与 `--developer` 时，所有登录用户都按 `admin` 处理。也可通过 `VEADK_STUDIO_ADMINS` 设置。 |
 | `--developer` | `str \| None` | `None` | 逗号分隔的开发者名单（用户名或 OAuth 邮箱）。也可通过 `VEADK_STUDIO_DEVELOPERS` 设置。 |
