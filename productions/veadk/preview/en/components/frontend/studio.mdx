@@ -10,6 +10,10 @@ Intelligent development, custom configuration, code-package deployment, and exis
   When selecting an agent in the workspace, Studio prepares the session list, agent information, capabilities, and automatic evaluation statuses before changing the visible selection, eliminating intermediate loading states during the switch.
 </Note>
 
+<Note>
+  When you send a message or run a test agent, Studio receives responses over a streaming endpoint. If no first event arrives within 30 seconds, Studio aborts the stream and prompts you to check shared public egress network configuration and retry, preventing the request from hanging indefinitely.
+</Note>
+
 ## Start locally
 
 Run the command from the parent directory of your agent applications:
