@@ -2107,6 +2107,18 @@ Studio restricts Runtime visibility according to the signed-in account. Existing
   A local username is stored in the browser and can be changed or impersonated. Use it only for local development and feature testing. Production deployments must use OAuth or gateway authentication so identity and permissions are determined from verified sign-in information.
 </Warning>
 
+### Local session ownership
+
+When Studio is running with OAuth or gateway authentication, local ADK session reads, creates, updates, and deletes, as well as agent run requests, are bound to the signed-in identity. A user can only access sessions that belong to their own identity; matching is case-insensitive and considers the username, email, and other identifiers in the sign-in token.
+
+Requests that target local sessions without a trusted signed-in identity receive a 401. A non-admin user who attempts to access another user's sessions receives a 403.
+
+<Note>
+  Even when neither `--admin` nor `--developer` is configured (so every signed-in user has full Studio capabilities), cross-user session access still requires an explicit entry in the administrator list. This restriction is independent of role permissions and is not relaxed by the legacy "all users are admins" mode.
+</Note>
+
+Identities listed in the `--admin` administrator list may access other users' local sessions for troubleshooting and support; such access is recorded in an audit log containing the actor, target user, request method, and path.
+
 
 ## View system information
 
