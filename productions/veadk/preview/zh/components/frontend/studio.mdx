@@ -25,7 +25,7 @@ veadk studio --agents-dir ./agents --open
 
 火山引擎凭证用于工作台中的模型、云资源查询和 AgentKit 部署。生产环境应通过环境变量或密钥管理服务提供凭证，不要把凭证写入项目文件。
 
-使用 BytePlus 作为云服务商时，传入 `--provider byteplus`，并通过 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 环境变量提供凭证；Runtime 列表默认查询的地域为 `BYTEPLUS_REGION` 或 `ap-southeast-1`。未显式指定 `--provider` 时，本地 CLI 始终使用火山引擎。
+使用 BytePlus 作为云服务商时，传入 `--provider byteplus`，并通过 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 环境变量提供凭证；Runtime 列表默认查询的地域为 `BYTEPLUS_REGION` 或 `ap-southeast-1`。未显式指定 `--provider` 时，依次读取 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER` 环境变量确定云服务商，均未设置时使用火山引擎。
 
 
 ## Studio 持久化存储
@@ -1876,7 +1876,7 @@ Dev Sandbox 技能生成需要管理员配置处于 `Ready` 状态的 AgentKit D
 | `--site-logo` | `str \| None` | `VEADK_SITE_LOGO` | 自定义 Logo，支持本地图片路径或 HTTP(S) URL。 |
 | `--host` | `str` | `127.0.0.1` | 监听地址。 |
 | `--port` | `int` | `8000` | 监听端口。 |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | 选择 AgentKit 服务的云服务商。BytePlus 仅在显式指定时启用，使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证。 |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`，然后 `volcengine` | 云服务商。未指定时依次读取 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER` 环境变量，均未设置时使用 `volcengine`；选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证。 |
 | `--dev` | `bool` 标志 | `false` | 在选择器中加载本地智能体，而不是云端 AgentKit Runtime。 |
 | `--vite` | `bool` 标志 | `false` | 只启动 API，并允许 `http://localhost:5173`（及回退端口 `http://localhost:5174`）的 Vite 开发服务器跨域访问。 |
 | `--oauth2-user-pool` | `str \| None` | `None` | VeIdentity 用户池名称。与客户端名称或 UID 配合启用 SSO。 |
@@ -2002,7 +2002,7 @@ veadk studio deploy \
 | `--client-secret` | `str` | `""` | 无法通过客户端 UID 读取密钥时显式提供。直接传参可能进入 shell 历史，能够读取时应省略。 |
 | `--allow-dangerous-login` | `bool` 标志 | `false` | 在 Studio 托管的 Identity 用户池上启用本地密码登录、无密码登录、注册、找回与未确认用户登录流程。仅当未通过 `--user-pool-id` 指定已有用户池时生效；指定已有用户池时部署保留其既有登录设置。 |
 | `--vefaas-app-name` | `str` | 必填 | VeFaaS 应用名称，长度 4–64，只能包含字母、数字和连字符，不能包含下划线。 |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | 部署使用的云服务商。选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证，默认地域为 `ap-southeast-1`。 |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`，然后 `volcengine` | 部署使用的云服务商。未指定时依次读取 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER` 环境变量，均未设置时使用 `volcengine`；选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证，默认地域为 `ap-southeast-1`。 |
 | `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | 由 `--provider` 推导 | Studio 部署地域，同时决定 VeFaaS、API Gateway 等资源所在区域。传入 `--user-pool-id` 与 `--allowed-client-id` 时跨北京、上海查找已有用户池。 |
 | `--project` | `str` | `default` | VeFaaS 函数所属项目。 |
 | `--iam-role` | `str \| None` | `None` | 绑定到函数的既有 IAM Role TRN；省略时创建或复用默认 Role。 |
@@ -2068,7 +2068,7 @@ veadk studio update --vefaas-app-name "veadk-studio"
 
 | 选项 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | 已部署 Studio 的云服务商。选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证。 |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`，然后 `volcengine` | 已部署 Studio 的云服务商。未指定时依次读取 `AGENTKIT_CLOUD_PROVIDER` 与 `CLOUD_PROVIDER` 环境变量，均未设置时使用 `volcengine`；选择 `byteplus` 时使用 `BYTEPLUS_ACCESS_KEY`、`BYTEPLUS_SECRET_KEY` 和可选的 `BYTEPLUS_SESSION_TOKEN` 提供凭证。 |
 | `--vefaas-app-name` | `str` | 必填 | 要更新的 VeFaaS Application 名称。 |
 | `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | 查询两个地域 | 将查找范围限制到一个地域。BytePlus 模式下默认查询 `ap-southeast-1`。 |
 | `--project` | `str \| None` | 查询全部可见项目 | 将查找范围限制到一个项目。 |
