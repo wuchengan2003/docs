@@ -680,7 +680,17 @@ Studio 不提供 `local` 后端，因为创建页面不能为进程内向量库�
 - 连接云端 Runtime 时，Studio 服务端使用自身配置的云服务商凭证向 APMPlus 查询该会话的链路，浏览器不接触凭证。查询使用的 APMPlus OpenAPI 接入地址按当前云服务商选择：火山引擎为 `open.volcengineapi.com`，BytePlus 为 `open.byteplusapi.com`。
 
 <Note>
-  云端 Runtime 的链路观测需在火山引擎控制台为对应智能体开启 APMPlus 链路观测。通过 Studio 部署的 Runtime 默认启用 APMPlus 链路观测；未开启链路观测的 Runtime 打开链路面板时会提示「该 Agent 暂未开启链路观测，请到控制台打开后使用」，链路查询失败时会提示稍后重试。
+  云端 Runtime 的链路观测需在火山引擎控制台为对应智能体开启 APMPlus 链路观测。通过 Studio 部署的 Runtime 默认启用 APMPlus 链路观测。打开链路面板时，Studio 根据查询结果显示不同状态：
+
+| 状态 | 说明 |
+| :--- | :--- |
+| 加载中 | 正在向 APMPlus 查询链路数据。 |
+| 采集中 | 链路数据尚未到达 APMPlus，面板显示采集中状态并提供重试按钮，Studio 会自动重试两次后仍无数据时需手动重试。 |
+| 未开启 | Runtime 未开启链路观测，提示到控制台开启后重试。 |
+| 权限不足 | Studio 运行角色缺少 APMPlus 只读权限，提示联系管理员补充权限。 |
+| 加载失败 | 链路查询发生其他错误，面板提供重新加载按钮。 |
+
+  查询链路时，Studio 服务端优先按 `POST /run_sse` 入口 span 定位目标链路；未命中时回退到对会话时间窗口的广泛扫描，选取与该轮回复结束时间最接近的链路。链路数据可能因采集延迟而短暂不可见，稍后重试即可恢复。
 </Note>
 
 ### 问题反馈

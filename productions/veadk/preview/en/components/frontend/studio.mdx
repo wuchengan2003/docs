@@ -680,7 +680,17 @@ The “Tracing flame graph” button next to an assistant reply opens the call-t
 - For a connected cloud Runtime, the Studio server queries APMPlus for the session trace using its own cloud-provider credentials; the browser never touches the credentials. The APMPlus OpenAPI endpoint follows the configured cloud provider: `open.volcengineapi.com` for Volcengine and `open.byteplusapi.com` for BytePlus.
 
 <Note>
-  Trace observation for a cloud Runtime requires enabling APMPlus tracing for the corresponding agent in the Volcengine console. Runtimes deployed through Studio have APMPlus tracing enabled by default. Opening the trace panel for a Runtime without tracing enabled prompts you to enable APMPlus tracing in the console first, and a failed trace query prompts you to retry later.
+  Trace observation for a cloud Runtime requires enabling APMPlus tracing for the corresponding agent in the Volcengine console. Runtimes deployed through Studio have APMPlus tracing enabled by default. When the trace panel opens, Studio displays different states depending on the query result:
+
+| State | Description |
+| :--- | :--- |
+| Loading | Querying APMPlus for trace data. |
+| Collecting | Trace data has not arrived in APMPlus yet; the panel shows a collecting state with a retry button. Studio retries automatically up to two times before requiring a manual retry. |
+| Not enabled | The Runtime does not have tracing enabled; the panel prompts you to enable it in the console and retry. |
+| Forbidden | The Studio runtime role lacks APMPlus read permission; the panel prompts you to contact an administrator to grant access. |
+| Load failed | The trace query encountered another error; the panel provides a reload button. |
+
+  When querying traces, the Studio server first locates the target trace by the `POST /run_sse` entry span; if no match is found, it falls back to a broad scan of the session time window and selects the trace closest to the reply end time. Trace data may be temporarily unavailable due to collection latency and should appear after a short retry.
 </Note>
 
 ### Issue feedback
