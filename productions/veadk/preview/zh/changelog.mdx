@@ -10,6 +10,9 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| Studio 链路观测 | 调用链路面板区分加载中、采集中、未开启、权限不足和加载失败五种状态：采集中状态自动重试两次并提供手动重试按钮；权限不足时提示联系管理员补充 APMPlus 只读权限；加载失败时提供重新加载按钮。查询链路时优先按 `POST /run_sse` 入口 span 定位，未命中时回退到会话时间窗口的广泛扫描并选取最接近的链路。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 项目生成 | 生成项目的 `requirements.txt` 改为固定版本号（`veadk-python==1.1.5`、`agentkit-sdk-python==0.8.4`、`google-adk==2.1.0`、`starlette==0.52.1`），确保构建镜像可复现；启用飞书渠道时同时固定 `lark-channel-sdk` 与 `lark-oapi` 版本。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| 本地链路导出 | Studio 本地调试链路导出器不再仅索引 `call_llm` span，改为索引全部 span；会话 ID 属性新增 `gen_ai.session.id` 与 `session.id`，提升会话内链路的完整性。 | [内存导出器](/productions/veadk/preview/zh/components/observability/inmemory) |
 | Studio 安全 | Studio 启用 OAuth 或 gateway 认证后，本地 ADK 会话的读取、创建、更新、删除与智能体运行请求均绑定到登录身份：用户只能访问自己的会话，未携带可信身份返回 401，非管理员跨用户访问返回 403。即使未配置角色名单（遗留「全部用户为管理员」模式），跨用户会话访问仍要求显式出现在管理员名单中；管理员访问其他用户会话会记录审计日志。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | 构建镜像失败时，Studio 现在重试同步 CodePipeline 最终构建日志并标记为失败状态，提高在日志末尾定位真实失败原因的概率；构建日志篇幅上限同步提高。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | 部署阶段的推进改为单调不可回退，构建日志事件不再把已进入部署阶段的任务回退为构建阶段。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
