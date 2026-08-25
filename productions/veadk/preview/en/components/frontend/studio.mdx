@@ -25,7 +25,7 @@ veadk studio --agents-dir ./agents --open
 
 Volcengine credentials are used for models, cloud-resource queries, and AgentKit deployment from the workbench. In production, provide them through environment variables or a secret manager rather than project files.
 
-To use BytePlus as the cloud provider, pass `--provider byteplus` and supply credentials via `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN` environment variables. Runtime listings default to the region in `BYTEPLUS_REGION` or `ap-southeast-1`. Without an explicit `--provider`, the local CLI always uses Volcengine.
+To use BytePlus as the cloud provider, pass `--provider byteplus` and supply credentials via `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN` environment variables. Runtime listings default to the region in `BYTEPLUS_REGION` or `ap-southeast-1`. Without an explicit `--provider`, the CLI reads `AGENTKIT_CLOUD_PROVIDER` then `CLOUD_PROVIDER` to determine the cloud provider, falling back to Volcengine when neither is set.
 
 
 ## Studio persistent storage
@@ -1876,7 +1876,7 @@ When running Studio locally with `veadk studio --vite`, the Studio backend start
 | `--site-logo` | `str \| None` | `VEADK_SITE_LOGO` | Custom logo as a local image path or HTTP(S) URL. |
 | `--host` | `str` | `127.0.0.1` | Bind address. |
 | `--port` | `int` | `8000` | Bind port. |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | Cloud provider for AgentKit services. BytePlus is used only when explicitly selected and reads credentials from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`. |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`, then `volcengine` | Cloud provider for AgentKit services. Defaults to `AGENTKIT_CLOUD_PROVIDER` then `CLOUD_PROVIDER`, falling back to `volcengine` when neither is set; selecting `byteplus` reads credentials from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`. |
 | `--dev` | Boolean flag | `false` | Load local agents in the picker instead of cloud AgentKit Runtimes. |
 | `--vite` | Boolean flag | `false` | Serve only the API and allow CORS from the Vite development server at `http://localhost:5173` (and the fallback port `http://localhost:5174`). |
 | `--oauth2-user-pool` | `str \| None` | `None` | VeIdentity user-pool name. Combine with a client name or UID to enable SSO. |
@@ -2002,7 +2002,7 @@ veadk studio deploy \
 | `--client-secret` | `str` | `""` | Supply only if the secret cannot be read from the client UID. Direct arguments can enter shell history, so omit it when lookup is available. |
 | `--allow-dangerous-login` | Boolean flag | `false` | Enable local password, passwordless, sign-up, recovery, and unconfirmed-user login flows on a Studio-managed Identity user pool. Only takes effect when no existing pool is specified via `--user-pool-id`; when an existing pool is provided, deployment preserves its existing login settings. |
 | `--vefaas-app-name` | `str` | Required | VeFaaS application name, 4–64 characters containing letters, digits, and hyphens, but no underscores. |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | Cloud provider for the deployment. When `byteplus` is selected, credentials are read from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`; the default region is `ap-southeast-1`. |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`, then `volcengine` | Cloud provider for the deployment. Defaults to `AGENTKIT_CLOUD_PROVIDER` then `CLOUD_PROVIDER`, falling back to `volcengine` when neither is set; when `byteplus` is selected, credentials are read from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`, with the default region `ap-southeast-1`. |
 | `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | Derived from `--provider` | Studio deployment region; also determines the region for VeFaaS, API Gateway, and related resources. When `--user-pool-id` and `--allowed-client-id` are provided, the deploy command searches existing VeIdentity user pools across Beijing and Shanghai. |
 | `--project` | `str` | `default` | VeFaaS function project. |
 | `--iam-role` | `str \| None` | `None` | Existing IAM role TRN for the function. If omitted, the default role is created or reused. |
@@ -2068,7 +2068,7 @@ The update also creates or updates the scheduled-task scheduler functions and co
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | Cloud provider of the existing Studio deployment. When `byteplus` is selected, credentials are read from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`. |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`, then `volcengine` | Cloud provider of the existing Studio deployment. Defaults to `AGENTKIT_CLOUD_PROVIDER` then `CLOUD_PROVIDER`, falling back to `volcengine` when neither is set; when `byteplus` is selected, credentials are read from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`. |
 | `--vefaas-app-name` | `str` | Required | Existing VeFaaS Application name. |
 | `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | Search both regions | Limit lookup to one region. In BytePlus mode, the default search region is `ap-southeast-1`. |
 | `--project` | `str \| None` | Search all visible projects | Limit lookup to one project. |
