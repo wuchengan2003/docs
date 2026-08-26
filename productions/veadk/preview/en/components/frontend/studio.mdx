@@ -329,7 +329,11 @@ Both flags can be used independently. `--environment-cr-repository` must use the
 Intelligent development is a goal-driven creation flow: on Add Agent, select "Intelligent development" and describe the problem your agent should solve in natural language. Codex in the sandbox then determines the intent, builds the project, debugs it, and performs a temporary cloud validation, producing a deployable source artifact.
 
 <Note>
-  Intelligent development requires a configured Dev Sandbox Tool (`SANDBOX_DEV` or `--sandbox-dev-tool-id`). When not configured, the entry shows "Unavailable." `veadk studio deploy` creates this Tool automatically by default; for local startup you can specify an existing Tool ID manually.
+  Intelligent development requires a configured Dev Sandbox Tool (`SANDBOX_DEV` or `--sandbox-dev-tool-id`) with model credentials configured on that Tool (a model ID, an API Key, and a model API base URL pointing to the current cloud's official Ark endpoint). When the Tool is not configured, the entry shows "Unavailable." When the Tool is configured but model credentials are missing or do not match, the entry is also unavailable and prompts you to redeploy Studio. `veadk studio deploy` creates this Tool and completes the model configuration automatically by default; for local startup you can specify an existing Tool ID manually.
+</Note>
+
+<Note>
+  The "Intelligent development" page provides a model selector below the goal input, used to specify the model Codex uses for the current intelligent-development session. The model list is fetched by the Studio server from Ark models activated under the current account, showing only available or retiring models with their display name, ID, vendor, and lifecycle status, and supports search filtering. The default is the model configured on the Dev Sandbox Tool; after selecting a different model, the selected model's name, provider, and API base URL are injected into the session environment by the Studio server without sending model credentials to the browser. The model list can be reloaded on load failure.
 </Note>
 
 #### Workflow
