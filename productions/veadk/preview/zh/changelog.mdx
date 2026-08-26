@@ -23,6 +23,7 @@ title: "更新日志"
 | Studio 评测 | 账号尚无评测数据集时，首次创建对话反馈和自动评测数据集不再因缺少已存在的工作区而失败；Studio 现在直接在项目下创建首个数据集并从中解析工作区，后续数据集操作复用该工作区。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) · [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) |
 | Studio 界面 | 智能体目录、资源库、定时任务、环境中心等页面统一为一致的资源集合布局，采用统一的卡片、搜索、筛选和分页组件。智能体目录新增创建人筛选（「全部」/「我创建的」）和区域筛选，智能体类型标签简化（如「Codex 智能体」改为「Codex」），创建时间改为相对时间显示。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 智能模式 | 智能开发会话不再出现在侧边栏的历史会话列表中，也不再支持从侧边栏删除。会话在当前浏览器会话中运行，切换页面后可恢复当前会话；构建进行中切换页面时提示离开将停止本轮构建，但会话仍会保留。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能模式 | 智能模式创建页面新增模型选择器，可在创建智能开发会话时指定 Codex 使用的模型。模型列表来自当前账号已开通的火山方舟模型，默认使用开发沙箱 Tool 已配置的模型；所选模型配置由 Studio 服务端注入会话环境，不向浏览器下发凭据。同时，智能模式入口现在校验开发沙箱 Tool 的模型凭据是否已配置，未配置时入口不可用并提示重新部署 Studio。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.6
 
