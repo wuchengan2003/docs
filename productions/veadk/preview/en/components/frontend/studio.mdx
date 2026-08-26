@@ -754,6 +754,10 @@ The “Tracing flame graph” button next to an assistant reply opens the call-t
   When querying traces, the Studio server first locates the target trace by the `POST /run_sse` entry span; if no match is found, it falls back to a broad scan of the session time window and selects the trace closest to the reply end time. Trace data may be temporarily unavailable due to collection latency and should appear after a short retry.
 </Note>
 
+<Note>
+  When displaying model output in the trace panel, Studio automatically removes empty placeholders (`null` entries) produced during streaming progression, showing only the actual content parts.
+</Note>
+
 ### Issue feedback
 
 The “Issue feedback” button next to an assistant reply reports a problem for that turn. In the dialog, select an issue type and add a description before submitting. The submission includes the turn's input, output, tool-call records, and trace information for investigation, and is redacted for credentials before being sent. Available issue types:
