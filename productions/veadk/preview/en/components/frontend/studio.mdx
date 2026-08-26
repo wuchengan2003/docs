@@ -356,7 +356,7 @@ When deploying from intelligent development, the source is materialized server-s
 
 #### Session management
 
-Intelligent-development sessions appear in the sidebar history list, mixed with regular conversations and sorted by time. An in-progress session shows a "Building" status; you can switch to other pages and return to resume the session. When resuming or reopening a completed session, the conversation history shows only user messages and assistant responses; internal intent-gate and task-scheduling steps are not displayed. Completed sessions can be reopened to continue the conversation or deleted; deleting an in-progress session requires stopping the active build first.
+Intelligent-development sessions run in the current browser session and do not appear in the sidebar history list. An in-progress session shows a "Building" status; you can switch to other pages and return to resume the current session. When you try to navigate away during a build, Studio prompts that leaving will stop the current build, but the session is preserved. When resuming a session, the conversation history shows only user messages and assistant responses; internal intent-gate and task-scheduling steps are not displayed.
 
 <Note>
   Tool calls, thinking content, and progress messages from intelligent development are redacted server-side before being sent to the browser: task credentials and private paths are removed and never appear in the browser.
