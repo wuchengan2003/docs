@@ -621,6 +621,10 @@ The temporary test process is retained for 1,800 seconds by default and can be c
   Debug runs support only the official Ark model endpoint for the current cloud provider. Agents configured with a custom model endpoint cannot start in a debug run; use the official endpoint or test through a deployed Runtime instead.
 </Note>
 
+<Note>
+  When Studio is deployed in the cloud (running on VeFaaS), debug runs validate MCP and A2A endpoint addresses: only private endpoints within the VPC attached to the Studio function are allowed; private addresses outside that VPC, loopback addresses, link-local addresses, and cloud metadata addresses are blocked. Locally started Studio is unaffected and still allows local resources. If Studio cannot determine the VPC ranges (for example, when VPC is not enabled on the function or the function role lacks VPC and subnet read permissions), the debug run fails with guidance to check VPC configuration and IAM permissions. VPC range information is cached for 5 minutes on the Studio server.
+</Note>
+
 ### Configure memory
 
 After enabling long-term memory for an agent, select one of these backends in Studio:
