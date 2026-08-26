@@ -1154,23 +1154,19 @@ print(response.json())
 
 The **Agents** entry in the sidebar opens the agent directory, where you browse, connect to, and inspect the AgentKit Runtimes under your account. The agent selector in the conversation top bar also provides an entry point into this directory.
 
-The directory switches between agent types using the tabs at the top, defaulting to **General agents**:
+The directory switches between agent types using the filter at the top, defaulting to **General agents**:
 
 | Type | Description |
 | :--- | :--- |
-| General agents | Lists all AgentKit Runtimes created by the signed-in user. |
-| Codex agents | Opens the Codex temporary session creation entry. |
-| DeepSeek Harness | Opens the DeepSeek Harness workspace session creation entry. |
-| OpenClaw agents | Not yet available. |
-| Hermes agents | Not yet available. |
+| General agents | Lists the AgentKit Runtimes visible to the current user. Visibility depends on role permissions. |
+| Codex | Opens the Codex temporary session creation entry. |
+| DeepSeek | Opens the DeepSeek workspace session creation entry. |
+| OpenClaw | Not yet available. |
+| Hermes | Not yet available. |
 
-The General agents list loads the signed-in user's own Runtimes across all regions and automatically loads the next page as you scroll to the bottom of the list, showing "All agents loaded" when complete. Use the search box at the top to filter the loaded agents by name.
+The General agents list provides owner, region, and name filters. The owner filter toggles between "All" and "Created by me": "All" is available only to the `admin` role; `developer` and regular users can only view their own Runtimes. The region filter defaults to the Studio's current region and can be switched to other regions supported by the current cloud provider. The list paginates by the selected region and automatically loads the next page as you scroll to the bottom, showing "All agents loaded" when complete. Use the search box to filter the loaded agents by name.
 
-Each agent card shows the Runtime name and creation time. Click a card to open that Runtime's detail view; the **Connect** button on the card makes the Runtime the agent for the current conversation and switches to the conversation page. The connected agent is pinned to the top of the list. When loading fails, the directory shows an error message with a **Reload** button; an empty list shows the corresponding empty-state message. Connection failures are diagnosed the same way as when [selecting a cloud Runtime](#select-a-cloud-runtime).
-
-<Note>
-  The agent directory lists only the Runtimes created by the signed-in user and is not filtered by region. To browse other users' or all Runtimes, use the agent selector in the top bar or the management page; the visible scope depends on role permissions.
-</Note>
+Each agent card shows the Runtime name, description, creator, and creation time. The creation time is displayed as a relative label (e.g., "3 minutes ago"). Click a card to open that Runtime's detail view; the **Connect** button on the card makes the Runtime the agent for the current conversation and switches to the conversation page. The connected agent is pinned to the top of the list. When you have creation permission, the first card in the list is a "Create agent" entry. When loading fails, the directory shows an error message with a **Reload** button; an empty list shows the corresponding empty-state message. Connection failures are diagnosed the same way as when [selecting a cloud Runtime](#select-a-cloud-runtime).
 
 ## Select a cloud Runtime
 
