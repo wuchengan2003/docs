@@ -18,6 +18,7 @@ title: "更新日志"
 | Studio 调试 | 云端部署的 Studio（运行于 VeFaaS）在调试运行时新增 MCP 与 A2A 端点地址校验：仅允许连接当前函数所绑定 VPC 网段内的私网端点，位于该 VPC 之外的私网地址、环回地址、链路本地地址和云元数据地址被禁止；本地启动的 Studio 不受影响。若无法确认 VPC 网段，调试运行会报错并提示检查 VPC 配置和 IAM 权限。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 迁移 | 「Codex 执行动态」面板改进：计划步骤中首个未完成项自动标记为进行中，命令执行与文件更新等活动条目使用一致的标题，执行异常的活动条目自动展开以展示错误详情。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 迁移 | 迁移模型选择器现在排除不兼容项目迁移的模型，选择不兼容模型创建迁移任务时会报错并提示选择其他模型。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 打包 | `veadk-python` 包现在包含全部前端运行时模块，并在从源码构建 Studio 时校验 wheel 完整性；此前部分前端模块缺失，可能导致 `veadk studio deploy --from-source` 或 `veadk studio update` 运行时出现导入错误。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.6
 
