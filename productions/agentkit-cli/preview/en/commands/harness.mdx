@@ -321,3 +321,38 @@ agentkit harness invoke my-harness "Summarize this session" \
 ```
 
 For a Harness protected by `custom_jwt`, pass a bearer token explicitly with `--token`, or first run `agentkit login --identity-only <sso-address>` to save the OIDC session. The CLI forwards the cached `id_token` only when the Runtime endpoint uses HTTPS, the Runtime discovery URL matches the active login issuer, and the active OAuth client ID is in the allowed list.
+
+## harness sidecar catalog
+
+Print the Harness Sidecar Product Component Catalog. This command only prints JSON and does not create or modify cloud resources. Use it from Studio, CI, or scripts to show selectable components, availability, and the default selection for a profile.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `--profile <profile>` | Product Component profile: `default` or `ops`. | `ops` |
+
+```bash
+agentkit harness sidecar catalog --profile ops
+```
+
+The output includes `schema_version`, `catalog_version`, `profiles`, `selected_profile`, `components`, `total_component_count`, and `selectable_component_count`. `components[].selected_by_profile` indicates whether the current profile selects the component by default, and `components[].availability.available` indicates whether the current Runtime contract can use it.
+
+## harness sidecar resolve
+
+Resolve a profile and component switches into a deterministic Harness Sidecar plan. This command only prints the JSON plan. It exits non-zero when the plan is invalid, which makes it suitable for validating `harness_sidecar.component_overrides` before release.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `--profile <profile>` | Product Component profile: `default` or `ops`. | `ops` |
+| `--disabled` | Disable Sidecar selection and output an empty effective component list. | `false` |
+| `--component <id=true\|false>` | Override one selectable component; repeatable. Supported IDs are `context_engine`, `compressor`, `verifier`, `long_run_control`, and `mcp_resilience`. | — |
+| `--catalog-version <version>` | Expected Catalog version. | `2026.07.1` |
+| `--runtime-version <version>` | Target managed Runtime version; omitted to let the platform choose. | — |
+
+```bash
+agentkit harness sidecar resolve \
+  --profile default \
+  --component context_engine=true \
+  --component mcp_resilience=true
+```
+
+In the output, `effective_components` is the final enabled component list, `activation_targets` describes whether runtime components, the model proxy, and the MCP gateway are enabled, and `plan_hash` is used after release to verify the plan loaded by the runtime. `mcp_resilience` automatically includes SQL read-only protection; `sql_readonly` cannot be selected directly with `--component`.

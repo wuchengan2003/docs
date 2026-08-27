@@ -158,6 +158,7 @@ The CLI loads the project's `.env` (from the working directory) before resolving
 
 # ── Project ──────────────────────────────────────────────
 name: my-agent
+description: ""
 cloud_provider: volcengine      # volcengine | byteplus
 region: cn-beijing
 project: default
@@ -171,6 +172,8 @@ runtime:
   min_instance: 1              # keep one warm instance by default
   max_instance: 5
   max_concurrency: 20          # concurrent requests per instance
+  # tags:
+  #   owner: team-name
   # network:
   #   enable_public_network: true
   #   enable_private_network: false
@@ -180,6 +183,21 @@ runtime:
   #   security_group_ids:
   #     - ${SECURITY_GROUP_ID}
   #   enable_shared_internet_access: true
+
+# ── Harness Sidecar optimization (optional) ─────────────
+# Enabling any component selects the managed Sidecar Runtime. Initial support is
+# Volcengine cn-shanghai, CPython 3.12, linux/amd64, and exactly one instance;
+# set runtime.min_instance/max_instance to 1. The private Runtime artifact is
+# supplied by the platform and must never be written into this file.
+# harness_sidecar:
+#   enabled: true
+#   profile: default
+#   component_overrides:
+#     context_engine: true
+#     compressor: false
+#     verifier: false
+#     long_run_control: false   # Studio name: Goal任务控制
+#     mcp_resilience: false     # automatically includes SQL readonly protection
 
 # ── Build ────────────────────────────────────────────────
 # Defaults to .agentkit/Dockerfile (or ./Dockerfile if present).
@@ -264,8 +282,13 @@ infrastructure:
   tos:                         # TOS (build artifacts)
     region: cn-beijing
     project: default
-    bucket_name: Auto          # Auto → agentkit-platform-<account-id>
+    bucket_name: Auto          # Auto → provider/region-safe account bucket
     object_prefix: agentkit-builds
+  # code_pipeline:
+  #   workspace_name: agentkit-cli-workspace
+  #   workspace_id: ""           # optional; pins an existing workspace
+  #   pipeline_name: my-agent
+  #   pipeline_id: ""            # optional; pins an existing compatible pipeline
 ```
 
 ## Project
@@ -275,6 +298,7 @@ The top-level fields provide the default cloud provider, region, and project inh
 | Field | Description | Default |
 | --- | --- | --- |
 | `name` | Runtime/app name; the runtime is created or updated idempotently by this name. | `agent` |
+| `description` | Runtime description. | — |
 | `cloud_provider` | Cloud provider: `volcengine` or `byteplus`. Applies to Runtime, IAM/STS, CR, TOS, and Code Pipeline. | Current cloud environment |
 | `region` | Default region inherited by resource blocks. | Provider default region |
 | `project` | The AgentKit project it belongs to. | `default` |
@@ -292,6 +316,7 @@ The `runtime` block configures compute resources and the scaling policy.
 | `min_instance` | Minimum instances. Set `0` to allow scale-to-zero when idle. | `1` |
 | `max_instance` | Maximum instances. | `5` |
 | `max_concurrency` | Concurrent requests per instance. | `20` |
+| `tags` | Tags written when a new runtime is created. Updating this config later does not rewrite tags on an existing runtime. | `{}` |
 
 ### Runtime network
 
@@ -305,6 +330,72 @@ The `runtime` block configures compute resources and the scaling policy.
 | `subnet_ids` | Subnet IDs for private networking. | `[]` |
 | `security_group_ids` | Security-group IDs for private networking. | `[]` |
 | `enable_shared_internet_access` | Whether the private network uses shared internet access. | Platform default |
+
+## Harness Sidecar
+
+`harness_sidecar` enables Product Component capabilities for a managed Harness Runtime. When it is enabled, `release` uses a platform-provided managed Sidecar base image, injects the Sidecar runtime configuration during release, and verifies the Sidecar, model proxy, and required MCP gateway after the runtime becomes ready. When this block is enabled, set at least one selectable component to `true` in `component_overrides`.
+
+<Warning>
+Managed Harness Sidecar currently supports only Volcengine `cn-shanghai`, CPython 3.12, `linux/amd64`, and exactly one runtime instance, so both `runtime.min_instance` and `runtime.max_instance` must be `1`. It also requires the release environment to provide the platform-managed Sidecar base image configuration; release fails in ordinary local environments where that configuration is unavailable. Sidecar releases must use the default `key_auth` gateway auth and cannot be combined with `custom_jwt` or frontend BFF-derived auth.
+</Warning>
+
+```yaml
+runtime:
+  region: cn-shanghai
+  min_instance: 1
+  max_instance: 1
+
+harness_sidecar:
+  enabled: true
+  profile: default
+  component_overrides:
+    context_engine: true
+    compressor: true
+    verifier: true
+    long_run_control: true
+    mcp_resilience: false
+```
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `harness_sidecar.enabled` | boolean | `true` when the object exists | Whether to enable managed Sidecar. Set it to `false`, or omit the whole block, to disable it. |
+| `harness_sidecar.profile` | string | `default` | Product Component profile. Supported values are `default` and `ops`. |
+| `harness_sidecar.catalog_version` | string | `2026.07.1` | Expected Catalog version. When provided, it must match the version supported by the current CLI. |
+| `harness_sidecar.runtime_version` | string | — | Target managed Runtime version. Omit it to let the platform choose. |
+| `harness_sidecar.component_overrides` | object | `{}` | Selectable component switches. Supported keys are `context_engine`, `compressor`, `verifier`, `long_run_control`, and `mcp_resilience`; values must be boolean. At least one value must be `true` when Sidecar is enabled. |
+| `harness_sidecar.fail_open` | boolean | `false` | Whether to pass traffic through when Sidecar fails. Managed APIG runtime requires this to stay `false`. |
+| `harness_sidecar.transport` | `apig_runtime_port` \| `local` | `apig_runtime_port` | How Sidecar reaches the model proxy and MCP gateway. Managed release uses `apig_runtime_port`. |
+| `harness_sidecar.model_proxy.enabled` | boolean | `true` | Whether to enable the model proxy. Managed APIG runtime requires this to stay `true`. |
+| `harness_sidecar.model_proxy.host` | string | `0.0.0.0` | Model proxy bind host. Managed APIG runtime requires an externally reachable host. |
+| `harness_sidecar.model_proxy.port` | integer | `18787` | Model proxy bind port. |
+| `harness_sidecar.model_proxy.upstream_base_url_env` | string | `MODEL_AGENT_API_BASE` | Runtime environment variable name that points to the upstream model base URL. |
+| `harness_sidecar.model_proxy.upstream_api_key_env` | string | `MODEL_AGENT_API_KEY` | Runtime environment variable name that points to the upstream model API key. |
+| `harness_sidecar.model_proxy.prefer_configured_upstream_api_key` | boolean | `true` | Managed APIG runtime requires the configured upstream API key. |
+| `harness_sidecar.model_proxy.compression_provider` | string | `noop` | Compression provider used by the model proxy. |
+| `harness_sidecar.model_proxy.fail_open` | boolean | Inherits `harness_sidecar.fail_open` | Whether to pass traffic through when the model proxy fails. |
+| `harness_sidecar.mcp_gateway.enabled` | boolean | Derived from the component plan | Whether to enable the MCP gateway. It is enabled when `mcp_resilience` or SQL read-only protection is active. |
+| `harness_sidecar.mcp_gateway.host` | string | `0.0.0.0` | MCP gateway bind host. Managed APIG runtime requires an externally reachable host. |
+| `harness_sidecar.mcp_gateway.port` | integer | `18788` | MCP gateway bind port. |
+| `harness_sidecar.mcp_gateway.upstreams_env` | string | `MCP_URLS` | Runtime environment variable name that points to upstream MCP URLs. |
+| `harness_sidecar.mcp_gateway.upstream_api_key_env` | string | `MCP_API_KEY` | Runtime environment variable name that points to the upstream MCP API key. |
+| `harness_sidecar.mcp_gateway.prefer_configured_upstream_api_key` | boolean | `true` when managed MCP gateway is enabled | Managed APIG runtime requires the configured upstream MCP API key. |
+| `harness_sidecar.mcp_gateway.fail_open` | boolean | Inherits `harness_sidecar.fail_open` | Whether to pass traffic through when the MCP gateway fails. Managed APIG runtime requires this to stay `false`. |
+
+Available components are listed below. `mcp_resilience` automatically includes SQL read-only protection; `sql_readonly`, `browser`, `evaluation`, and `shadow` are not directly selectable `component_overrides`.
+
+| Component ID | Description | Directly selectable |
+| --- | --- | --- |
+| `context_engine` | Governs context assembly, task anchoring, and context budget. | Yes |
+| `compressor` | Compresses long context and large tool results to reduce token cost. | Yes |
+| `verifier` | Verifies evidence and answers, then repairs or alerts on failure. | Yes |
+| `long_run_control` | Manages Goal task progress, continuation, and stopping conditions. | Yes |
+| `mcp_resilience` | Governs MCP connection handling, timeouts, empty results, large responses, and call budgets; automatically includes SQL read-only protection. | Yes |
+| `sql_readonly` | Provides SQL read-only protection for selected MCP routes. | No |
+| `browser` | Browser task enhancement; unavailable in the current Runtime contract. | No |
+| `evaluation` | Online evaluation; unavailable in the current Runtime contract. | No |
+| `shadow` | Shadow comparison runs; unavailable in the current Runtime contract. | No |
+
+Use [`harness sidecar resolve`](/productions/agentkit-cli/preview/en/commands/harness#harness-sidecar-resolve) before release to validate the selected plan.
 
 ## Environment variables
 
@@ -422,8 +513,12 @@ Set `apmplus` to `true` to enable APMPlus monitoring.
 | `container_registry.repo_name` | Image repository name. | app name |
 | `tos.region` | TOS region; inherits top-level `region` when omitted. | Top-level `region` |
 | `tos.project` | TOS project; inherits top-level `project` when omitted. | Top-level `project` |
-| `tos.bucket_name` | Object storage bucket for build artifacts. `Auto` → `agentkit-platform-<account-id>`. | `Auto` |
+| `tos.bucket_name` | Object storage bucket for build artifacts. `Auto` derives a provider-, region-, and account-safe default name to avoid cross-region conflicts. | `Auto` |
 | `tos.object_prefix` | Object prefix for build artifacts. | `agentkit-builds` |
+| `code_pipeline.workspace_name` | Code Pipeline workspace name. When `workspace_id` is not set, the CLI finds or creates by this name. | — |
+| `code_pipeline.workspace_id` | Code Pipeline workspace ID to pin and reuse. | — |
+| `code_pipeline.pipeline_name` | Code Pipeline pipeline name. Defaults to the app name when omitted. | app name |
+| `code_pipeline.pipeline_id` | Compatible Code Pipeline pipeline ID to pin and reuse. Managed Harness Sidecar releases still resolve the current compatible pipeline by name. | — |
 
 ## Build
 

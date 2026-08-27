@@ -73,13 +73,13 @@ agentkit sandbox init -t self-host
 
 ## sandbox config
 
-Configure local defaults for sandbox commands. The config file is `.agentkit/sandbox.yaml` in the current project. `--list` prints YAML after merging defaults and redacts model API keys and WebSearch API keys.
+Configure local defaults for sandbox commands. The config file is `.agentkit/sandbox.yaml` in the current project. `--list` prints the current config file and redacts model API keys and WebSearch API keys.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `--set <KEY=VALUE>` | Set a config value; repeatable. | — |
 | `--unset <KEY>` | Remove a config value; repeatable. | — |
-| `--list` | Print the current effective config. | `false` |
+| `--list` | Print the current config file. | `false` |
 
 ```bash
 agentkit sandbox config \

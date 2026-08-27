@@ -16,7 +16,7 @@ Without a subcommand, `release` runs the full pipeline. If `.agentkit/agentkit.y
 | `--im-feishu` | Release a Feishu bot proxy after the runtime release. | `false` |
 | `--im-feishu-app-id <id>` | Feishu App ID for the proxy. | `im.feishu.app_id` or `FEISHU_APP_ID` |
 | `--im-feishu-app-secret <secret>` | Feishu App Secret for the proxy; prefer `FEISHU_APP_SECRET`. | `im.feishu.app_secret` or `FEISHU_APP_SECRET` |
-| `--json` | Emit machine-readable NDJSON events for a managed Sidecar release. | `false` |
+| `--json` | Emit machine-readable NDJSON events for a managed Harness Sidecar release. | `false` |
 
 ```bash
 agentkit release --name my-agent --region cn-beijing --project default
@@ -25,6 +25,12 @@ agentkit release --name my-agent --region cn-beijing --project default
 <Warning>
 `release` creates or updates cloud runtimes and may create VeFaaS functions, gateways, container registry resources, TOS objects, and identity configuration. Confirm `.agentkit/agentkit.yaml`, credentials, region, and project before running it.
 </Warning>
+
+`--json` is only for managed Sidecar releases where `.agentkit/agentkit.yaml` resolves a `harness_sidecar` configuration. Using this flag with a standard release configuration returns a failure result. Output is newline-delimited JSON with `progress`, `runtime`, and terminal `result` events, so Studio or CI can render build, deploy, and publish status by phase.
+
+```bash
+agentkit release --json
+```
 
 ## release config
 

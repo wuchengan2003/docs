@@ -158,6 +158,7 @@ CLI 在解析前会先加载项目目录下的 `.env`，因此把取值写入 `.
 
 # ── Project ──────────────────────────────────────────────
 name: my-agent
+description: ""
 cloud_provider: volcengine      # volcengine | byteplus
 region: cn-beijing
 project: default
@@ -171,6 +172,8 @@ runtime:
   min_instance: 1              # keep one warm instance by default
   max_instance: 5
   max_concurrency: 20          # concurrent requests per instance
+  # tags:
+  #   owner: team-name
   # network:
   #   enable_public_network: true
   #   enable_private_network: false
@@ -180,6 +183,21 @@ runtime:
   #   security_group_ids:
   #     - ${SECURITY_GROUP_ID}
   #   enable_shared_internet_access: true
+
+# ── Harness Sidecar optimization (optional) ─────────────
+# Enabling any component selects the managed Sidecar Runtime. Initial support is
+# Volcengine cn-shanghai, CPython 3.12, linux/amd64, and exactly one instance;
+# set runtime.min_instance/max_instance to 1. The private Runtime artifact is
+# supplied by the platform and must never be written into this file.
+# harness_sidecar:
+#   enabled: true
+#   profile: default
+#   component_overrides:
+#     context_engine: true
+#     compressor: false
+#     verifier: false
+#     long_run_control: false   # Studio name: Goal任务控制
+#     mcp_resilience: false     # automatically includes SQL readonly protection
 
 # ── Build ────────────────────────────────────────────────
 # Defaults to .agentkit/Dockerfile (or ./Dockerfile if present).
@@ -264,8 +282,13 @@ infrastructure:
   tos:                         # TOS (build artifacts)
     region: cn-beijing
     project: default
-    bucket_name: Auto          # Auto → agentkit-platform-<account-id>
+    bucket_name: Auto          # Auto → provider/region-safe account bucket
     object_prefix: agentkit-builds
+  # code_pipeline:
+  #   workspace_name: agentkit-cli-workspace
+  #   workspace_id: ""           # optional; pins an existing workspace
+  #   pipeline_name: my-agent
+  #   pipeline_id: ""            # optional; pins an existing compatible pipeline
 ```
 
 ## 项目
@@ -275,6 +298,7 @@ infrastructure:
 | 字段 | 说明 | 默认值 |
 | --- | --- | --- |
 | `name` | 运行时/应用名称，运行时按此名称幂等创建或更新。 | `agent` |
+| `description` | 运行时描述。 | — |
 | `cloud_provider` | 云厂商：`volcengine` 或 `byteplus`。同时用于 Runtime、IAM/STS、CR、TOS 与 Code Pipeline。 | 当前云环境 |
 | `region` | 各资源块继承的默认区域。 | 云厂商默认区域 |
 | `project` | 所属 AgentKit 项目。 | `default` |
@@ -292,6 +316,7 @@ infrastructure:
 | `min_instance` | 最小实例数。设为 `0` 时允许空闲缩容到零。 | `1` |
 | `max_instance` | 最大实例数。 | `5` |
 | `max_concurrency` | 单实例并发请求数。 | `20` |
+| `tags` | 创建新运行时时写入的标签键值对。已有运行时的标签不会在更新时自动改写。 | `{}` |
 
 ### 运行时网络
 
@@ -305,6 +330,72 @@ infrastructure:
 | `subnet_ids` | 私有网络使用的子网 ID 列表。 | `[]` |
 | `security_group_ids` | 私有网络使用的安全组 ID 列表。 | `[]` |
 | `enable_shared_internet_access` | 私有网络是否使用共享公网出口。 | 平台默认 |
+
+## Harness Sidecar
+
+`harness_sidecar` 为托管 Harness Runtime 启用 Product Component 能力。启用后，`release` 会使用平台提供的托管 Sidecar 基础镜像，在发布过程中写入 Sidecar 运行时配置，并在运行时就绪后校验 Sidecar、模型代理和所需 MCP 网关状态。启用该块时，至少需要在 `component_overrides` 中将一个可选组件设为 `true`。
+
+<Warning>
+当前托管 Harness Sidecar 仅支持 Volcengine `cn-shanghai`、CPython 3.12、`linux/amd64`，并要求 `runtime.min_instance` 与 `runtime.max_instance` 都为 `1`。它还要求发布环境由平台提供托管 Sidecar 基础镜像配置；普通本地环境未提供该配置时，发布会失败。启用 Sidecar 时必须使用默认 `key_auth` 网关鉴权，不能与 `custom_jwt` 或前端 BFF 鉴权派生同时使用。
+</Warning>
+
+```yaml
+runtime:
+  region: cn-shanghai
+  min_instance: 1
+  max_instance: 1
+
+harness_sidecar:
+  enabled: true
+  profile: default
+  component_overrides:
+    context_engine: true
+    compressor: true
+    verifier: true
+    long_run_control: true
+    mcp_resilience: false
+```
+
+| 字段 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `harness_sidecar.enabled` | boolean | `true`（存在对象时） | 是否启用托管 Sidecar。设为 `false` 或省略整个块时不启用。 |
+| `harness_sidecar.profile` | string | `default` | Product Component profile，支持 `default` 与 `ops`。 |
+| `harness_sidecar.catalog_version` | string | `2026.07.1` | 期望的 Catalog 版本；传入时必须与当前 CLI 支持版本一致。 |
+| `harness_sidecar.runtime_version` | string | — | 目标托管 Runtime 版本；省略时由平台选择。 |
+| `harness_sidecar.component_overrides` | object | `{}` | 可选组件开关。支持 `context_engine`、`compressor`、`verifier`、`long_run_control` 与 `mcp_resilience`，值必须为 boolean；启用 Sidecar 时至少需要一个 `true`。 |
+| `harness_sidecar.fail_open` | boolean | `false` | Sidecar 故障时是否放行；托管 APIG 运行时要求保持 `false`。 |
+| `harness_sidecar.transport` | `apig_runtime_port` \| `local` | `apig_runtime_port` | Sidecar 访问模型代理和 MCP 网关的传输方式。托管发布使用 `apig_runtime_port`。 |
+| `harness_sidecar.model_proxy.enabled` | boolean | `true` | 是否启用模型代理；托管 APIG 运行时要求保持 `true`。 |
+| `harness_sidecar.model_proxy.host` | string | `0.0.0.0` | 模型代理监听地址；托管 APIG 运行时必须对外可达。 |
+| `harness_sidecar.model_proxy.port` | integer | `18787` | 模型代理监听端口。 |
+| `harness_sidecar.model_proxy.upstream_base_url_env` | string | `MODEL_AGENT_API_BASE` | 指向上游模型 Base URL 的运行时环境变量名。 |
+| `harness_sidecar.model_proxy.upstream_api_key_env` | string | `MODEL_AGENT_API_KEY` | 指向上游模型 API Key 的运行时环境变量名。 |
+| `harness_sidecar.model_proxy.prefer_configured_upstream_api_key` | boolean | `true` | 托管 APIG 运行时要求使用配置中的上游 API Key。 |
+| `harness_sidecar.model_proxy.compression_provider` | string | `noop` | 模型代理压缩提供方。 |
+| `harness_sidecar.model_proxy.fail_open` | boolean | 继承 `harness_sidecar.fail_open` | 模型代理故障时是否放行。 |
+| `harness_sidecar.mcp_gateway.enabled` | boolean | 由组件计划决定 | 是否启用 MCP 网关；启用 `mcp_resilience` 或 SQL 只读保护时会启用。 |
+| `harness_sidecar.mcp_gateway.host` | string | `0.0.0.0` | MCP 网关监听地址；托管 APIG 运行时必须对外可达。 |
+| `harness_sidecar.mcp_gateway.port` | integer | `18788` | MCP 网关监听端口。 |
+| `harness_sidecar.mcp_gateway.upstreams_env` | string | `MCP_URLS` | 指向上游 MCP 地址列表的运行时环境变量名。 |
+| `harness_sidecar.mcp_gateway.upstream_api_key_env` | string | `MCP_API_KEY` | 指向上游 MCP API Key 的运行时环境变量名。 |
+| `harness_sidecar.mcp_gateway.prefer_configured_upstream_api_key` | boolean | 启用托管 MCP 网关时为 `true` | 托管 APIG 运行时要求使用配置中的上游 MCP API Key。 |
+| `harness_sidecar.mcp_gateway.fail_open` | boolean | 继承 `harness_sidecar.fail_open` | MCP 网关故障时是否放行；托管 APIG 运行时要求保持 `false`。 |
+
+可用组件如下。`mcp_resilience` 会自动带上 SQL 只读保护；`sql_readonly`、`browser`、`evaluation` 与 `shadow` 不是用户可直接选择的 `component_overrides` 项。
+
+| 组件 ID | 说明 | 可直接选择 |
+| --- | --- | --- |
+| `context_engine` | 治理上下文组装、任务锚定和上下文预算。 | 是 |
+| `compressor` | 压缩长上下文和大型工具结果，降低 Token 成本。 | 是 |
+| `verifier` | 校验证据和回答，在失败时执行修复或告警。 | 是 |
+| `long_run_control` | 管理 Goal 任务的进度、续跑和结束条件。 | 是 |
+| `mcp_resilience` | 治理 MCP 连接、超时、空结果、大返回和调用预算；自动包含 SQL 只读保护。 | 是 |
+| `sql_readonly` | 对所选 MCP 路由提供 SQL 只读保护。 | 否 |
+| `browser` | 浏览器任务增强；当前 Runtime 合约中不可用。 | 否 |
+| `evaluation` | 在线评测；当前 Runtime 合约中不可用。 | 否 |
+| `shadow` | Shadow 对照运行；当前 Runtime 合约中不可用。 | 否 |
+
+发布前可用 [`harness sidecar resolve`](/productions/agentkit-cli/preview/zh/commands/harness#harness-sidecar-resolve) 校验选择结果。
 
 ## 环境变量
 
@@ -422,8 +513,12 @@ envs:
 | `container_registry.repo_name` | 镜像仓库名。 | 应用名 |
 | `tos.region` | TOS 区域；省略时继承顶层 `region`。 | 顶层 `region` |
 | `tos.project` | TOS 项目；省略时继承顶层 `project`。 | 顶层 `project` |
-| `tos.bucket_name` | 存放构建产物的对象存储桶。`Auto` → `agentkit-platform-<account-id>`。 | `Auto` |
+| `tos.bucket_name` | 存放构建产物的对象存储桶。`Auto` 会按云厂商、区域和账号生成避免跨区域冲突的默认名称。 | `Auto` |
 | `tos.object_prefix` | 构建产物的对象前缀。 | `agentkit-builds` |
+| `code_pipeline.workspace_name` | Code Pipeline 工作区名称；未设置 `workspace_id` 时按名称查找或创建。 | — |
+| `code_pipeline.workspace_id` | 要固定复用的 Code Pipeline 工作区 ID。 | — |
+| `code_pipeline.pipeline_name` | Code Pipeline 流水线名称；省略时使用应用名。 | 应用名 |
+| `code_pipeline.pipeline_id` | 要固定复用的兼容流水线 ID。托管 Harness Sidecar 发布始终按名称解析当前兼容流水线。 | — |
 
 ## 构建
 

@@ -73,13 +73,13 @@ agentkit sandbox init -t self-host
 
 ## sandbox config
 
-配置沙箱命令的本地默认值。配置文件位于当前项目的 `.agentkit/sandbox.yaml`，`--list` 会输出合并默认值后的 YAML，并自动隐藏模型 API Key 和 WebSearch API Key。
+配置沙箱命令的本地默认值。配置文件位于当前项目的 `.agentkit/sandbox.yaml`，`--list` 会输出当前配置文件内容，并自动隐藏模型 API Key 和 WebSearch API Key。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
 | `--set <KEY=VALUE>` | 写入配置值，可重复。 | — |
 | `--unset <KEY>` | 删除配置值，可重复。 | — |
-| `--list` | 输出当前有效配置。 | `false` |
+| `--list` | 输出当前配置文件内容。 | `false` |
 
 ```bash
 agentkit sandbox config \

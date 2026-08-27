@@ -6,6 +6,13 @@ title: "Changelog"
 
 There are currently no unreleased public changes.
 
+## 0.52.1 - 2026-08-12
+
+- [Harness](/productions/agentkit-cli/preview/en/commands/harness#harness-sidecar-catalog) adds `harness sidecar catalog` and `harness sidecar resolve` for printing the Product Component Catalog and resolving profiles plus component switches into a verifiable Sidecar plan before release.
+- [Release configuration](/productions/agentkit-cli/preview/en/agentkit-yaml#harness-sidecar) now supports managed `harness_sidecar` config, adds runtime descriptions, create-time tags, and Code Pipeline workspace/pipeline pinning fields, and derives `Auto` TOS buckets from the cloud provider, region, and account.
+- [`release`](/productions/agentkit-cli/preview/en/commands/release#release) adds `--json` for managed Harness Sidecar releases, emitting newline-delimited build, deploy, runtime-id, and final-result events and verifying the Sidecar, model proxy, and required MCP gateway after release.
+- [`sandbox config --list`](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-config) now prints the current `.agentkit/sandbox.yaml` file instead of listing inferred default model, network, and tool settings.
+
 ## 0.52.0 - 2026-08-11
 
 - [Authentication commands](/productions/agentkit-cli/preview/en/commands/auth) can now read `/.well-known/agentkit-cli` discovery documents from custom login addresses that include a single tenant path segment, with stricter validation for remote addresses, discovery fields, regions, cloud providers, and STS coordinates. When logging in through a remote discovery document, the CLI saves the profile only after login succeeds.

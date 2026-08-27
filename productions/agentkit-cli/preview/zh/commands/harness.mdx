@@ -321,3 +321,38 @@ agentkit harness invoke my-harness "总结本次会话" \
 ```
 
 对于使用 `custom_jwt` 鉴权的 Harness，可以通过 `--token` 显式传入 Bearer token，也可以先运行 `agentkit login --identity-only <sso-address>` 保存 OIDC 会话。CLI 只会在 Runtime endpoint 为 HTTPS、Runtime 的 discovery URL 与当前登录 issuer 匹配且当前 OAuth client ID 位于允许列表时自动转发缓存的 `id_token`。
+
+## harness sidecar catalog
+
+输出 Harness Sidecar Product Component Catalog。该命令只打印 JSON，不创建或修改云资源；可用于在 Studio、CI 或脚本中展示当前 profile 下的可选组件、可用状态和默认选择。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `--profile <profile>` | Product Component profile：`default` 或 `ops`。 | `ops` |
+
+```bash
+agentkit harness sidecar catalog --profile ops
+```
+
+输出包含 `schema_version`、`catalog_version`、`profiles`、`selected_profile`、`components`、`total_component_count` 与 `selectable_component_count`。其中 `components[].selected_by_profile` 表示该组件是否由当前 profile 默认选中，`components[].availability.available` 表示当前 Runtime 合约是否可用。
+
+## harness sidecar resolve
+
+将 profile 与组件开关解析为确定性的 Harness Sidecar plan。该命令只输出 JSON 计划；当计划无效时会返回非零退出码，便于发布前校验 `harness_sidecar.component_overrides` 是否可用。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `--profile <profile>` | Product Component profile：`default` 或 `ops`。 | `ops` |
+| `--disabled` | 关闭 Sidecar 选择，输出空的有效组件列表。 | `false` |
+| `--component <id=true\|false>` | 覆盖一个可选组件；可重复传入。支持 `context_engine`、`compressor`、`verifier`、`long_run_control` 与 `mcp_resilience`。 | — |
+| `--catalog-version <version>` | 期望的 Catalog 版本。 | `2026.07.1` |
+| `--runtime-version <version>` | 目标托管 Runtime 版本；未指定时由平台选择。 | — |
+
+```bash
+agentkit harness sidecar resolve \
+  --profile default \
+  --component context_engine=true \
+  --component mcp_resilience=true
+```
+
+输出中的 `effective_components` 是最终启用组件；`activation_targets` 描述运行时组件、模型代理和 MCP 网关是否会被启用；`plan_hash` 用于发布后核验运行时实际加载的计划。`mcp_resilience` 会自动带上 SQL 只读保护，`sql_readonly` 不能作为 `--component` 直接选择。
