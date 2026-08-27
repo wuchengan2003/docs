@@ -271,7 +271,18 @@ In the "Environments" tab of the Workspaces page, you can create, manage, and bu
 
 ### Create a runtime environment
 
-In the Environments tab, click "Create environment" and fill in the following configuration:
+After clicking "Create environment" in the Environments tab, choose a creation method:
+
+| Creation method | Description |
+| :--- | :--- |
+| Custom configuration | Select the operating system, Python version, command-line tools, and skills; Studio auto-generates the Dockerfile. You can review and edit the generated content on the "Dockerfile" tab. |
+| Upload Dockerfile | Upload an existing Dockerfile file directly, skipping tool and skill selection. You can continue editing the file content after upload. |
+
+Both methods require an environment name and description.
+
+#### Custom configuration
+
+After selecting "Custom configuration", fill in the following settings:
 
 | Setting | Options | Description |
 | :--- | :--- | :--- |
@@ -310,6 +321,22 @@ When creating or saving an environment, Studio auto-generates a Dockerfile based
 <Warning>
   Never write access keys, tokens, or other credentials into the Dockerfile. The Dockerfile is submitted to the cloud build service together with the project and may be readable by anyone with access to the build artifacts.
 </Warning>
+
+#### Upload Dockerfile
+
+After selecting "Upload Dockerfile", drag a file onto the upload area or click it to choose a local Dockerfile file. After uploading, you can continue editing the content in the preview area.
+
+The uploaded Dockerfile must satisfy the following requirements:
+
+| Requirement | Constraint |
+| :--- | :--- |
+| File size | At most 128 KiB |
+| Content | Must not be empty |
+| Instruction | Must contain a `FROM` instruction |
+
+<Note>
+  When uploading a Dockerfile, operating system, Python version, command-line tools, and skills are not selected; those are determined by the uploaded file content. The environment name and description are still required.
+</Note>
 
 ### Build environment images
 
