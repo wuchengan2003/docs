@@ -12,6 +12,8 @@ VeADK 提供一组在 [AgentKit 沙箱](https://console.volcengine.com/agentkit)
 | `execute_skills` | 在预制技能沙箱中运行 `agent.py` 工作流 |
 | `coding` | 在 OpenCode 沙箱中运行代码生成工作流 |
 | `run_sandbox_agent` | 指定任意 `tool_id` 在远端沙箱执行 `agent.py` |
+| `invoke_skill` | 以非阻塞方式创建技能任务，返回初始任务对象 |
+| `poll_skill` | 获取技能任务的当前状态快照 |
 
 导入路径：
 
@@ -19,6 +21,8 @@ VeADK 提供一组在 [AgentKit 沙箱](https://console.volcengine.com/agentkit)
 - `from veadk.tools.builtin_tools.execute_skills import execute_skills`
 - `from veadk.tools.builtin_tools.coding import coding`
 - `from veadk.tools.builtin_tools.run_sandbox_agent import run_sandbox_agent`
+- `from veadk.tools.builtin_tools.invoke_skill import invoke_skill`
+- `from veadk.tools.builtin_tools.poll_skill import poll_skill`
 
 ## 环境变量与前提
 
