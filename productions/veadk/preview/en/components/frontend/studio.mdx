@@ -34,7 +34,7 @@ To use BytePlus as the cloud provider, pass `--provider byteplus` and supply cre
 
 ## Studio persistent storage
 
-Studio capabilities such as video creation, automatic evaluation, and artifact persistence require persistent object storage to save reference assets, generated results, optimization snapshots, and conversation artifacts. Studio uses TOS as the persistent storage backend. When no dedicated publish storage is configured, skill publishing also reuses the persistent storage bucket; see [Skill publish storage](#skill-publish-storage).
+Studio capabilities such as video creation, automatic evaluation, intelligent-development project versions, and artifact persistence require persistent object storage to save reference assets, generated results, optimization snapshots, and conversation artifacts. Studio uses TOS as the persistent storage backend. When no dedicated publish storage is configured, skill publishing also reuses the persistent storage bucket; see [Skill publish storage](#skill-publish-storage).
 
 ### Cloud deployment
 
@@ -64,6 +64,8 @@ Both variables must be set for Studio to enable persistent storage. When not con
 Studio objects use a user-first, versioned key layout with the path format `veadk-studio/v1/users/<encoded-user-ID>/<namespace>/<scope>/<resource-ID>/`. Video reference assets use the `video/<asset-role>/<asset-ID>/` namespace and store file content and `metadata.json` below it.
 
 Optimization snapshots produced by automatic evaluation are stored at `veadk-studio/v1/evaluation-optimizations/<Runtime ID>/<app name>.json`, with the latest snapshot retained for each Runtime application.
+
+Intelligent-development project versions are stored at `veadk-studio/v1/users/<encoded-user-ID>/intelligent-development/projects/<project-ID>/versions/<version-ID>/`. Each version contains an immutable source ZIP, validation report, and commit marker. Viewing, downloading, and deploying a saved version do not depend on the original Sandbox; the project summary is only an index.
 
 ## Customize branding
 
@@ -393,7 +395,7 @@ Intelligent development is a goal-driven creation flow: on Add Agent, select "In
 
 #### Deploy validated source
 
-When deploying from intelligent development, the source is materialized server-side from the validated delivery artifact; browser files cannot replace it and only a new Runtime can be created. The deployment page shows the Runtime name (editable; must be 4–64 characters containing only letters, digits, underscores, and hyphens), the entry-point file, artifact checksums, and supports selecting the deployment region and network mode. The Runtime name is taken from the agent name in the delivery artifact, and resource tags record the source as intelligent development.
+When deploying from intelligent development, the source is materialized server-side from the validated delivery artifact or a saved project version; browser files cannot replace it and only a new Runtime can be created. The deployment page shows the Runtime name (editable; must be 4–64 characters containing only letters, digits, underscores, and hyphens), the entry-point file, artifact checksums, and supports selecting the deployment region and network mode. The Runtime name is taken from the agent name in the delivery artifact, and resource tags record the source as intelligent development.
 
 <Warning>
   Source that has not passed cloud validation can still be deployed, but confirm the Runtime configuration before proceeding.
@@ -406,6 +408,32 @@ Intelligent-development sessions run in the current browser session and do not a
 <Note>
   Tool calls, thinking content, and progress messages from intelligent development are redacted server-side before being sent to the browser: task credentials and private paths are removed and never appear in the browser.
 </Note>
+
+#### Project version library
+
+Each completed build or optimization is saved as an immutable project version in the private Studio TOS bucket. Saved versions do not depend on the original Sandbox environment — viewing, downloading, and deploying remain available even after the Sandbox session expires. Versions are grouped by project and listed by creation time.
+
+<Note>
+  Project version persistence requires the administrator to configure Studio persistent storage (`VEADK_STUDIO_TOS_BUCKET` and `VEADK_STUDIO_TOS_REGION`). When persistent storage is not configured, build artifacts are only available within the current Sandbox session and are not saved as project versions. See [Studio persistent storage](#studio-persistent-storage) for configuration.
+</Note>
+
+Open the project version library from the intelligent-development creation page to browse saved projects and their versions. Each version displays the creation time, intent summary, validation status, agent name, entry-point file, file count, and artifact size. The following operations are available:
+
+| Operation | Description |
+| :--- | :--- |
+| View source | Browse files in the version using an IDE-style file tree in the code browser, with light and dark theme support. |
+| Download ZIP | Download the complete source archive for the version. |
+| Deploy to AgentKit | Materialize the source from a saved version and deploy to a new Runtime without depending on the original Sandbox. |
+| Restore to new session | Restore a saved version into a new intelligent-development session as a baseline for further iteration. |
+| Delete version | Delete the version and its source artifacts; deletion is irreversible. |
+
+<Note>
+  Optimization builds expose before/after changes directly in the delivery, viewable in the source browser.
+</Note>
+
+##### Version comparison
+
+Select any two versions of the same project in the project version library to compare file differences between them. The comparison is presented in a side-by-side diff view, showing additions, deletions, and modifications per file. Version comparison does not produce additional stored artifacts.
 
 ### Add and deploy from a code package
 
