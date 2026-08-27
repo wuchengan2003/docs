@@ -6,17 +6,19 @@ The `auth` command group handles SSO authentication: log in through the browser 
 
 ## auth login
 
-Authenticate via browser SSO and store short-lived STS credentials.
+Authenticate via browser SSO and store short-lived STS credentials. With `--identity-only`, the CLI only stores the user's OIDC session and does not create or refresh STS credentials; use this mode to invoke `custom_jwt` runtimes or [`chat`](/productions/agentkit-cli/preview/en/commands/chat) with a shared Harness.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `[address]` | Login address | None |
 | `-p, --profile <name>` | Use a named, pre-seeded profile instead of an address | None |
 | `--duration <seconds>` | Requested STS credential lifetime (seconds) | `3600` |
+| `--identity-only` | Store only the user OIDC session, without AgentKit management credentials. | `false` |
 | `--no-open` | Don't open a browser — just print the login URL (headless/SSH) | `false` |
 
 ```bash
 agentkit auth login
+agentkit login https://login.example.com/team --identity-only
 ```
 
 ## auth logout
@@ -53,12 +55,13 @@ Create or update a profile's login coordinates (non-secret).
 | `<name>` | Profile name (required) | None |
 | `--issuer <url>` | OIDC issuer URL | None |
 | `--client-id <id>` | Public OAuth client id | None |
-| `--role-trn <trn>` | STS role TRN | None |
+| `--role-trn <trn>` | STS role TRN; required unless `--identity-only` is used | None |
 | `--provider-trn <trn>` | IAM OIDC provider TRN | None |
 | `--region <region>` | Region | `cn-beijing` |
+| `--identity-only` | Save an OIDC-only profile without an STS role. | `false` |
 
 ```bash
-agentkit auth profile set my-profile --issuer https://example.com --client-id abc123
+agentkit auth profile set my-profile --issuer https://example.com --client-id abc123 --identity-only
 ```
 
 ## auth profile list
@@ -171,7 +174,7 @@ agentkit auth admin sso-setup --yes \
 
 ## auth admin publish
 
-Create or reuse the CLI login resources for an existing user pool and publish the `/.well-known/agentkit-cli` discovery document to a selected TOS bucket.
+Create or reuse the CLI login resources for an existing user pool and publish the `/.well-known/agentkit-cli` discovery document to a selected TOS bucket. You can also pass existing `--issuer`, `--client-id`, `--role-trn`, and `--provider-trn` together to use publish-only mode without creating identity or IAM resources.
 
 <Warning>
 This command modifies identity and IAM resources and writes public login configuration to the selected bucket. Confirm that the bucket, account, and user pool belong to the target environment.
@@ -183,10 +186,23 @@ This command modifies identity and IAM resources and writes public login configu
 | `--bucket <bucket>` | TOS bucket that hosts the discovery document (required) | — |
 | `--account <account>` | Expected account ID; refuse to continue when the active credentials belong to another account | — |
 | `--region <region>` | Cloud region | Current provider's default region |
+| `--domain <domain>` | Custom login hostname with CNAME and HTTPS already configured. | TOS bucket HTTPS address |
+| `--issuer <url>` | Existing OIDC issuer; enables publish-only mode when passed together with `--client-id`, `--role-trn`, and `--provider-trn`. | — |
+| `--client-id <id>` | Existing public OIDC client id; required in publish-only mode. | — |
+| `--role-trn <trn>` | Existing target-account STS role TRN; required in publish-only mode. | — |
+| `--provider-trn <trn>` | Existing target-account IAM OIDC provider TRN; required in publish-only mode. | — |
 
 ```bash
 agentkit auth admin publish \
   --user-pool <user-pool-id> \
   --bucket <discovery-bucket> \
   --account <account-id>
+
+agentkit auth admin publish \
+  --user-pool <user-pool-id> \
+  --bucket <discovery-bucket> \
+  --issuer https://issuer.example.com \
+  --client-id <client-id> \
+  --role-trn trn:iam::<account-id>:role/<role-name> \
+  --provider-trn trn:iam::<account-id>:oidc-provider/<provider-name>
 ```

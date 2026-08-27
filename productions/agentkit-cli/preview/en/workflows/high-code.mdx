@@ -36,10 +36,10 @@ The high-code path suits cases that need custom logic, tools, or multi-agent orc
     </Tip>
   </Step>
   <Step title="Invoke the runtime">
-    Call the runtime by name to verify the deployment.
+    Invoke the runtime resolved from the current project's `agentkit.yaml` to verify the deployment.
 
     ```bash
-    agentkit invoke my-agent -m "Hello, introduce yourself"
+    agentkit invoke run "Hello, introduce yourself"
     ```
   </Step>
   <Step title="Inspect and iterate">

@@ -2,7 +2,7 @@
 title: "Manage platform skills"
 ---
 
-The `skill` command group manages skills on the AgentKit skill platform: list, show details, list versions, list skill spaces, and delete skills.
+The `skill` command group manages skills on the AgentKit skill platform: list, show details, list versions, list skill spaces, and delete skills. The `skills` command group works with local skill packages.
 
 ## skill list
 
@@ -71,4 +71,21 @@ Delete a skill.
 
 ```bash
 agentkit skill delete sk-xxxxxxxx --yes
+```
+
+## skills secure
+
+Generate secure Skill packages for managed agents from a local skills directory. By default, output is written to a sibling `<sourceSkillsDir>-secure` directory; pass `--force` to overwrite generated `SKILL.md` files that already exist.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<sourceSkillsDir>` | Local skills directory. Required. | None |
+| `-o, --output <dir>` | Output directory. | Sibling `<sourceSkillsDir>-secure` directory |
+| `--force` | Overwrite existing generated `SKILL.md` files. | `false` |
+| `--json` | Output raw JSON. | `false` |
+
+```bash
+agentkit skills secure ./skills
+
+agentkit skills secure ./skills --output ./skills-secure --force --json
 ```

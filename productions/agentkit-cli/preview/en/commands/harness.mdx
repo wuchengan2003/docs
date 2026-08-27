@@ -22,7 +22,7 @@ agentkit --provider byteplus harness init my-harness --region ap-southeast-1
 
 `harness.yaml` is the single source of configuration for a code-free agent; `harness deploy` expands it into the runtime's environment variables. In the generated file, common fields are active and each component's optional params are shown commented-out, grouped by backend — set a component's `type`, then uncomment the params under that backend. The complete file looks like this:
 
-```yaml harness.yaml
+```yaml title="harness.yaml"
 # =============================================================================
 # AgentKit harness configuration (code-free agent).
 #
@@ -279,4 +279,73 @@ Build the harness image and create or update the runtime from `harness.yaml`.
 
 ```bash
 agentkit harness deploy --project default --region cn-beijing
+```
+
+## harness invoke
+
+Invoke a deployed Harness runtime, with optional per-request overrides for model, prompt, tools, skills, runtime backend, or A2A registry. The default transport is the streaming `run_sse` protocol and the command prints answer text; pass `--raw` to print raw response events or JSON.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<name>` | Deployed Harness or runtime name. Required. | None |
+| `<message>` | Message to send to the agent. Required. | None |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+| `--rev <n>` | Runtime version to invoke. | Current version |
+| `--user-id <id>` | User ID for this run. | `agentkit_user` |
+| `--session-id <id>` | Session ID for this run; generated randomly if omitted. | Random |
+| `--token <jwt>` | Bearer token for a `custom_jwt` Harness. | None |
+| `--tip-token-key <key>` | TIP token key forwarded to the Harness request context. | None |
+| `--apikey <key>` | Explicit bearer key override. | None |
+| `--raw` | Print the raw Harness response. | `false` |
+| `--model-name <name>` | One-time model name override. | Current config |
+| `--system-prompt <text>` | One-time system prompt override. | Current config |
+| `--tools <list>` | One-time built-in tool override, comma-separated. | Current config |
+| `--skills <list>` | One-time Skill Hub slugs, spaces, or `space:skill` references. | Current config |
+| `--runtime <backend>` | One-time runtime backend override: `adk` or `codex`. | Current config |
+| `--max-llm-calls <n>` | Maximum LLM calls for this invocation; must be a positive integer. | Current config |
+| `--registry <uri>` | One-time A2A registry override: `default`, `agentkit://...`, or an HTTP(S) URL. | Current config |
+| `--registry-space-id <id>` | One-time AgentKit A2A space ID override. | Current config |
+| `--registry-space-name <name>` | One-time AgentKit A2A space name override. | Current config |
+| `--registry-top-k <n>` | Maximum AgentCards to retrieve for this invocation. | Current config |
+| `--registry-endpoint <url>` | One-time A2A registry endpoint override. | Current config |
+| `--registry-region <region>` | One-time A2A registry region override. | Current config |
+| `--protocol <protocol>` | Transport protocol: `invoke` or `run_sse`. | `run_sse` |
+
+```bash
+agentkit harness invoke my-harness "Show today's tasks"
+
+agentkit harness invoke my-harness "Use the Codex backend for this analysis" \
+  --runtime codex \
+  --model-name doubao-seed-2-1-pro \
+  --max-llm-calls 12
+```
+
+## harness sidecar catalog
+
+Print the managed Harness Sidecar product component catalog. The catalog is runtime-independent and helps you inspect the components supported by a product profile.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `--profile <profile>` | Product profile. | `ops` |
+
+```bash
+agentkit harness sidecar catalog --profile ops
+```
+
+## harness sidecar resolve
+
+Resolve Sidecar enablement and component overrides into a deterministic plan, then print JSON. If the resulting plan is not valid, the command exits non-zero.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `--profile <profile>` | Product profile. | `ops` |
+| `--disabled` | Disable Sidecar selection. | `false` |
+| `--component <id=true\|false>` | Override a user-selectable product component. Repeatable. | None |
+| `--catalog-version <version>` | Component catalog version. | Current CLI built-in version |
+| `--runtime-version <version>` | Managed runtime version. | None |
+
+```bash
+agentkit harness sidecar resolve --profile ops --component logs=true
+
+agentkit harness sidecar resolve --profile ops --disabled
 ```

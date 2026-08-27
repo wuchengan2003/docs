@@ -6,17 +6,19 @@ title: "鉴权与登录"
 
 ## auth login
 
-通过浏览器 SSO 完成鉴权，并存储短时 STS 凭据。
+通过浏览器 SSO 完成鉴权，并存储短时 STS 凭据。传入 `--identity-only` 时，CLI 只保存用户 OIDC 会话，不创建或刷新 STS 凭据；该模式用于调用 `custom_jwt` 运行时或 [`chat`](/productions/agentkit-cli/preview/zh/commands/chat) 共享 Harness。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
 | `[address]` | 登录地址 | 无 |
 | `-p, --profile <name>` | 使用预置的命名配置，替代直接传入地址 | 无 |
 | `--duration <seconds>` | 请求的 STS 凭据有效期（秒） | `3600` |
+| `--identity-only` | 只保存用户 OIDC 会话，不创建 AgentKit 管理凭据。 | `false` |
 | `--no-open` | 不打开浏览器，仅打印登录 URL（用于无头环境/SSH） | `false` |
 
 ```bash
 agentkit auth login
+agentkit login https://login.example.com/team --identity-only
 ```
 
 ## auth logout
@@ -53,12 +55,13 @@ agentkit auth whoami
 | `<name>` | 配置名称（必填） | 无 |
 | `--issuer <url>` | OIDC issuer URL | 无 |
 | `--client-id <id>` | 公开的 OAuth client id | 无 |
-| `--role-trn <trn>` | STS role TRN | 无 |
+| `--role-trn <trn>` | STS role TRN；未使用 `--identity-only` 时必填 | 无 |
 | `--provider-trn <trn>` | IAM OIDC provider TRN | 无 |
 | `--region <region>` | 区域 | `cn-beijing` |
+| `--identity-only` | 保存不含 STS 角色的 OIDC-only profile。 | `false` |
 
 ```bash
-agentkit auth profile set my-profile --issuer https://example.com --client-id abc123
+agentkit auth profile set my-profile --issuer https://example.com --client-id abc123 --identity-only
 ```
 
 ## auth profile list
@@ -171,7 +174,7 @@ agentkit auth admin sso-setup --yes \
 
 ## auth admin publish
 
-为已有用户池创建或复用 CLI 登录资源，并把 `/.well-known/agentkit-cli` 发现文档发布到指定 TOS bucket。
+为已有用户池创建或复用 CLI 登录资源，并把 `/.well-known/agentkit-cli` 发现文档发布到指定 TOS bucket。也可以同时传入已有 `--issuer`、`--client-id`、`--role-trn` 与 `--provider-trn` 进入仅发布模式，避免重新创建身份和 IAM 资源。
 
 <Warning>
 该命令会修改身份和 IAM 资源，并向指定 bucket 写入公开登录配置。确认 bucket、账号和用户池均属于目标环境。
@@ -183,10 +186,23 @@ agentkit auth admin sso-setup --yes \
 | `--bucket <bucket>` | 托管发现文档的 TOS bucket（必填） | — |
 | `--account <account>` | 预期的账号 ID；当前凭证不属于该账号时拒绝继续 | — |
 | `--region <region>` | 云区域 | 当前云厂商的默认区域 |
+| `--domain <domain>` | 已配置 CNAME 与 HTTPS 证书的自定义登录域名。 | TOS bucket 的 HTTPS 地址 |
+| `--issuer <url>` | 已有 OIDC issuer；与 `--client-id`、`--role-trn`、`--provider-trn` 同时传入时启用仅发布模式。 | — |
+| `--client-id <id>` | 已有公开 OIDC client id；仅发布模式必填。 | — |
+| `--role-trn <trn>` | 目标账号下已有 STS role TRN；仅发布模式必填。 | — |
+| `--provider-trn <trn>` | 目标账号下已有 IAM OIDC provider TRN；仅发布模式必填。 | — |
 
 ```bash
 agentkit auth admin publish \
   --user-pool <user-pool-id> \
   --bucket <discovery-bucket> \
   --account <account-id>
+
+agentkit auth admin publish \
+  --user-pool <user-pool-id> \
+  --bucket <discovery-bucket> \
+  --issuer https://issuer.example.com \
+  --client-id <client-id> \
+  --role-trn trn:iam::<account-id>:role/<role-name> \
+  --provider-trn trn:iam::<account-id>:oidc-provider/<provider-name>
 ```

@@ -20,7 +20,7 @@ Before you start, configure Volcengine AK/SK credentials or obtain valid short-l
     agentkit launch
     ```
 
-    Once deployed, run `agentkit invoke qa-agent -m "hello"` to confirm the runtime responds.
+    Once deployed, run `agentkit invoke run "hello"` to confirm the runtime responds.
   </Step>
 
   <Step title="Create a dataset and add cases">
@@ -83,7 +83,7 @@ Before you start, configure Volcengine AK/SK credentials or obtain valid short-l
 
     ```bash
     # Status, weighted overall score, and per-evaluator averages
-    agentkit eval experiment get 75901xxxxxxxxxxxxx
+    agentkit eval experiment show 75901xxxxxxxxxxxxx
 
     # Per-case results: each case, the target output, and each evaluator's score and rationale
     agentkit eval experiment results 75901xxxxxxxxxxxxx
@@ -102,12 +102,12 @@ Before you start, configure Volcengine AK/SK credentials or obtain valid short-l
 
 ## Wire it into CI
 
-The evaluation commands need no browser login and all support `--json`, so they can be orchestrated directly in a CI pipeline: the `experimentId` returned by `eval run` feeds into `eval experiment get` or `results`.
+The evaluation commands need no browser login and all support `--json`, so they can be orchestrated directly in a CI pipeline: the `experimentId` returned by `eval run` feeds into `eval experiment show` or `results`.
 
 ```bash
 # A minimal loop you can drop into CI
 EXP=$(agentkit eval run --dataset qa-set --evaluator relevance --target qa-agent --json | jq -r .experimentId)
-agentkit eval experiment get "$EXP" --json
+agentkit eval experiment show "$EXP" --json
 ```
 
 ## Practical guidance

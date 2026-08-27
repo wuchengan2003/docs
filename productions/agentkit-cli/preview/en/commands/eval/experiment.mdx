@@ -17,18 +17,20 @@ List the experiments in a project: id, name, status, start time, and aggregate s
 agentkit eval experiment list
 ```
 
-## eval experiment get
+## eval experiment show
 
 Show details of an experiment: status, dataset, target, weighted overall score, and each evaluator's average score and score distribution.
+
+You can also write this command as `eval experiment get`.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `<id>` | Experiment id (required) | None |
-| `-p, --project <name>` | Project name | `default` |
+| `-p, --project <name>` | Project name; ignored on the TEA backend. | `default` |
 | `--json` | Output raw JSON | `false` |
 
 ```bash
-agentkit eval experiment get 75901xxxxxxxxxxxxx
+agentkit eval experiment show 75901xxxxxxxxxxxxx
 ```
 
 ```text

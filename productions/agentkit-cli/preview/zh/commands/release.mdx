@@ -16,6 +16,7 @@ title: "发布"
 | `--im-feishu` | 运行时发布后发布飞书机器人代理。 | `false` |
 | `--im-feishu-app-id <id>` | 飞书代理使用的 App ID。 | `im.feishu.app_id` 或 `FEISHU_APP_ID` |
 | `--im-feishu-app-secret <secret>` | 飞书代理使用的 App Secret；推荐改用 `FEISHU_APP_SECRET`。 | `im.feishu.app_secret` 或 `FEISHU_APP_SECRET` |
+| `--json` | 托管 Sidecar 发布时输出机器可读的 NDJSON 事件。 | `false` |
 
 ```bash
 agentkit release --name my-agent --region cn-beijing --project default
