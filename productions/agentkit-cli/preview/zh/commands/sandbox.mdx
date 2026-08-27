@@ -54,7 +54,11 @@ agentkit sandbox build --project-dir . --dockerfile Dockerfile --image-name cust
 
 ## sandbox init
 
-生成沙箱 Dockerfile 模板。未指定模板时，默认生成 `skill` 模板；传入 `self-host` 时会同时生成 `Dockerfile`、`.agentkit/sandbox.yaml`、`.gitignore`、`.dockerignore` 和 `README.md`，用于自托管沙箱环境。
+生成沙箱 Dockerfile 模板。未指定模板时，默认生成 `skill` 模板。命令会按模板对应的工具类型解析当前内置基础镜像，并把实际镜像地址写入生成的 Dockerfile。
+
+<Note>
+  解析内置基础镜像需要可用的 AgentKit 控制面凭据和区域配置。离线环境或无权限环境无法生成带实际基础镜像的模板。
+</Note>
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
@@ -81,10 +85,12 @@ agentkit sandbox init -t self-host
 agentkit sandbox config \
   --set tool-type=CodeEnv \
   --set session-id=dev \
-  --set model-name=glm-5-2-260617
+  --set model-name=deepseek-v4-flash-ga-260731
 
 agentkit sandbox config --list
 ```
+
+首次写入 `.agentkit/sandbox.yaml` 时，CLI 只保存网络、工具类型、CPU、快照和会话 TTL 等基础默认值；模型提供方、模型名称和模型 Base URL 会在读取有效配置时按云环境补齐，只有用户通过 `sandbox config --set model-*` 或命令行标志显式设置后才会持久化。
 
 支持的配置键如下。
 
@@ -163,12 +169,17 @@ agentkit sandbox config --list
 | `--no-network-shared-internet` | 禁用共享公网出口。 | — |
 | `--network-vpc-id <id>` | 私有网络使用的 VPC ID；启用 `--network-private` 时必填。 | 配置值或 — |
 | `--network-subnet-ids <ids>` | 逗号分隔的子网 ID。 | 配置值或 — |
-| `--llm-shield-app-id <app-id>` | 为 `Skill` 工具启用 LLM Shield，并注入指定 App ID。 | — |
-| `--envs <KEY=VALUE>` | 注入到沙箱工具的环境变量；可重复。重复键会报错。 | — |
+| `--envs <KEY=VALUE>` | 注入沙箱工具的环境变量；可重复传入。与内置变量同名时，本标志传入的值覆盖内置值。 | — |
 | `--json` | 输出 JSON。 | `false` |
 
 ```bash
 agentkit sandbox create --tool-type CodeEnv --tool-name dev-code --cpu 4
+
+agentkit sandbox create \
+  --tool-type CodeEnv \
+  --tool-name dev-code \
+  --envs NODE_ENV=development \
+  --envs FEATURE_FLAG=enabled
 ```
 
 创建自定义 `Private` 工具时需要先准备镜像地址：
@@ -396,7 +407,7 @@ agentkit sandbox shell --session-id dev --command "python --version"
 
 ## sandbox web
 
-打开沙箱 Web 预览，并输出包含 URL、工具 ID、会话 ID 与会话是否新建的 JSON。默认会先在沙箱浏览器中打开 `/home/gem/` 文件路径，再打开本机 noVNC 页面。
+打开沙箱 Web 预览，并输出包含 URL、工具 ID、会话 ID 与会话是否新建的 JSON。默认打开浏览器时，CLI 会同时请求远端沙箱浏览器打开 `/home/gem/`，便于直接查看会话文件；传入 `--no-open` 时只返回 Web URL。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |

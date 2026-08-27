@@ -54,7 +54,11 @@ agentkit sandbox build --project-dir . --dockerfile Dockerfile --image-name cust
 
 ## sandbox init
 
-Generate a sandbox Dockerfile template. When no template is specified, the command generates the `skill` template; with `self-host`, it writes `Dockerfile`, `.agentkit/sandbox.yaml`, `.gitignore`, `.dockerignore`, and `README.md` for a self-host sandbox environment.
+Generate a sandbox Dockerfile template. When no template is specified, the command generates the `skill` template. The command resolves the current built-in base image for the template's tool type and writes the concrete image URL into the generated Dockerfile.
+
+<Note>
+  Resolving the built-in base image requires usable AgentKit control-plane credentials and region configuration. Offline or unauthorized environments cannot generate a template with a concrete base image.
+</Note>
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
@@ -81,10 +85,12 @@ Configure local defaults for sandbox commands. The config file is `.agentkit/san
 agentkit sandbox config \
   --set tool-type=CodeEnv \
   --set session-id=dev \
-  --set model-name=glm-5-2-260617
+  --set model-name=deepseek-v4-flash-ga-260731
 
 agentkit sandbox config --list
 ```
+
+When `.agentkit/sandbox.yaml` is first written, the CLI persists only foundational defaults such as networking, tool type, CPU, snapshots, and session TTL. Model provider, model name, and model base URL are filled in when the effective config is read, and are persisted only after you set them explicitly with `sandbox config --set model-*` or command-line flags.
 
 Supported config keys are listed below.
 
@@ -163,12 +169,17 @@ Create a sandbox tool. After creation, the CLI waits until the tool reaches `Rea
 | `--no-network-shared-internet` | Disable shared internet access. | — |
 | `--network-vpc-id <id>` | VPC ID for private networking; required when `--network-private` is enabled. | Config value or — |
 | `--network-subnet-ids <ids>` | Comma-separated subnet IDs. | Config value or — |
-| `--llm-shield-app-id <app-id>` | Enable LLM Shield for a `Skill` tool and inject the specified App ID. | — |
-| `--envs <KEY=VALUE>` | Environment variable to inject into the sandbox tool; repeatable. Duplicate keys are rejected. | — |
+| `--envs <KEY=VALUE>` | Environment variable to inject into the sandbox tool; repeatable. When it has the same key as a built-in variable, this value overrides the built-in value. | — |
 | `--json` | Output JSON. | `false` |
 
 ```bash
 agentkit sandbox create --tool-type CodeEnv --tool-name dev-code --cpu 4
+
+agentkit sandbox create \
+  --tool-type CodeEnv \
+  --tool-name dev-code \
+  --envs NODE_ENV=development \
+  --envs FEATURE_FLAG=enabled
 ```
 
 To create a custom `Private` tool, prepare an image URL first:
@@ -396,7 +407,7 @@ agentkit sandbox shell --session-id dev --command "python --version"
 
 ## sandbox web
 
-Open the sandbox web preview and print JSON containing the URL, tool id, session id, and whether the session was newly created. By default, the command first opens `/home/gem/` in the sandbox browser, then opens the local noVNC page.
+Open the sandbox web preview and print JSON containing the URL, tool id, session id, and whether the session was newly created. When opening a browser by default, the CLI also asks the remote sandbox browser to open `/home/gem/` so the session files are immediately visible; with `--no-open`, it only returns the web URL.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |

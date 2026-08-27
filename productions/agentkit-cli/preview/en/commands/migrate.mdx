@@ -5,12 +5,22 @@ title: "Migrate an existing agent"
 `migrate` supports two migration modes:
 
 - Run a local structured migration for LangChain, LangGraph, ADK, Strands, or Bedrock AgentCore projects and generate an AgentKit app.
-- Start a remote migration job for a Dify export or another type of agent project, then download the generated VeADK project when the job finishes.
+- Start a remote migration job for a Dify Workflow, Dify Chatflow, or another type of agent project, then download the generated VeADK project when the job finishes.
 
 ```bash
 agentkit migrate [project-dir] --framework langchain|langgraph|adk|strands|agentcore --entry <file.py:object> [options]
 agentkit migrate [project-dir] --framework dify|any create|list|status [job-id] [options]
 ```
+
+## Dify Migration Scope
+
+With `--framework dify create`, the input directory should contain `workflow.yml` or `workflow.yaml`. Before the remote migration starts, the CLI reads the Dify DSL and provides read-only context to the migration process: DSL version, app mode, nodes and edges, variables, app features, dependencies, diagnostics, and locations of truncated content. Credential fields and common authentication text are redacted.
+
+Both Dify `workflow` and `advanced-chat` apps are in scope. For Chatflow, migration also pays attention to conversation variables, `sys.query`, `sys.files`, `sys.conversation_id`, LLM node memory windows, Answer node order, file upload, speech features, citation resources, and content moderation context.
+
+<Note>
+  This context helps migration understand the source graph; it does not mean every Dify node maps one-to-one to an AgentKit capability with the same name. Review the generated report and the source project behavior before accepting the result.
+</Note>
 
 ## migrate
 

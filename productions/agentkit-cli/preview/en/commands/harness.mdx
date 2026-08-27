@@ -69,7 +69,7 @@ description: ""
 #   env: RUNTIME               flag: --runtime
 runtime: adk
 
-# Per-run defaults. Both can be overridden by `agentkit invoke` flags.
+# Per-run defaults. Both can be overridden by `agentkit harness invoke` flags.
 #   env: MAX_LLM_CALLS         flag: --max-llm-calls
 # max_llm_calls: 20
 
@@ -169,7 +169,7 @@ Field reference:
 - **`system_prompt`**: the agent instruction; empty uses the server default (env `SYSTEM_PROMPT`, flag `--system-prompt`).
 - **`description`**: agent description used for discovery and generated AgentCards (env `DESCRIPTION`, flag `--description`).
 - **`runtime`**: the agent runtime backend, `adk` (default) or `codex` (env `RUNTIME`, flag `--runtime`).
-- **`max_llm_calls`**: default maximum LLM calls per run; `agentkit invoke --max-llm-calls` can override it for one request.
+- **`max_llm_calls`**: default maximum LLM calls per run; `agentkit harness invoke --max-llm-calls` can override it for one request.
 - **`structured_tool_calls`** / **`include_tools_every_turn`**: control the tool-call format and whether tool definitions are sent on every model turn.
 - **`registry`**: optional A2A registry. `space_id` selects a space, `top_k` limits AgentCard retrieval, and `endpoint` plus `region` locate the service.
 - **`knowledgebase`**: a knowledge base. An empty `type` disables it; supported backends are `viking`, `opensearch`, `redis` — set `type`, then uncomment that backend's connection params.
@@ -283,69 +283,41 @@ agentkit harness deploy --project default --region cn-beijing
 
 ## harness invoke
 
-Invoke a deployed Harness runtime, with optional per-request overrides for model, prompt, tools, skills, runtime backend, or A2A registry. The default transport is the streaming `run_sse` protocol and the command prints answer text; pass `--raw` to print raw response events or JSON.
+Invoke a deployed Harness and optionally override its model, system prompt, tools, skills, runtime backend, or A2A registry for this request. Overrides affect only the current request and do not modify `harness.yaml`.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
-| `<name>` | Deployed Harness or runtime name. Required. | None |
-| `<message>` | Message to send to the agent. Required. | None |
-| `-r, --region <region>` | Cloud region. | Auto-detect |
+| `<name>` | Harness or Runtime name (required). | — |
+| `<message>` | User message to send (required). | — |
+| `-r, --region <region>` | Cloud region. | Auto-sense |
 | `--rev <n>` | Runtime version to invoke. | Current version |
-| `--user-id <id>` | User ID for this run. | `agentkit_user` |
-| `--session-id <id>` | Session ID for this run; generated randomly if omitted. | Random |
-| `--token <jwt>` | Bearer token for a `custom_jwt` Harness. | None |
-| `--tip-token-key <key>` | TIP token key forwarded to the Harness request context. | None |
-| `--apikey <key>` | Explicit bearer key override. | None |
-| `--raw` | Print the raw Harness response. | `false` |
-| `--model-name <name>` | One-time model name override. | Current config |
-| `--system-prompt <text>` | One-time system prompt override. | Current config |
-| `--tools <list>` | One-time built-in tool override, comma-separated. | Current config |
-| `--skills <list>` | One-time Skill Hub slugs, spaces, or `space:skill` references. | Current config |
-| `--runtime <backend>` | One-time runtime backend override: `adk` or `codex`. | Current config |
-| `--max-llm-calls <n>` | Maximum LLM calls for this invocation; must be a positive integer. | Current config |
-| `--registry <uri>` | One-time A2A registry override: `default`, `agentkit://...`, or an HTTP(S) URL. | Current config |
-| `--registry-space-id <id>` | One-time AgentKit A2A space ID override. | Current config |
-| `--registry-space-name <name>` | One-time AgentKit A2A space name override. | Current config |
-| `--registry-top-k <n>` | Maximum AgentCards to retrieve for this invocation. | Current config |
-| `--registry-endpoint <url>` | One-time A2A registry endpoint override. | Current config |
-| `--registry-region <region>` | One-time A2A registry region override. | Current config |
+| `--user-id <id>` | `user_id` for this run. | `agentkit_user` |
+| `--session-id <id>` | `session_id` for this run; generated when omitted. | Generated |
+| `--token <jwt>` | Bearer token for a `custom_jwt` Harness. | — |
+| `--tip-token-key <key>` | TIP token key forwarded to the Harness request context. | — |
+| `--apikey <key>` | Explicit bearer API key. | — |
+| `--raw` | Print the raw Harness response or streaming events. | `false` |
+| `--model-name <name>` | Model name for this request. | Config value |
+| `--system-prompt <text>` | System prompt for this request. | Config value |
+| `--tools <list>` | Comma-separated tools for this request. | Config value |
+| `--skills <list>` | Skill Hub slugs, spaces, or `space:skill` references for this request. | Config value |
+| `--runtime <backend>` | Runtime backend for this request: `adk` or `codex`. | Config value |
+| `--max-llm-calls <n>` | Maximum LLM calls for this request; must be a positive integer. | Config value |
+| `--registry <uri>` | A2A registry for this request: `default`, `agentkit://...`, or an HTTP(S) URL. | Config value |
+| `--registry-space-id <id>` | A2A registry space ID. | Config value |
+| `--registry-space-name <name>` | A2A registry space name. | Config value |
+| `--registry-top-k <n>` | A2A AgentCard retrieval limit; must be a positive integer. | Config value |
+| `--registry-endpoint <url>` | A2A registry endpoint. | Config value |
+| `--registry-region <region>` | A2A registry region. | Runtime region |
 | `--protocol <protocol>` | Transport protocol: `invoke` or `run_sse`. | `run_sse` |
 
 ```bash
-agentkit harness invoke my-harness "Show today's tasks"
+agentkit harness invoke my-harness "Hello, introduce yourself"
 
-agentkit harness invoke my-harness "Use the Codex backend for this analysis" \
-  --runtime codex \
-  --model-name doubao-seed-2-1-pro \
-  --max-llm-calls 12
+agentkit harness invoke my-harness "Summarize this session" \
+  --model-name doubao-pro \
+  --max-llm-calls 10 \
+  --registry default
 ```
 
-## harness sidecar catalog
-
-Print the managed Harness Sidecar product component catalog. The catalog is runtime-independent and helps you inspect the components supported by a product profile.
-
-| Flag / Argument | Description | Default |
-| --- | --- | --- |
-| `--profile <profile>` | Product profile. | `ops` |
-
-```bash
-agentkit harness sidecar catalog --profile ops
-```
-
-## harness sidecar resolve
-
-Resolve Sidecar enablement and component overrides into a deterministic plan, then print JSON. If the resulting plan is not valid, the command exits non-zero.
-
-| Flag / Argument | Description | Default |
-| --- | --- | --- |
-| `--profile <profile>` | Product profile. | `ops` |
-| `--disabled` | Disable Sidecar selection. | `false` |
-| `--component <id=true\|false>` | Override a user-selectable product component. Repeatable. | None |
-| `--catalog-version <version>` | Component catalog version. | Current CLI built-in version |
-| `--runtime-version <version>` | Managed runtime version. | None |
-
-```bash
-agentkit harness sidecar resolve --profile ops --component logs=true
-
-agentkit harness sidecar resolve --profile ops --disabled
-```
+For a Harness protected by `custom_jwt`, pass a bearer token explicitly with `--token`, or first run `agentkit login --identity-only <sso-address>` to save the OIDC session. The CLI forwards the cached `id_token` only when the Runtime endpoint uses HTTPS, the Runtime discovery URL matches the active login issuer, and the active OAuth client ID is in the allowed list.

@@ -2,39 +2,97 @@
 title: "调用运行时"
 ---
 
-`invoke` 命令组用于向已部署 Runtime 发送请求。常规用法是 `agentkit invoke run`：可以从 `agentkit.yaml` 解析 Runtime，也可以用 Runtime ID 或端点地址直接调用。
+`invoke` 命令组用于向已部署的 Runtime 发送一次请求。默认从当前目录的 `agentkit.yaml` 读取 Runtime 端点、版本、鉴权和 A2A 配置；也可以通过 `--runtime-id` 或 `--endpoint` 直接指定目标。
+
+<Note>
+  `agentkit invoke "hello"` 会按兼容规则转换为 `agentkit invoke run "hello"`；文档中使用 `invoke run` 作为明确写法。`-ak` 也会转换为 `--apikey`，用于兼容 Python SDK 风格参数。
+</Note>
 
 ## invoke run
 
-发送一条消息或一段 JSON 请求体到 Runtime。默认会按 Python SDK 兼容的请求格式发送，并在流式响应中输出答案文本；传入 `--raw` 可查看原始流式事件或 JSON 响应。
+向 Runtime 发送消息或自定义 JSON payload。传入普通消息时，CLI 会发送 `{ "prompt": "<message>" }`；传入 `--payload` 时，会原样发送解析后的 JSON 对象。
+
+每次请求默认带有 `user_id: agentkit_user` 与 `session_id: agentkit_sample_session` 上下文 headers。需要自定义用户或会话标识时，通过 `--headers` 传入同名字段覆盖默认值。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `[message]` | 要发送的用户消息；未传时必须提供 `--payload`。 | 无 |
-| `--config-file <path>` | 用于解析 Runtime 的配置文件。不能与 `--runtime-id` 或 `--endpoint` 同用。 | `agentkit.yaml` |
-| `-p, --payload <json>` | 要发送的 JSON 请求体；不能与 `[message]` 同用。 | 无 |
-| `-h, --headers <json>` | 额外请求头，JSON 对象格式。 | 无 |
-| `-r, --runtime-id <id>` | 按 Runtime ID 解析端点与鉴权信息。 | 无 |
-| `-e, --endpoint <url>` | 直接调用指定端点；必须配合 `--apikey` 或 `--headers` 中的 `Authorization` 使用。 | 无 |
-| `--region <region>` | Runtime ID 查询使用的区域；仅与 `--runtime-id` 同用。 | 自动检测 |
-| `--a2a` | 在直接调用模式下强制使用 A2A JSON-RPC 请求。 | `false` |
-| `--show-reasoning` | 流式输出中展示 LangChain `reasoning_content`。 | `false` |
-| `--raw` | 输出原始流式事件或原始 JSON 响应。 | `false` |
-| `--apikey <key>` | API Key 鉴权；直接端点调用时作为 Bearer key 使用。 | 无 |
+| `[message]` | 要发送的用户消息；不能与 `--payload` 同时使用。 | — |
+| `--config-file <path>` | 读取指定生命周期配置文件；不能与 `--runtime-id` 或 `--endpoint` 同时使用。 | 当前目录的 `agentkit.yaml` |
+| `-p, --payload <json>` | 要发送的 JSON payload；适合需要传递 `state_delta` 或 JSON-RPC 请求的场景。 | — |
+| `-h, --headers <json>` | 要随请求发送的 JSON headers；所有值必须是字符串。 | — |
+| `-r, --runtime-id <id>` | 直接调用指定 Runtime ID，并通过控制面解析端点与鉴权信息。 | — |
+| `-e, --endpoint <url>` | 直接调用指定 Runtime endpoint。 | — |
+| `--region <region>` | 解析 `--runtime-id` 时使用的区域。 | 自动感知 |
+| `--a2a` | 在直接调用模式下强制使用 A2A JSON-RPC 传输。 | `false` |
+| `--show-reasoning` | 流式输出时打印 LangChain `reasoning_content`。 | `false` |
+| `--raw` | 输出原始流式事件或原始 JSON 响应；错误信息不带交互装饰。 | `false` |
+| `--apikey <key>` | 显式指定 Bearer API Key；`--endpoint` 模式可用，不能与 `--runtime-id` 同时使用。 | — |
 
 ```bash
+# 读取当前目录的 agentkit.yaml
 agentkit invoke run "你好，介绍一下你自己"
 
-agentkit invoke run \
-  --runtime-id r-xxxxxxxx \
-  --region cn-beijing \
-  "总结本次会话"
+# 兼容简写，等价于上一条
+agentkit invoke "你好，介绍一下你自己"
+```
 
+## 目标解析
+
+未传 `--runtime-id` 或 `--endpoint` 时，CLI 读取 `agentkit.yaml`：
+
+- `launch_type: local` 时调用本地 `http://127.0.0.1:<invoke_port>`；
+- 云端部署会优先使用配置中保存的 `runtime_endpoint` 与鉴权信息；
+- 如果配置只保存了 `runtime_id`，CLI 会用控制面查询当前版本端点与鉴权信息；
+- `agent_type` 或 `template_type` 包含 `a2a` 时，CLI 自动使用 A2A 传输。
+
+```bash
+agentkit invoke run "检查部署状态" --config-file ./agentkit.staging.yaml
+```
+
+传入 `--runtime-id` 时，CLI 会用管理凭据查询 Runtime 当前或指定版本。该模式会自动使用可解析的 `key_auth` 凭证；`custom_jwt` Runtime 必须通过 `--headers` 传入 OAuth token。
+
+```bash
+agentkit invoke run "hello" \
+  --runtime-id <runtime-id> \
+  --headers '{"Authorization":"Bearer <oauth-token>","session_id":"session-1"}'
+```
+
+传入 `--endpoint` 时，CLI 不查询控制面，必须显式提供鉴权信息：
+
+```bash
 agentkit invoke run \
-  --endpoint https://runtime.example.com/run_sse \
-  --apikey "$AGENTKIT_RUNTIME_API_KEY" \
-  --payload '{"prompt":"生成三条测试用例"}' \
+  --payload '{"prompt":"hello","state_delta":{"locale":"zh"}}' \
+  --endpoint https://runtime.example.com \
+  --apikey <api-key>
+```
+
+## 传输与输出
+
+CLI 会先尝试 `POST /invoke`。当该端点返回 `404` 或 `405` 时，会继续检测 ADK `/run_sse`；如果目标暴露 A2A AgentCard，也会使用 A2A JSON-RPC。显式传入 `--a2a` 或 `--payload` 中包含 `jsonrpc: "2.0"` 时，会直接使用 A2A JSON-RPC。
+
+默认输出会从流式事件中提取答案文本；`--raw` 输出事件或响应原文，适合脚本解析。未传 `--raw` 时，如果模型输出 reasoning 内容，CLI 会显示提示；需要查看 reasoning 文本时传入 `--show-reasoning`。
+
+```bash
+agentkit invoke run "请给出推理过程和答案" \
+  --runtime-id <runtime-id> \
+  --show-reasoning
+
+agentkit invoke run --payload '{"jsonrpc":"2.0","method":"message/stream","params":{"message":{"role":"user","parts":[{"kind":"text","text":"hello"}]}},"id":1}' \
+  --endpoint https://a2a.example.com \
+  --headers '{"Authorization":"Bearer <token>"}' \
   --raw
 ```
 
-直接端点模式不会读取 `agentkit.yaml`。使用 `--runtime-id` 时，CLI 会解析 Runtime 的端点与默认鉴权信息，因此不能同时传入 `--endpoint`，也不能用 `--apikey` 覆盖 Runtime ID 查询出的 `key_auth` 凭证。
+## custom_jwt 鉴权
+
+`custom_jwt` Runtime 要求请求携带用户 OAuth token。对于 `--runtime-id` 或配置文件解析出的 Runtime，CLI 不会自动把登录会话中的 `id_token` 注入到通用 `invoke run` 请求中；请通过 `--headers` 显式传入 `Authorization`。
+
+```bash
+agentkit login --identity-only <sso-address>
+
+agentkit invoke run "hello" \
+  --runtime-id <custom-jwt-runtime-id> \
+  --headers '{"Authorization":"Bearer <oauth-token>"}'
+```
+
+身份仅登录会保存 OIDC 会话，不会生成 AgentKit 管理凭据。若还需要通过 `--runtime-id` 查询 Runtime，请另外配置 AK/SK，或使用普通 `agentkit login` 获取 STS 凭据。

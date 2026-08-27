@@ -2,24 +2,28 @@
 title: "鉴权与登录"
 ---
 
-`auth` 命令组用于 SSO 鉴权：通过浏览器登录并存储短时 STS 凭据、清除会话、查看当前身份、管理登录配置，以及为组织准备 CLI SSO 登录资源。`login`、`logout`、`whoami` 同时提供为顶层命令（如 `agentkit login`）。
+`auth` 命令组用于 SSO 鉴权：通过浏览器登录并存储短时 STS 凭据或仅保存用户 OIDC 会话、清除会话、查看当前身份、管理登录配置，以及为组织准备 CLI SSO 登录资源。`login`、`logout`、`whoami` 同时提供为顶层命令（如 `agentkit login`）。
 
 ## auth login
 
-通过浏览器 SSO 完成鉴权，并存储短时 STS 凭据。传入 `--identity-only` 时，CLI 只保存用户 OIDC 会话，不创建或刷新 STS 凭据；该模式用于调用 `custom_jwt` 运行时或 [`chat`](/productions/agentkit-cli/preview/zh/commands/chat) 共享 Harness。
+通过浏览器 SSO 完成鉴权。默认模式会使用 OIDC 登录结果换取短时 STS 凭据；`--identity-only` 只保存用户 OIDC 会话，可供 `harness invoke` 在匹配的 `custom_jwt` Runtime 上自动转发用户 `id_token`，但不创建 AgentKit 管理凭据。通用 `invoke run` 调用 `custom_jwt` Runtime 时仍需通过 `--headers` 显式传入 `Authorization`。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
 | `[address]` | 登录地址 | 无 |
 | `-p, --profile <name>` | 使用预置的命名配置，替代直接传入地址 | 无 |
 | `--duration <seconds>` | 请求的 STS 凭据有效期（秒） | `3600` |
-| `--identity-only` | 只保存用户 OIDC 会话，不创建 AgentKit 管理凭据。 | `false` |
+| `--identity-only` | 只保存用户 OIDC 会话，不执行 STS 角色交换。 | `false` |
 | `--no-open` | 不打开浏览器，仅打印登录 URL（用于无头环境/SSH） | `false` |
 
 ```bash
 agentkit auth login
-agentkit login https://login.example.com/team --identity-only
+agentkit auth login --identity-only <sso-address>
 ```
+
+<Note>
+  身份仅登录不会提供控制面权限。需要解析 Runtime、管理资源或查询项目时，请另外配置 AK/SK，或使用普通 `agentkit login` 获取 STS 凭据。
+</Note>
 
 ## auth logout
 
@@ -55,14 +59,19 @@ agentkit auth whoami
 | `<name>` | 配置名称（必填） | 无 |
 | `--issuer <url>` | OIDC issuer URL | 无 |
 | `--client-id <id>` | 公开的 OAuth client id | 无 |
-| `--role-trn <trn>` | STS role TRN；未使用 `--identity-only` 时必填 | 无 |
+| `--role-trn <trn>` | STS role TRN；未使用 `--identity-only` 时必填。 | 无 |
 | `--provider-trn <trn>` | IAM OIDC provider TRN | 无 |
 | `--region <region>` | 区域 | `cn-beijing` |
-| `--identity-only` | 保存不含 STS 角色的 OIDC-only profile。 | `false` |
+| `--identity-only` | 保存无需 STS 角色的 OIDC-only profile。 | `false` |
 
 ```bash
-agentkit auth profile set my-profile --issuer https://example.com --client-id abc123 --identity-only
+agentkit auth profile set my-profile \
+  --issuer https://example.com \
+  --client-id abc123 \
+  --identity-only
 ```
+
+登录状态保存在 `~/.agentkit/auth`。长效 refresh token 会优先写入操作系统密钥环；无法使用密钥环时，CLI 将会话文件以 `0600` 权限写入本地。身份仅会话不会保留 OAuth access token，CLI 也不会打印已存储的 token。
 
 ## auth profile list
 

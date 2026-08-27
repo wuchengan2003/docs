@@ -65,7 +65,7 @@ agentkit runtime logs my-agent --limit 200
 
 ## runtime attach
 
-Open an interactive terminal inside a running instance of the runtime, the same shell the console's instance terminal provides. Press Ctrl-] to detach, which leaves the instance running. When the runtime has scaled to zero and has no instance, one is started automatically before attaching; a runtime using `custom_jwt` authentication cannot be auto-started without a token, so invoke it once first.
+Open an interactive terminal inside a running instance of the runtime, the same shell the console's instance terminal provides. Press Ctrl-] to detach, which leaves the instance running. When the runtime has scaled to zero and has no instance, one is started automatically before attaching; a runtime using `custom_jwt` authentication cannot be auto-started without a token, so run `agentkit invoke run` once first.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |

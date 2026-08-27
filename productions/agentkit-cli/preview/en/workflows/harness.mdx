@@ -5,7 +5,7 @@ title: "Using Harness"
 The harness path suits cases that need no custom code: the agent's model, tools, knowledge base, memory, and prompt all live in a single `harness.yaml`, which the CLI builds and deploys as a runtime. The whole loop revolves around that one file — initialize, configure, deploy, invoke, then return to configuration to iterate.
 
 <Note>
-  Configure AK/SK credentials first, or obtain short-lived STS credentials through [SSO login](/productions/agentkit-cli/preview/en/commands/auth). `harness deploy` and `invoke` use the same credential precedence to resolve valid credentials. See the Authentication section of the [Quickstart](/productions/agentkit-cli/preview/en/quickstart).
+  Configure AK/SK credentials first, or obtain short-lived STS credentials through [SSO login](/productions/agentkit-cli/preview/en/commands/auth). `harness deploy` requires control-plane credentials; `harness invoke` uses control-plane credentials to resolve the Runtime and can pass an additional user token for `custom_jwt` Runtimes. See the Authentication section of the [Quickstart](/productions/agentkit-cli/preview/en/quickstart).
 </Note>
 
 <Warning>

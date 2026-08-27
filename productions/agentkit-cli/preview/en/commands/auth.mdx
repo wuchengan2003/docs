@@ -2,24 +2,28 @@
 title: "Authentication & login"
 ---
 
-The `auth` command group handles SSO authentication: log in through the browser and store short-lived STS credentials, clear the session, show the current identity, manage login profiles, and prepare CLI SSO login resources for an organization. `login`, `logout`, and `whoami` are also available as top-level commands (e.g. `agentkit login`).
+The `auth` command group handles SSO authentication: log in through the browser and store short-lived STS credentials or only the user's OIDC session, clear the session, show the current identity, manage login profiles, and prepare CLI SSO login resources for an organization. `login`, `logout`, and `whoami` are also available as top-level commands (e.g. `agentkit login`).
 
 ## auth login
 
-Authenticate via browser SSO and store short-lived STS credentials. With `--identity-only`, the CLI only stores the user's OIDC session and does not create or refresh STS credentials; use this mode to invoke `custom_jwt` runtimes or [`chat`](/productions/agentkit-cli/preview/en/commands/chat) with a shared Harness.
+Authenticate through browser SSO. The default mode exchanges the OIDC login result for short-lived STS credentials. `--identity-only` stores only the user's OIDC session, allowing `harness invoke` to automatically forward the user `id_token` to a matching `custom_jwt` Runtime, but it does not create AgentKit management credentials. Generic `invoke run` calls to a `custom_jwt` Runtime still need an explicit `Authorization` header through `--headers`.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `[address]` | Login address | None |
 | `-p, --profile <name>` | Use a named, pre-seeded profile instead of an address | None |
 | `--duration <seconds>` | Requested STS credential lifetime (seconds) | `3600` |
-| `--identity-only` | Store only the user OIDC session, without AgentKit management credentials. | `false` |
+| `--identity-only` | Store only the user's OIDC session without performing the STS role exchange. | `false` |
 | `--no-open` | Don't open a browser — just print the login URL (headless/SSH) | `false` |
 
 ```bash
 agentkit auth login
-agentkit login https://login.example.com/team --identity-only
+agentkit auth login --identity-only <sso-address>
 ```
+
+<Note>
+  Identity-only login does not provide control-plane permissions. To resolve Runtimes, manage resources, or query projects, configure AK/SK separately or use regular `agentkit login` to obtain STS credentials.
+</Note>
 
 ## auth logout
 
@@ -55,14 +59,19 @@ Create or update a profile's login coordinates (non-secret).
 | `<name>` | Profile name (required) | None |
 | `--issuer <url>` | OIDC issuer URL | None |
 | `--client-id <id>` | Public OAuth client id | None |
-| `--role-trn <trn>` | STS role TRN; required unless `--identity-only` is used | None |
+| `--role-trn <trn>` | STS role TRN; required unless `--identity-only` is used. | None |
 | `--provider-trn <trn>` | IAM OIDC provider TRN | None |
 | `--region <region>` | Region | `cn-beijing` |
 | `--identity-only` | Save an OIDC-only profile without an STS role. | `false` |
 
 ```bash
-agentkit auth profile set my-profile --issuer https://example.com --client-id abc123 --identity-only
+agentkit auth profile set my-profile \
+  --issuer https://example.com \
+  --client-id abc123 \
+  --identity-only
 ```
+
+Login state is stored under `~/.agentkit/auth`. The long-lived refresh token is written to the OS keyring when available; when the keyring is unavailable, session files are written locally with `0600` permissions. Identity-only sessions do not retain the OAuth access token, and the CLI never prints stored tokens.
 
 ## auth profile list
 

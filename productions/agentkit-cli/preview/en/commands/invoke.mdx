@@ -2,39 +2,97 @@
 title: "Invoke a runtime"
 ---
 
-The `invoke` command group sends requests to a deployed Runtime. The regular entry point is `agentkit invoke run`: it can resolve a Runtime from `agentkit.yaml`, or invoke directly by Runtime ID or endpoint URL.
+The `invoke` command group sends one request to a deployed Runtime. By default it reads the Runtime endpoint, version, authentication, and A2A settings from `agentkit.yaml` in the current directory. You can also target a Runtime directly with `--runtime-id` or `--endpoint`.
+
+<Note>
+  `agentkit invoke "hello"` is normalized to `agentkit invoke run "hello"` for compatibility. This reference uses `invoke run` as the explicit form. `-ak` is also normalized to `--apikey` for Python SDK-style arguments.
+</Note>
 
 ## invoke run
 
-Send a message or JSON payload to a Runtime. By default, the command uses the Python SDK-compatible request shape and prints answer text from streaming responses; pass `--raw` to inspect raw streaming events or JSON responses.
+Send a message or custom JSON payload to a Runtime. With a plain message, the CLI sends `{ "prompt": "<message>" }`. With `--payload`, it sends the parsed JSON value unchanged.
+
+Every request includes default `user_id: agentkit_user` and `session_id: agentkit_sample_session` context headers. To customize the user or session identifier, pass those fields through `--headers` to override the defaults.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
-| `[message]` | User message to send; required unless `--payload` is provided. | None |
-| `--config-file <path>` | Config file used to resolve the Runtime. Cannot be used with `--runtime-id` or `--endpoint`. | `agentkit.yaml` |
-| `-p, --payload <json>` | JSON request payload. Cannot be used with `[message]`. | None |
-| `-h, --headers <json>` | Extra request headers as a JSON object. | None |
-| `-r, --runtime-id <id>` | Resolve endpoint and auth by Runtime ID. | None |
-| `-e, --endpoint <url>` | Invoke a specific endpoint URL directly; must be used with `--apikey` or an `Authorization` header in `--headers`. | None |
-| `--region <region>` | Region used for Runtime ID lookup; only valid with `--runtime-id`. | Auto-detect |
-| `--a2a` | Force an A2A JSON-RPC request in direct mode. | `false` |
-| `--show-reasoning` | Show LangChain `reasoning_content` in streaming output. | `false` |
-| `--raw` | Print raw streaming events or the raw JSON response. | `false` |
-| `--apikey <key>` | API key for authentication; used as a bearer key in direct endpoint mode. | None |
+| `[message]` | User message to send; mutually exclusive with `--payload`. | — |
+| `--config-file <path>` | Read a specific lifecycle config file; mutually exclusive with `--runtime-id` and `--endpoint`. | `agentkit.yaml` in the current directory |
+| `-p, --payload <json>` | JSON payload to send; use it for fields such as `state_delta` or JSON-RPC requests. | — |
+| `-h, --headers <json>` | JSON headers to send with the request; every value must be a string. | — |
+| `-r, --runtime-id <id>` | Directly invoke a Runtime ID, resolving its endpoint and authentication through the control plane. | — |
+| `-e, --endpoint <url>` | Directly invoke a Runtime endpoint. | — |
+| `--region <region>` | Region used when resolving `--runtime-id`. | Auto-sense |
+| `--a2a` | Force A2A JSON-RPC transport in direct invocation mode. | `false` |
+| `--show-reasoning` | Print LangChain `reasoning_content` during streaming. | `false` |
+| `--raw` | Print raw streaming events or the raw JSON response; errors are printed without interactive decorations. | `false` |
+| `--apikey <key>` | Explicit bearer API key; available with `--endpoint` and mutually exclusive with `--runtime-id`. | — |
 
 ```bash
+# Read agentkit.yaml in the current directory
 agentkit invoke run "Hello, introduce yourself"
 
-agentkit invoke run \
-  --runtime-id r-xxxxxxxx \
-  --region cn-beijing \
-  "Summarize this session"
+# Compatibility shorthand, equivalent to the previous command
+agentkit invoke "Hello, introduce yourself"
+```
 
+## Target Resolution
+
+When neither `--runtime-id` nor `--endpoint` is passed, the CLI reads `agentkit.yaml`:
+
+- `launch_type: local` invokes `http://127.0.0.1:<invoke_port>`;
+- cloud deployments prefer the saved `runtime_endpoint` and authentication fields from the config;
+- if the config only has `runtime_id`, the CLI queries the control plane for the current version endpoint and authentication;
+- when `agent_type` or `template_type` contains `a2a`, the CLI automatically uses A2A transport.
+
+```bash
+agentkit invoke run "Check deployment status" --config-file ./agentkit.staging.yaml
+```
+
+With `--runtime-id`, the CLI uses management credentials to query the Runtime's current or selected version. This mode automatically uses resolvable `key_auth` credentials; for a `custom_jwt` Runtime, pass the OAuth token through `--headers`.
+
+```bash
+agentkit invoke run "hello" \
+  --runtime-id <runtime-id> \
+  --headers '{"Authorization":"Bearer <oauth-token>","session_id":"session-1"}'
+```
+
+With `--endpoint`, the CLI does not query the control plane, so you must provide authentication explicitly:
+
+```bash
 agentkit invoke run \
-  --endpoint https://runtime.example.com/run_sse \
-  --apikey "$AGENTKIT_RUNTIME_API_KEY" \
-  --payload '{"prompt":"Generate three test cases"}' \
+  --payload '{"prompt":"hello","state_delta":{"locale":"en"}}' \
+  --endpoint https://runtime.example.com \
+  --apikey <api-key>
+```
+
+## Transport And Output
+
+The CLI tries `POST /invoke` first. If that endpoint returns `404` or `405`, it detects ADK `/run_sse`; if the target exposes an A2A AgentCard, it uses A2A JSON-RPC. Passing `--a2a`, or passing a `--payload` that contains `jsonrpc: "2.0"`, uses A2A JSON-RPC directly.
+
+By default, output is extracted as answer text from streaming events. `--raw` prints raw events or the raw response for scripts. Without `--raw`, reasoning chunks produce a short hint; pass `--show-reasoning` to print the reasoning text.
+
+```bash
+agentkit invoke run "Show your reasoning and answer" \
+  --runtime-id <runtime-id> \
+  --show-reasoning
+
+agentkit invoke run --payload '{"jsonrpc":"2.0","method":"message/stream","params":{"message":{"role":"user","parts":[{"kind":"text","text":"hello"}]}},"id":1}' \
+  --endpoint https://a2a.example.com \
+  --headers '{"Authorization":"Bearer <token>"}' \
   --raw
 ```
 
-Direct endpoint mode does not read `agentkit.yaml`. With `--runtime-id`, the CLI resolves the Runtime endpoint and default auth information, so `--endpoint` cannot be passed at the same time and `--apikey` cannot override the `key_auth` credential resolved from the Runtime ID.
+## custom_jwt Authentication
+
+A `custom_jwt` Runtime requires the request to carry a user OAuth token. For Runtime access resolved through `--runtime-id` or the config file, the CLI does not automatically inject the login session's `id_token` into generic `invoke run` requests; pass `Authorization` explicitly through `--headers`.
+
+```bash
+agentkit login --identity-only <sso-address>
+
+agentkit invoke run "hello" \
+  --runtime-id <custom-jwt-runtime-id> \
+  --headers '{"Authorization":"Bearer <oauth-token>"}'
+```
+
+Identity-only login saves the OIDC session without creating AgentKit management credentials. If you also need to resolve a Runtime through `--runtime-id`, configure AK/SK separately or use regular `agentkit login` to obtain STS credentials.

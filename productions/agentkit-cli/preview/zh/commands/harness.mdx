@@ -69,7 +69,7 @@ description: ""
 #   env: RUNTIME               flag: --runtime
 runtime: adk
 
-# Per-run defaults. Both can be overridden by `agentkit invoke` flags.
+# Per-run defaults. Both can be overridden by `agentkit harness invoke` flags.
 #   env: MAX_LLM_CALLS         flag: --max-llm-calls
 # max_llm_calls: 20
 
@@ -169,7 +169,7 @@ short_term_memory:
 - **`system_prompt`**：智能体指令，留空则使用服务端默认（env `SYSTEM_PROMPT`，flag `--system-prompt`）。
 - **`description`**：用于发现和生成 AgentCard 的智能体描述（env `DESCRIPTION`，flag `--description`）。
 - **`runtime`**：智能体运行时后端，`adk`（默认）或 `codex`（env `RUNTIME`，flag `--runtime`）。
-- **`max_llm_calls`**：每次运行允许的默认最大 LLM 调用次数；`agentkit invoke --max-llm-calls` 可为单次请求覆盖。
+- **`max_llm_calls`**：每次运行允许的默认最大 LLM 调用次数；`agentkit harness invoke --max-llm-calls` 可为单次请求覆盖。
 - **`structured_tool_calls`** / **`include_tools_every_turn`**：控制工具调用格式，以及是否在每轮模型调用中重复发送工具定义。
 - **`registry`**：可选 A2A registry。`space_id` 选择空间，`top_k` 控制最多检索的 AgentCard 数量，`endpoint` 与 `region` 指定服务位置。
 - **`knowledgebase`**：知识库。`type` 留空即禁用，支持 `viking`、`opensearch`、`redis`；设好 `type` 后取消注释该后端下对应的连接参数。
@@ -283,69 +283,41 @@ agentkit harness deploy --project default --region cn-beijing
 
 ## harness invoke
 
-调用一个已部署的 Harness 运行时，并可为本次请求覆盖模型、提示词、工具、技能、运行时后端或 A2A registry。默认使用 `run_sse` 流式协议并输出回答文本；传入 `--raw` 时输出原始响应事件或 JSON。
+调用已部署的 Harness，并可为本次请求临时覆盖模型、系统提示词、工具、技能、运行时后端或 A2A registry。覆盖项只影响当前请求，不会修改 `harness.yaml`。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<name>` | 已部署 Harness 或运行时名称，必填。 | 无 |
-| `<message>` | 发送给智能体的消息，必填。 | 无 |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
-| `--rev <n>` | 要调用的运行时版本。 | 当前版本 |
-| `--user-id <id>` | 本次运行使用的用户 ID。 | `agentkit_user` |
-| `--session-id <id>` | 本次运行使用的会话 ID；未传时随机生成。 | 随机 |
-| `--token <jwt>` | 调用 `custom_jwt` Harness 时使用的 Bearer token。 | 无 |
-| `--tip-token-key <key>` | 转发到 Harness 请求上下文的 TIP token key。 | 无 |
-| `--apikey <key>` | 显式 Bearer key 覆盖。 | 无 |
-| `--raw` | 输出原始 Harness 响应。 | `false` |
-| `--model-name <name>` | 本次调用覆盖模型名称。 | 当前配置 |
-| `--system-prompt <text>` | 本次调用覆盖系统提示词。 | 当前配置 |
-| `--tools <list>` | 本次调用覆盖内置工具，逗号分隔。 | 当前配置 |
-| `--skills <list>` | 本次调用覆盖 Skill Hub slug、空间或 `space:skill` 引用。 | 当前配置 |
-| `--runtime <backend>` | 本次调用覆盖运行时后端：`adk` 或 `codex`。 | 当前配置 |
-| `--max-llm-calls <n>` | 本次调用允许的最大 LLM 调用次数，必须为正整数。 | 当前配置 |
-| `--registry <uri>` | 本次调用覆盖 A2A registry：`default`、`agentkit://...` 或 HTTP(S) URL。 | 当前配置 |
-| `--registry-space-id <id>` | 本次调用覆盖 AgentKit A2A 空间 ID。 | 当前配置 |
-| `--registry-space-name <name>` | 本次调用覆盖 AgentKit A2A 空间名称。 | 当前配置 |
-| `--registry-top-k <n>` | 本次调用最多检索的 AgentCard 数量。 | 当前配置 |
-| `--registry-endpoint <url>` | 本次调用覆盖 A2A registry 端点。 | 当前配置 |
-| `--registry-region <region>` | 本次调用覆盖 A2A registry 区域。 | 当前配置 |
-| `--protocol <protocol>` | 调用协议：`invoke` 或 `run_sse`。 | `run_sse` |
+| `<name>` | Harness 或 Runtime 名称（必填）。 | — |
+| `<message>` | 要发送的用户消息（必填）。 | — |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
+| `--rev <n>` | 要调用的 Runtime 版本。 | 当前版本 |
+| `--user-id <id>` | 本次运行的 `user_id`。 | `agentkit_user` |
+| `--session-id <id>` | 本次运行的 `session_id`；未设置时自动生成。 | 自动生成 |
+| `--token <jwt>` | `custom_jwt` Harness 使用的 Bearer token。 | — |
+| `--tip-token-key <key>` | 转发到 Harness 请求上下文的 TIP token key。 | — |
+| `--apikey <key>` | 显式指定 Bearer API Key。 | — |
+| `--raw` | 输出原始 Harness 响应或流式事件。 | `false` |
+| `--model-name <name>` | 本次请求使用的模型名称。 | 配置值 |
+| `--system-prompt <text>` | 本次请求使用的系统提示词。 | 配置值 |
+| `--tools <list>` | 本次请求使用的工具列表，多个值用逗号分隔。 | 配置值 |
+| `--skills <list>` | 本次请求使用的 Skill Hub slug、空间或 `space:skill` 引用。 | 配置值 |
+| `--runtime <backend>` | 本次请求使用的运行时后端：`adk` 或 `codex`。 | 配置值 |
+| `--max-llm-calls <n>` | 本次请求允许的最大 LLM 调用次数，必须为正整数。 | 配置值 |
+| `--registry <uri>` | 本次请求使用的 A2A registry：`default`、`agentkit://...` 或 HTTP(S) URL。 | 配置值 |
+| `--registry-space-id <id>` | A2A registry 空间 ID。 | 配置值 |
+| `--registry-space-name <name>` | A2A registry 空间名称。 | 配置值 |
+| `--registry-top-k <n>` | A2A AgentCard 检索数量，必须为正整数。 | 配置值 |
+| `--registry-endpoint <url>` | A2A registry 端点。 | 配置值 |
+| `--registry-region <region>` | A2A registry 区域。 | Runtime 区域 |
+| `--protocol <protocol>` | 传输协议：`invoke` 或 `run_sse`。 | `run_sse` |
 
 ```bash
-agentkit harness invoke my-harness "查询今天的待办"
+agentkit harness invoke my-harness "你好，介绍一下你自己"
 
-agentkit harness invoke my-harness "使用 Codex 后端分析这个问题" \
-  --runtime codex \
-  --model-name doubao-seed-2-1-pro \
-  --max-llm-calls 12
+agentkit harness invoke my-harness "总结本次会话" \
+  --model-name doubao-pro \
+  --max-llm-calls 10 \
+  --registry default
 ```
 
-## harness sidecar catalog
-
-输出托管 Harness Sidecar 的产品组件目录。目录与运行时版本无关，可用于查看某个产品 profile 支持的组件。
-
-| 标志/参数 | 说明 | 默认值 |
-| --- | --- | --- |
-| `--profile <profile>` | 产品 profile。 | `ops` |
-
-```bash
-agentkit harness sidecar catalog --profile ops
-```
-
-## harness sidecar resolve
-
-把 Sidecar 开关和组件覆盖项解析为确定性的计划，并输出 JSON。若计划不可用，命令返回非零退出码。
-
-| 标志/参数 | 说明 | 默认值 |
-| --- | --- | --- |
-| `--profile <profile>` | 产品 profile。 | `ops` |
-| `--disabled` | 禁用 Sidecar 选择。 | `false` |
-| `--component <id=true\|false>` | 覆盖一个可选择产品组件，可重复。 | 无 |
-| `--catalog-version <version>` | 组件目录版本。 | 当前 CLI 内置版本 |
-| `--runtime-version <version>` | 托管运行时版本。 | 无 |
-
-```bash
-agentkit harness sidecar resolve --profile ops --component logs=true
-
-agentkit harness sidecar resolve --profile ops --disabled
-```
+对于使用 `custom_jwt` 鉴权的 Harness，可以通过 `--token` 显式传入 Bearer token，也可以先运行 `agentkit login --identity-only <sso-address>` 保存 OIDC 会话。CLI 只会在 Runtime endpoint 为 HTTPS、Runtime 的 discovery URL 与当前登录 issuer 匹配且当前 OAuth client ID 位于允许列表时自动转发缓存的 `id_token`。

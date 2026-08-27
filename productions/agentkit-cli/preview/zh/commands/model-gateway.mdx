@@ -1,55 +1,56 @@
 ---
-title: "管理模型网关"
+title: "管理 Model Gateway"
 ---
 
-`model-gateway` 命令组用于启用 AgentKit Model Gateway、接入模型提供方、创建调用方消费者，并生成调用示例。该命令也可使用别名 `mgw`。
+`model-gateway` 命令组用于启用 AgentKit Model Gateway，并管理可被统一访问的模型提供方与调用方。顶层命令别名为 `mgw`。
 
 <Warning>
-模型网关会创建或修改云端网关、模型提供方与消费者资源。执行创建、更新或删除操作前，请确认区域、API Gateway 选择、模型访问地址和 API Key 的权限范围。
+  Model Gateway 会创建或使用云端网关资源，并保存模型提供方 API Key。执行前确认账号、区域、网关模式与密钥来源；不要把真实 API Key 写入仓库、脚本或命令历史。
 </Warning>
 
 ## model-gateway activate
 
-启用 Model Gateway。若当前区域已有网关，命令会返回现有网关；否则创建新网关并等待其进入可用状态。
+启用 Model Gateway。若当前区域已经存在 Model Gateway，命令会返回已有资源；若资源处于失败状态，命令会报错。创建后 CLI 会等待网关进入可用状态。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `--apig-gateway-id <id>` | 使用指定 API Gateway 实例；省略时使用共享模式。 | 共享模式 |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `--apig-gateway-id <id>` | 使用指定 API Gateway 实例；省略时使用共享模式。 | — |
+| `-r, --region <region>` | 云区域。 | 从云厂商或环境自动解析 |
 | `--json` | 输出原始 JSON。 | `false` |
 
 ```bash
 agentkit model-gateway activate --region cn-beijing
-agentkit mgw activate --apig-gateway-id apig-xxxxxxxx --json
+
+agentkit mgw activate --apig-gateway-id <apig-gateway-id> --json
 ```
 
 ## model-gateway provider create
 
-创建模型提供方。模型提供方保存上游模型 API Base URL、协议、API Key 与模型名称。该命令也可写作 `model-gateway provider add`。
+创建一个模型提供方。提供方包含上游 Base URL、协议、一个或多个 API Key，以及可通过网关访问的模型名称。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<name>` | 模型提供方名称。 | 必填 |
-| `--base-url <url>` | 上游模型 API Base URL。 | 必填 |
-| `--api-key <key>` | 上游模型 API Key；可重复传入多个。 | 必填 |
-| `--model <name>` | 上游模型名称；可重复传入多个。 | 必填 |
+| `<name>` | 提供方名称（必填）。 | — |
+| `--base-url <url>` | 上游模型服务 Base URL（必填）。 | — |
+| `--api-key <key>` | 上游模型服务 API Key；可重复传入。 | — |
+| `--model <name>` | 上游模型名称；可重复传入。 | — |
 | `--protocol <protocol>` | 上游协议：`openai` 或 `anthropic`。 | `openai` |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
 
 ```bash
 agentkit model-gateway provider create ark \
   --base-url https://ark.cn-beijing.volces.com/api/v3 \
-  --api-key ${ARK_API_KEY} \
-  --model doubao-seed-2-1-pro
+  --api-key ${MODEL_PROVIDER_API_KEY} \
+  --model deepseek-v4-flash-ga-260731
 ```
 
 ## model-gateway provider list
 
-列出模型提供方。
+列出当前 Model Gateway 下的模型提供方。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
 | `--json` | 输出原始 JSON。 | `false` |
 
 ```bash
@@ -58,12 +59,12 @@ agentkit model-gateway provider list
 
 ## model-gateway provider show
 
-查看模型提供方详情。
+查看指定模型提供方详情。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<name>` | 模型提供方名称。 | 必填 |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `<name>` | 提供方名称（必填）。 | — |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
 | `--json` | 输出原始 JSON。 | `false` |
 
 ```bash
@@ -72,33 +73,35 @@ agentkit model-gateway provider show ark
 
 ## model-gateway provider update
 
-更新模型提供方。至少传入 `--base-url`、`--api-key`、`--model` 或 `--protocol` 之一；传入 `--api-key` 或 `--model` 时会替换对应列表。
+更新指定模型提供方。至少传入 `--base-url`、`--api-key`、`--model` 或 `--protocol` 之一。传入 `--api-key` 会替换提供方 API Key 列表；传入 `--model` 会替换模型列表。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<name>` | 模型提供方名称。 | 必填 |
-| `--base-url <url>` | 新的上游模型 API Base URL。 | — |
-| `--api-key <key>` | 替换上游模型 API Key 列表；可重复传入。 | — |
-| `--model <name>` | 替换上游模型列表；可重复传入。 | — |
-| `--protocol <protocol>` | 新的上游协议：`openai` 或 `anthropic`。 | — |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `<name>` | 提供方名称（必填）。 | — |
+| `--base-url <url>` | 新的上游模型服务 Base URL。 | — |
+| `--api-key <key>` | 替换后的上游 API Key；可重复传入。 | — |
+| `--model <name>` | 替换后的模型名称；可重复传入。 | — |
+| `--protocol <protocol>` | 新协议：`openai` 或 `anthropic`。 | — |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
 
 ```bash
-agentkit model-gateway provider update ark --model doubao-seed-2-1-pro --model doubao-seed-2-1-lite
+agentkit model-gateway provider update ark \
+  --model deepseek-v4-flash-ga-260731 \
+  --model doubao-seed-2-0-pro-260215
 ```
 
 ## model-gateway provider delete
 
-删除模型提供方。
+删除指定模型提供方。
 
 <Warning>
-删除模型提供方会影响已授权到该提供方或模型的消费者。省略 `--yes` 时 CLI 会要求确认。
+  删除提供方会影响依赖该提供方或其模型授权的调用方。执行前确认名称和授权范围；自动化脚本中才建议使用 `--yes` 跳过确认。
 </Warning>
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<name>` | 模型提供方名称。 | 必填 |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `<name>` | 提供方名称（必填）。 | — |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
 | `-y, --yes` | 跳过确认提示。 | `false` |
 
 ```bash
@@ -107,30 +110,32 @@ agentkit model-gateway provider delete ark --yes
 
 ## model-gateway consumer create
 
-创建消费者。消费者持有访问模型网关的 API Key，并可通过授权和限流规则约束可访问的模型。该命令也可写作 `model-gateway consumer add`。
+创建调用方。调用方会获得用于访问 Model Gateway 的 API Key，并可配置模型授权范围和 token 速率限制。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<name>` | 消费者名称。 | 必填 |
-| `--allow-model <provider[/model]>` | 授权访问的提供方或提供方下的模型；可重复。仅传提供方名称表示允许该提供方全部模型。 | 不设置授权规则 |
-| `--tpm <tokens>` | 每分钟 token 限额。 | — |
-| `--tpd <tokens>` | 每天 token 限额。 | — |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `<name>` | 调用方名称（必填）。 | — |
+| `--allow-model <provider[/model]>` | 允许访问的提供方或提供方下的模型；可重复传入。 | — |
+| `--tpm <tokens>` | 每分钟 token 限额，必须为正整数。 | — |
+| `--tpd <tokens>` | 每天 token 限额，必须为正整数。 | — |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
 
 ```bash
-agentkit model-gateway consumer create app \
-  --allow-model ark/doubao-seed-2-1-pro \
+agentkit model-gateway consumer create app-server \
+  --allow-model ark/deepseek-v4-flash-ga-260731 \
   --tpm 60000 \
   --tpd 1000000
 ```
 
+`--allow-model` 的值可以只写提供方名称，表示允许该提供方下的所有模型；也可以写作 `<provider>/<model>`，只允许指定模型。
+
 ## model-gateway consumer list
 
-列出消费者。
+列出当前 Model Gateway 下的调用方。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
 | `--json` | 输出原始 JSON。 | `false` |
 
 ```bash
@@ -139,63 +144,75 @@ agentkit model-gateway consumer list
 
 ## model-gateway consumer show
 
-查看消费者详情。
+查看指定调用方详情，包括 API Key、授权范围和速率限制。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<name>` | 消费者名称。 | 必填 |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `<name>` | 调用方名称（必填）。 | — |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
 | `--json` | 输出原始 JSON。 | `false` |
 
 ```bash
-agentkit model-gateway consumer show app --json
+agentkit model-gateway consumer show app-server
 ```
 
 ## model-gateway consumer update
 
-更新消费者授权或限流。至少传入 `--allow-model`、`--tpm` 或 `--tpd` 之一；传入 `--allow-model` 时会替换授权范围。
+更新调用方的模型授权范围或 token 速率限制。至少传入 `--allow-model`、`--tpm` 或 `--tpd` 之一。传入 `--allow-model` 会替换现有授权范围。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<name>` | 消费者名称。 | 必填 |
-| `--allow-model <provider[/model]>` | 替换授权访问的提供方或模型；可重复。 | — |
-| `--tpm <tokens>` | 替换每分钟 token 限额。 | — |
-| `--tpd <tokens>` | 替换每天 token 限额。 | — |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `<name>` | 调用方名称（必填）。 | — |
+| `--allow-model <provider[/model]>` | 替换后的允许访问范围；可重复传入。 | — |
+| `--tpm <tokens>` | 替换后的每分钟 token 限额，必须为正整数。 | — |
+| `--tpd <tokens>` | 替换后的每天 token 限额，必须为正整数。 | — |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
 
 ```bash
-agentkit model-gateway consumer update app --allow-model ark --tpm 120000
+agentkit model-gateway consumer update app-server \
+  --allow-model ark \
+  --tpm 120000
 ```
 
 ## model-gateway consumer delete
 
-删除消费者。
+删除指定调用方。
 
 <Warning>
-删除消费者会使其 API Key 失效。省略 `--yes` 时 CLI 会要求确认。
+  删除调用方会使其 API Key 失效。执行前确认业务已经切换或停止使用该调用方。
 </Warning>
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<name>` | 消费者名称。 | 必填 |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `<name>` | 调用方名称（必填）。 | — |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
 | `-y, --yes` | 跳过确认提示。 | `false` |
 
 ```bash
-agentkit model-gateway consumer delete app --yes
+agentkit model-gateway consumer delete app-server --yes
 ```
 
 ## model-gateway show-example
 
-根据模型提供方与消费者生成调用示例。命令会选择消费者可访问的第一个模型，并输出对应协议的调用片段。
+根据提供方和调用方生成调用示例。命令会读取提供方访问地址、协议、可访问模型以及调用方 API Key，然后输出所选类型的示例。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `--model-provider <name>` | 模型提供方名称。 | 必填 |
-| `--consumer <name>` | 消费者名称。 | 必填 |
+| `--model-provider <name>` | 模型提供方名称（必填）。 | — |
+| `--consumer <name>` | 调用方名称（必填）。 | — |
 | `--example <type>` | 示例类型：`curl`、`openai`、`anthropic` 或 `agentkit`。 | `curl` |
-| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `-r, --region <region>` | 云区域。 | 自动感知 |
 
 ```bash
-agentkit model-gateway show-example --model-provider ark --consumer app --example agentkit
+agentkit model-gateway show-example \
+  --model-provider ark \
+  --consumer app-server \
+  --example openai
+
+agentkit mgw show-example \
+  --model-provider ark \
+  --consumer app-server \
+  --example agentkit
 ```
+
+`agentkit` 示例会输出可写入当前项目的模型环境变量，例如 `MODEL_AGENT_NAME`、`MODEL_AGENT_API_BASE` 与 `MODEL_AGENT_API_KEY`。
