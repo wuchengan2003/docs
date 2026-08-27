@@ -2,7 +2,7 @@
 title: "管理平台技能"
 ---
 
-`skill` 命令组用于管理 AgentKit 技能平台上的技能：列出、查看详情、查看版本、查看技能空间，以及删除技能。
+`skill` 命令组用于管理 AgentKit 技能平台上的技能：列出、查看详情、查看版本、查看技能空间，以及删除技能。`skills` 命令组用于处理本地技能包。
 
 ## skill list
 
@@ -71,4 +71,21 @@ agentkit skill spaces
 
 ```bash
 agentkit skill delete sk-xxxxxxxx --yes
+```
+
+## skills secure
+
+从本地技能目录批量生成适用于托管智能体的安全版 Skill 包。默认输出到源目录同级的 `<sourceSkillsDir>-secure` 目录；目标文件已存在时需传入 `--force` 才会覆盖。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `<sourceSkillsDir>` | 本地技能目录，必填。 | 无 |
+| `-o, --output <dir>` | 输出目录。 | 源目录同级的 `<sourceSkillsDir>-secure` |
+| `--force` | 覆盖已存在的生成 `SKILL.md` 文件。 | `false` |
+| `--json` | 输出原始 JSON。 | `false` |
+
+```bash
+agentkit skills secure ./skills
+
+agentkit skills secure ./skills --output ./skills-secure --force --json
 ```

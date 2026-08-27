@@ -15,12 +15,12 @@ Session-oriented commands share the same tool and session selectors: `-s, --sess
 | Subcommand | Description |
 | --- | --- |
 | `build` | Build a custom sandbox image in cloud Code Pipeline and store `Private` tool config. |
-| `init` | Generate a sandbox Dockerfile template. |
+| `init` | Generate a sandbox Dockerfile template, or initialize a self-host sandbox project. |
 | `config` | Read, write, or remove sandbox command defaults. |
 | `create` | Create a sandbox tool. |
 | `delete` | Delete a sandbox tool or a specific session. |
 | `dashboard` (`ui`) | Start a local sandbox web dashboard. |
-| `list` | List locally cached sandbox sessions. |
+| `list` | List local or remote sandbox sessions, or list sandbox Tools. |
 | `mount` | Open a TOS-mounted sandbox session directory in TosBrowser. |
 | `exec` | Connect to a sandbox terminal and execute a command. |
 | `invoke` | Invoke an agent in a `SkillEnv` sandbox through A2A. |
@@ -54,16 +54,17 @@ agentkit sandbox build --project-dir . --dockerfile Dockerfile --image-name cust
 
 ## sandbox init
 
-Generate a sandbox Dockerfile template. When no template is specified, the command generates the `skill` template.
+Generate a sandbox Dockerfile template. When no template is specified, the command generates the `skill` template; with `self-host`, it writes `Dockerfile`, `.agentkit/sandbox.yaml`, `.gitignore`, `.dockerignore`, and `README.md` for a self-host sandbox environment.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
-| `-t, --template <name>` | Dockerfile template name: `skill`, `skills`, `aio`, `code`, `code-install-package`, `code-install-skills`, `code-web-server`. | `skill` |
+| `-t, --template <name>` | Dockerfile template name: `skill`, `skills`, `aio`, `code`, `code-install-package`, `code-install-skills`, `code-web-server`, `self-host`. | `skill` |
 | `-o, --output <path>` | Output Dockerfile path. | Template default path |
 | `-f, --force` | Overwrite an existing output file. | `false` |
 
 ```bash
 agentkit sandbox init --template code-web-server --output Dockerfile.sandbox
+agentkit sandbox init -t self-host
 ```
 
 ## sandbox config
@@ -113,6 +114,23 @@ Supported config keys are listed below.
 | `session-id` | string | Randomly generated | Default user session id. |
 | `ttl` | integer | `28800` | Session TTL in seconds. |
 | `git-config` | `local` or file path | — | Git identity source injected into sandbox sessions. |
+| `self-host-project-name` | string | `default` | AgentKit project used by the self-host Tool and Runtime. |
+| `self-host-poll-interval-seconds` | integer | `5` | Polling interval for self-host Tool and Runtime readiness checks. |
+| `self-host-environment-base-url` | string | — | Self-host environment gateway URL. |
+| `self-host-environment-id` | string | — | Self-host environment ID. |
+| `self-host-environment-key` | string | — | Self-host environment secret; list output redacts this value. |
+| `self-host-sandbox-id` | string | Written by `sandbox create` | Sandbox Tool ID bound to the self-host Runtime. |
+| `self-host-sandbox-name` | string | Written by `sandbox create` | Sandbox Tool name bound to the self-host Runtime. |
+| `self-host-runtime-image-url` | string | Built-in runtime image | Self-host Runtime image URL. |
+| `self-host-runtime-name` | string | `agentkit-selfhost-runtime` | Self-host Runtime name prefix. |
+| `self-host-runtime-role-name` | string | `AgentKit_Runtime_Default_ServiceRole` | IAM role used by the self-host Runtime. |
+| `self-host-runtime-cpu-milli` | integer | `2000` | Self-host Runtime CPU in milli-cores. |
+| `self-host-runtime-memory-mb` | integer | `4096` | Self-host Runtime memory in MB. |
+| `self-host-runtime-min-instance` | integer | `1` | Self-host Runtime minimum instances. |
+| `self-host-runtime-max-instance` | integer | `1` | Self-host Runtime maximum instances. |
+| `self-host-runtime-max-concurrency` | integer | `10` | Maximum concurrency per self-host Runtime instance. |
+| `self-host-runtime-timeout-seconds` | integer | `1200` | Self-host Runtime request timeout. |
+| `self-host-runtime-api-key-name` | string | `Authorization` | Self-host Runtime API key request header name. |
 
 ## sandbox create
 
@@ -145,6 +163,8 @@ Create a sandbox tool. After creation, the CLI waits until the tool reaches `Rea
 | `--no-network-shared-internet` | Disable shared internet access. | — |
 | `--network-vpc-id <id>` | VPC ID for private networking; required when `--network-private` is enabled. | Config value or — |
 | `--network-subnet-ids <ids>` | Comma-separated subnet IDs. | Config value or — |
+| `--llm-shield-app-id <app-id>` | Enable LLM Shield for a `Skill` tool and inject the specified App ID. | — |
+| `--envs <KEY=VALUE>` | Environment variable to inject into the sandbox tool; repeatable. Duplicate keys are rejected. | — |
 | `--json` | Output JSON. | `false` |
 
 ```bash
@@ -158,6 +178,30 @@ agentkit sandbox create \
   --tool-type Private \
   --tool-name private-dev \
   --image-url cr.example.com/agentkit/custom-sandbox:latest
+```
+
+To enable LLM Shield for a `Skill` tool or inject custom environment variables, pass the corresponding flags when creating the tool:
+
+```bash
+agentkit sandbox create \
+  --tool-type Skill \
+  --tool-name guarded-skill \
+  --llm-shield-app-id app-xxxxxxxx \
+  --envs FEATURE_FLAG=enabled
+```
+
+## Self-Host Sandbox Flow
+
+Self-host projects use `sandbox init -t self-host` to generate configuration, then `sandbox build`, `sandbox create`, and [`env create`](/productions/agentkit-cli/preview/en/commands/env) to create the full environment. `sandbox create` reads `project_type: self-host`, uses the self-host Tool naming behavior, and writes the created Tool ID to `self_host.sandbox.id`.
+
+```bash
+agentkit sandbox init -t self-host
+agentkit sandbox config --set self-host-environment-base-url=https://gateway.example.com
+agentkit sandbox config --set self-host-environment-id=env-xxxxxxxx
+agentkit sandbox config --set self-host-environment-key=${SELF_HOST_ENVIRONMENT_KEY}
+agentkit sandbox build
+agentkit sandbox create
+agentkit env create
 ```
 
 ## sandbox dashboard
@@ -201,17 +245,28 @@ agentkit sandbox delete --tool-name private-dev --force
 
 ## sandbox list
 
-List locally cached sandbox sessions, or inspect one cached session. This command reads the local session cache and prints JSON; it does not list all cloud sandbox tools.
+List sandbox sessions or sandbox Tools and print JSON. By default, the command reads the local cache; with `--remote`, it queries cloud data. Remote session listing requires `--tool-id`.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `-s, --session-id <id>, --sid <id>` | User session id to look up. | — |
-| `--tool-id <id>` | Filter the local cache by sandbox tool id. | — |
+| `--tool-id <id>` | Filter by sandbox Tool id; required for remote session listing. | — |
+| `--sessions` | List sandbox sessions. | Default mode |
+| `--tools` | List sandbox Tools. | `false` |
+| `--tool-name <name>` | Filter by Tool name in `--tools` mode. | — |
+| `--tool-type <type>` | Filter by Tool type in `--tools` mode. | — |
+| `--status <status>` | Filter by status in `--tools` mode. | — |
+| `--local` | Query only the local cache. | Default |
+| `--remote` | Query only cloud data. | `false` |
 
 ```bash
 agentkit sandbox list
 
 agentkit sandbox list --tool-id tool-123 --session-id dev
+
+agentkit sandbox list --tools --remote --tool-name private-dev
+
+agentkit sandbox list --sessions --remote --tool-id tool-123
 ```
 
 ## sandbox mount
@@ -337,7 +392,7 @@ agentkit sandbox shell --session-id dev --command "python --version"
 
 ## sandbox web
 
-Open the sandbox web preview and print JSON containing the URL, tool id, session id, and whether the session was newly created.
+Open the sandbox web preview and print JSON containing the URL, tool id, session id, and whether the session was newly created. By default, the command first opens `/home/gem/` in the sandbox browser, then opens the local noVNC page.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |

@@ -2,51 +2,39 @@
 title: "Invoke a runtime"
 ---
 
-The `invoke` command invokes a deployed runtime by name or id, resolving its endpoint and authentication automatically before sending a message.
+The `invoke` command group sends requests to a deployed Runtime. The regular entry point is `agentkit invoke run`: it can resolve a Runtime from `agentkit.yaml`, or invoke directly by Runtime ID or endpoint URL.
 
-## invoke
+## invoke run
 
-Invoke a deployed runtime (resolves endpoint + auth).
+Send a message or JSON payload to a Runtime. By default, the command uses the Python SDK-compatible request shape and prints answer text from streaming responses; pass `--raw` to inspect raw streaming events or JSON responses.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
-| `<runtime>` | Runtime id (`r-...`) or name (required) | None |
-| `-m, --message <text>` | User message to send | None |
-| `-r, --region <region>` | Volcengine region | Auto-sense |
-| `--rev <n>` | Runtime version to invoke | Current |
-| `-u, --user <id>` | User id | `default` |
-| `-s, --session <id>` | Session id | `default` |
-| `--user-id <id>` | Harness SDK-compatible alias for `--user`. | `default` |
-| `--session-id <id>` | Harness SDK-compatible alias for `--session`. | `default` |
-| `--token <jwt>` | Bearer token (for custom_jwt runtimes) | None |
-| `--apikey <key>` | Explicit bearer API key; takes precedence over resolved `key_auth` credentials. | None |
-| `--path <path>` | Force a specific endpoint path | Auto-detect (ADK `/run_sse`, else `/invoke`) |
-| `--json` | Print the full JSON response | `false` |
-| `--raw` | Print the full Harness response; alias for `--json`. | `false` |
-| `--model-name <name>` | Model override for this Harness invocation. | None |
-| `--system-prompt <text>` | System-prompt override for this Harness invocation. | None |
-| `--tools <list>` | Comma-separated tool override for this Harness invocation. | None |
-| `--skills <list>` | Skill Hub slugs, spaces, or skill references for this Harness invocation. | None |
-| `--runtime <backend>` | Harness runtime override: `adk` or `codex`. | None |
-| `--max-llm-calls <n>` | Maximum LLM calls for this Harness invocation; must be a positive integer. | None |
-| `--registry <uri>` | A2A registry for this invocation: `default`, `agentkit://...`, or an HTTP(S) URL. | None |
-| `--registry-space-id <id>` | A2A registry space ID. | None |
-| `--registry-space-name <name>` | A2A registry space name; the CLI resolves it to one unique space ID. | None |
-| `--registry-top-k <n>` | Maximum AgentCards to retrieve; must be a positive integer. | None |
-| `--registry-endpoint <url>` | A2A registry endpoint. | None |
-| `--registry-region <region>` | A2A registry region. | Current Runtime region |
-| `--protocol <protocol>` | Harness transport: `invoke` or `run_sse`. | `invoke` |
+| `[message]` | User message to send; required unless `--payload` is provided. | None |
+| `--config-file <path>` | Config file used to resolve the Runtime. Cannot be used with `--runtime-id` or `--endpoint`. | `agentkit.yaml` |
+| `-p, --payload <json>` | JSON request payload. Cannot be used with `[message]`. | None |
+| `-h, --headers <json>` | Extra request headers as a JSON object. | None |
+| `-r, --runtime-id <id>` | Resolve endpoint and auth by Runtime ID. | None |
+| `-e, --endpoint <url>` | Invoke a specific endpoint URL directly; must be used with `--apikey` or an `Authorization` header in `--headers`. | None |
+| `--region <region>` | Region used for Runtime ID lookup; only valid with `--runtime-id`. | Auto-detect |
+| `--a2a` | Force an A2A JSON-RPC request in direct mode. | `false` |
+| `--show-reasoning` | Show LangChain `reasoning_content` in streaming output. | `false` |
+| `--raw` | Print raw streaming events or the raw JSON response. | `false` |
+| `--apikey <key>` | API key for authentication; used as a bearer key in direct endpoint mode. | None |
 
 ```bash
-agentkit invoke my-agent -m "Hello, introduce yourself"
+agentkit invoke run "Hello, introduce yourself"
+
+agentkit invoke run \
+  --runtime-id r-xxxxxxxx \
+  --region cn-beijing \
+  "Summarize this session"
+
+agentkit invoke run \
+  --endpoint https://runtime.example.com/run_sse \
+  --apikey "$AGENTKIT_RUNTIME_API_KEY" \
+  --payload '{"prompt":"Generate three test cases"}' \
+  --raw
 ```
 
-Passing any Harness override, `--max-llm-calls`, or `--protocol` selects the Harness request-level override endpoint. In that mode, `--path` cannot be used. Overrides apply only to the current request and do not modify `harness.yaml`.
-
-```bash
-agentkit invoke my-harness \
-  --message "Summarize this session" \
-  --model-name doubao-pro \
-  --max-llm-calls 10 \
-  --registry default
-```
+Direct endpoint mode does not read `agentkit.yaml`. With `--runtime-id`, the CLI resolves the Runtime endpoint and default auth information, so `--endpoint` cannot be passed at the same time and `--apikey` cannot override the `key_auth` credential resolved from the Runtime ID.

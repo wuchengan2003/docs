@@ -47,7 +47,7 @@ harness 路径适合无需自定义代码的场景：智能体的模型、工具
     按名称调用刚部署的运行时，CLI 会自动解析端点与鉴权，并使用已配置的 AK/SK 或当前 SSO 登录 profile 的有效 STS 凭证。
 
     ```bash
-    agentkit invoke my-harness -m "你好，介绍一下你自己"
+    agentkit harness invoke my-harness "你好，介绍一下你自己"
     ```
   </Step>
   <Step title="迭代">

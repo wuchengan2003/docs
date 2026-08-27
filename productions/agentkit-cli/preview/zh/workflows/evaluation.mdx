@@ -20,7 +20,7 @@ title: "评测闭环"
     agentkit launch
     ```
 
-    部署完成后可用 `agentkit invoke qa-agent -m "你好"` 确认运行时可正常响应。
+    部署完成后可用 `agentkit invoke run "你好"` 确认运行时可正常响应。
   </Step>
 
   <Step title="创建评测集并添加用例">
@@ -83,7 +83,7 @@ title: "评测闭环"
 
     ```bash
     # 状态与加权总分、各评估器平均分
-    agentkit eval experiment get 75901xxxxxxxxxxxxx
+    agentkit eval experiment show 75901xxxxxxxxxxxxx
 
     # 逐条结果：每条用例、目标输出与各评估器的分数和理由
     agentkit eval experiment results 75901xxxxxxxxxxxxx
@@ -102,12 +102,12 @@ title: "评测闭环"
 
 ## 纳入持续集成
 
-评测命令无需浏览器登录，且均支持 `--json`，可直接编排进 CI 流水线：`eval run` 返回的 `experimentId` 可传给 `eval experiment get` 或 `results`。
+评测命令无需浏览器登录，且均支持 `--json`，可直接编排进 CI 流水线：`eval run` 返回的 `experimentId` 可传给 `eval experiment show` 或 `results`。
 
 ```bash
 # 一个可放入 CI 的最小闭环示例
 EXP=$(agentkit eval run --dataset qa-set --evaluator 相关性 --target qa-agent --json | jq -r .experimentId)
-agentkit eval experiment get "$EXP" --json
+agentkit eval experiment show "$EXP" --json
 ```
 
 ## 实践建议

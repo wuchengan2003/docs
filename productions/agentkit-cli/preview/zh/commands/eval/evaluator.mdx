@@ -2,28 +2,62 @@
 title: "管理评估器"
 ---
 
-`eval evaluator` 命令组用于管理评估器（负责打分的评判模型）：浏览预置模板、列出与查看已有评估器、从模板派生新评估器、删除评估器。评估器通常是一段带评分标准的提示词，配合一个大模型端点，接收若干输入字段（如 `input`、`output`、`reference_output`）后给出分数。
+`eval evaluator` 命令组用于管理评估器：浏览预置模板、查看模板详情、列出和查看已有评估器、创建评估器、更新 TEA 评估器草稿、提交评估器版本以及删除评估器。评估器通常是一段带评分标准的提示词，配合一个评判模型，接收若干输入字段（如 `input`、`output`、`reference_output`）后给出分数。
 
 ## evaluator templates
 
-浏览平台预置的评估器模板，作为创建自己评估器的起点。
+浏览平台预置的评估器模板，作为创建自己评估器的起点。该命令是 `eval evaluator template list` 的兼容入口。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `-p, --project <name>` | 项目名称。 | `default` |
+| `--type <type>` | TEA 预置模板类型：`prompt` 或数字类型值。 | `prompt` |
+| `--locale <locale>` | TEA 模板语言；`cn` 或 `zh-CN` 会追加中文语言参数。 | `zh-CN` |
+| `-p, --project <name>` | 项目名称；TEA 后端会忽略该值。 | `default` |
 | `--json` | 输出原始 JSON。 | `false` |
 
 ```bash
 agentkit eval evaluator templates
 ```
 
-## evaluator list
+## evaluator template list
 
-列出你在当前项目下的评估器。
+列出预置评估器模板。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `-p, --project <name>` | 项目名称。 | `default` |
+| `--type <type>` | TEA 预置模板类型：`prompt` 或数字类型值。 | `prompt` |
+| `--locale <locale>` | TEA 模板语言；`cn` 或 `zh-CN` 会追加中文语言参数。 | `zh-CN` |
+| `-p, --project <name>` | 项目名称；TEA 后端会忽略该值。 | `default` |
+| `--json` | 输出原始 JSON。 | `false` |
+
+```bash
+agentkit eval evaluator template list --type prompt
+```
+
+## evaluator template show
+
+查看某个预置评估器模板的详情，包括输入 schema 和提示词内容。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `<key>` | TEA 模板 key，或 Coze 模板 ID / 名称。 | 必填 |
+| `--type <type>` | TEA 预置模板类型：`prompt` 或数字类型值。 | `prompt` |
+| `--language <type>` | TEA 代码模板的 `language_type`。 | — |
+| `--locale <locale>` | TEA 模板语言；`cn` 或 `zh-CN` 会追加中文语言参数。 | `zh-CN` |
+| `-p, --project <name>` | 项目名称；TEA 后端会忽略该值。 | `default` |
+| `--json` | 输出原始 JSON。 | `false` |
+
+```bash
+agentkit eval evaluator template show relevance --type prompt
+```
+
+## evaluator list
+
+列出当前项目下的评估器。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `-p, --project <name>` | 项目名称；TEA 后端会忽略该值。 | `default` |
 | `--json` | 输出原始 JSON。 | `false` |
 
 ```bash
@@ -32,42 +66,96 @@ agentkit eval evaluator list
 
 ## evaluator show
 
-查看某个评估器的详情：评分标准提示词、模型配置与输入字段。
+查看某个评估器的详情：评分标准提示词、模型配置、输入字段以及版本信息。TEA 后端可通过 `--evaluator-version` 查看指定版本。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<id>` | 评估器 ID 或名称（必填） | 无 |
-| `-p, --project <name>` | 项目名称。 | `default` |
+| `<id\|name>` | 评估器 ID 或精确名称。 | 必填 |
+| `--evaluator-version <id\|name>` | TEA 评估器版本 ID 或版本号，例如 `0.0.1`。 | 当前版本 |
+| `-p, --project <name>` | 项目名称；TEA 后端会忽略该值。 | `default` |
 | `--json` | 输出原始 JSON。 | `false` |
 
 ```bash
 agentkit eval evaluator show 相关性
+agentkit eval evaluator show 相关性 --evaluator-version 0.0.1
 ```
 
 ## evaluator create
 
-创建一个评估器。最简单的方式是从预置模板克隆评分标准与输入 schema，再指定自己的模型端点。
+创建评估器。最简单的方式是从预置模板克隆评分标准与输入 schema，再指定评判模型。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `--name <name>` | 评估器名称（必填） | 无 |
-| `--from-template <id\|name>` | 从预置模板克隆评分标准与输入 schema | 无 |
-| `--model <endpoint>` | 作为评判模型的方舟模型端点 ID（`ep-…`） | 无 |
-| `--prompt-file <path>` | 自定义评分标准文本文件（覆盖模板提示词） | 无 |
-| `--description <text>` | 评估器描述 | 无 |
-| `-p, --project <name>` | 项目名称。 | `default` |
+| `--name <name>` | 评估器名称。 | 必填 |
+| `--from-template <key\|id\|name>` | 从预置模板克隆评分标准与输入 schema。 | — |
+| `--model <name\|id>` | 评判模型；TEA 后端接受内置模型名称或 ID，Coze 后端接受方舟端点 ID。 | — |
+| `--prompt-file <path>` | 自定义评分标准文本文件，会覆盖模板提示词。 | — |
+| `--description <text>` | 评估器描述。 | — |
+| `--input-schemas <keys>` | TEA 输入 schema 字段，使用逗号分隔。 | 从模板或提示词推断 |
+| `-p, --project <name>` | 项目名称；TEA 后端会忽略该值。 | `default` |
 | `--json` | 输出原始 JSON。 | `false` |
 
-需至少提供 `--from-template` 或 `--prompt-file` 之一。
+使用 Coze 后端时，需至少提供 `--from-template` 或 `--prompt-file` 之一。
 
 ```bash
-# 从预置的「相关性」模板派生，换成自己的模型端点
-agentkit eval evaluator create --name 相关性 --from-template "相关性" --model ep-xxxxxxxx
+agentkit eval evaluator create --name 相关性 --from-template "相关性" --model "Doubao 2.0 Lite"
 ```
 
 <Tip>
 提示词中用 <code>{'{{input}}'}</code>、<code>{'{{output}}'}</code>、<code>{'{{reference_output}}'}</code> 这样的占位符引用输入字段；这些字段名即评估器的输入 schema，会在 [`eval run`](/productions/agentkit-cli/preview/zh/commands/eval/run) 中被自动映射。
 </Tip>
+
+## evaluator update-draft
+
+更新 TEA 评估器草稿。可以分别更新提示词、模型和输入 schema，也可以通过 `--evaluator-content-file` 提供完整评估器内容 JSON。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `<id>` | 评估器 ID。 | 必填 |
+| `--prompt-file <path>` | 自定义评分标准文本文件。 | — |
+| `--model <name\|id>` | 评判模型名称或 ID。 | — |
+| `--input-schemas-json <json>` | 输入 schema 的 JSON 数组。 | — |
+| `--evaluator-content-file <path>` | 完整 `evaluator_content` JSON 文件；会覆盖 `--prompt-file`、`--model` 和 `--input-schemas-json`。 | — |
+| `--evaluator-type <type>` | 评估器类型；省略时保持不变。 | — |
+| `--json` | 输出原始 JSON。 | `false` |
+
+```bash
+agentkit eval evaluator update-draft 75902xxxxxxxxxxxxx \
+  --prompt-file rubric.md \
+  --model "Doubao 2.0 Pro" \
+  --input-schemas-json '[{"key":"input"},{"key":"output"},{"key":"reference_output"}]'
+```
+
+## evaluator version list
+
+列出 TEA 评估器版本。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `--evaluator <id\|name>` | 评估器 ID 或精确名称。 | 必填 |
+| `-r, --region <region>` | Volcengine 区域。 | 环境变量与评测端点默认区域 |
+| `--json` | 输出原始 JSON。 | `false` |
+
+```bash
+agentkit eval evaluator version list --evaluator 相关性
+```
+
+## evaluator version submit
+
+提交 TEA 评估器草稿为新版本。提交后可在 `eval run --evaluator-version` 中选择该版本。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `<version>` | 版本号，例如 `0.0.2`。 | 必填 |
+| `--evaluator <id\|name>` | 评估器 ID 或精确名称。 | 必填 |
+| `--description <text>` | 版本描述。 | — |
+| `--desc <text>` | `--description` 的别名。 | — |
+| `-r, --region <region>` | Volcengine 区域。 | 环境变量与评测端点默认区域 |
+| `--json` | 输出原始 JSON。 | `false` |
+
+```bash
+agentkit eval evaluator version submit 0.0.2 --evaluator 相关性 --description "更新评分标准"
+```
 
 ## evaluator delete
 
@@ -79,9 +167,9 @@ agentkit eval evaluator create --name 相关性 --from-template "相关性" --mo
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<id>` | 评估器 ID 或名称（必填） | 无 |
-| `-p, --project <name>` | 项目名称。 | `default` |
-| `-y, --yes` | 跳过确认提示 | `false` |
+| `<id\|name>` | 评估器 ID 或精确名称。 | 必填 |
+| `-p, --project <name>` | 项目名称；TEA 后端会忽略该值。 | `default` |
+| `-y, --yes` | 跳过确认提示。 | `false` |
 
 ```bash
 agentkit eval evaluator delete 相关性 -y

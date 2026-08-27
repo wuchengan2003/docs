@@ -280,3 +280,72 @@ agentkit harness dev --reload --port 8000
 ```bash
 agentkit harness deploy --project default --region cn-beijing
 ```
+
+## harness invoke
+
+调用一个已部署的 Harness 运行时，并可为本次请求覆盖模型、提示词、工具、技能、运行时后端或 A2A registry。默认使用 `run_sse` 流式协议并输出回答文本；传入 `--raw` 时输出原始响应事件或 JSON。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `<name>` | 已部署 Harness 或运行时名称，必填。 | 无 |
+| `<message>` | 发送给智能体的消息，必填。 | 无 |
+| `-r, --region <region>` | 云区域。 | 自动检测 |
+| `--rev <n>` | 要调用的运行时版本。 | 当前版本 |
+| `--user-id <id>` | 本次运行使用的用户 ID。 | `agentkit_user` |
+| `--session-id <id>` | 本次运行使用的会话 ID；未传时随机生成。 | 随机 |
+| `--token <jwt>` | 调用 `custom_jwt` Harness 时使用的 Bearer token。 | 无 |
+| `--tip-token-key <key>` | 转发到 Harness 请求上下文的 TIP token key。 | 无 |
+| `--apikey <key>` | 显式 Bearer key 覆盖。 | 无 |
+| `--raw` | 输出原始 Harness 响应。 | `false` |
+| `--model-name <name>` | 本次调用覆盖模型名称。 | 当前配置 |
+| `--system-prompt <text>` | 本次调用覆盖系统提示词。 | 当前配置 |
+| `--tools <list>` | 本次调用覆盖内置工具，逗号分隔。 | 当前配置 |
+| `--skills <list>` | 本次调用覆盖 Skill Hub slug、空间或 `space:skill` 引用。 | 当前配置 |
+| `--runtime <backend>` | 本次调用覆盖运行时后端：`adk` 或 `codex`。 | 当前配置 |
+| `--max-llm-calls <n>` | 本次调用允许的最大 LLM 调用次数，必须为正整数。 | 当前配置 |
+| `--registry <uri>` | 本次调用覆盖 A2A registry：`default`、`agentkit://...` 或 HTTP(S) URL。 | 当前配置 |
+| `--registry-space-id <id>` | 本次调用覆盖 AgentKit A2A 空间 ID。 | 当前配置 |
+| `--registry-space-name <name>` | 本次调用覆盖 AgentKit A2A 空间名称。 | 当前配置 |
+| `--registry-top-k <n>` | 本次调用最多检索的 AgentCard 数量。 | 当前配置 |
+| `--registry-endpoint <url>` | 本次调用覆盖 A2A registry 端点。 | 当前配置 |
+| `--registry-region <region>` | 本次调用覆盖 A2A registry 区域。 | 当前配置 |
+| `--protocol <protocol>` | 调用协议：`invoke` 或 `run_sse`。 | `run_sse` |
+
+```bash
+agentkit harness invoke my-harness "查询今天的待办"
+
+agentkit harness invoke my-harness "使用 Codex 后端分析这个问题" \
+  --runtime codex \
+  --model-name doubao-seed-2-1-pro \
+  --max-llm-calls 12
+```
+
+## harness sidecar catalog
+
+输出托管 Harness Sidecar 的产品组件目录。目录与运行时版本无关，可用于查看某个产品 profile 支持的组件。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `--profile <profile>` | 产品 profile。 | `ops` |
+
+```bash
+agentkit harness sidecar catalog --profile ops
+```
+
+## harness sidecar resolve
+
+把 Sidecar 开关和组件覆盖项解析为确定性的计划，并输出 JSON。若计划不可用，命令返回非零退出码。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `--profile <profile>` | 产品 profile。 | `ops` |
+| `--disabled` | 禁用 Sidecar 选择。 | `false` |
+| `--component <id=true\|false>` | 覆盖一个可选择产品组件，可重复。 | 无 |
+| `--catalog-version <version>` | 组件目录版本。 | 当前 CLI 内置版本 |
+| `--runtime-version <version>` | 托管运行时版本。 | 无 |
+
+```bash
+agentkit harness sidecar resolve --profile ops --component logs=true
+
+agentkit harness sidecar resolve --profile ops --disabled
+```

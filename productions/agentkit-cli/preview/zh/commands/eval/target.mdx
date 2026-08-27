@@ -1,0 +1,39 @@
+---
+title: "管理评测目标"
+---
+
+`eval target` 命令组用于查看 TEA 评测后端中的 Source Eval Target。评测目标通常对应一个已经注册到评测平台的运行时或源对象，供 [`eval run`](/productions/agentkit-cli/preview/zh/commands/eval/run) 选择目标版本。
+
+<Note>
+`eval target` 仅适用于 TEA 评测后端。可先运行 [`eval backend`](/productions/agentkit-cli/preview/zh/commands/eval/run#eval-backend) 查看当前账号解析到的评测后端。
+</Note>
+
+## eval target list
+
+列出 Source Eval Target。可按目标类型和名称子串筛选。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `--target-type <n>` | 目标类型。 | `101` |
+| `--name <name>` | 按名称子串筛选。 | — |
+| `-r, --region <region>` | Volcengine 区域。 | 环境变量与评测端点默认区域 |
+| `--json` | 输出原始 JSON。 | `false` |
+
+```bash
+agentkit eval target list --name qa-agent
+```
+
+## eval target version-list
+
+列出某个 Source Eval Target 的可用版本。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `--source-target-id <id>` | Source Eval Target ID。 | 必填 |
+| `--target-type <n>` | 目标类型。 | `101` |
+| `-r, --region <region>` | Volcengine 区域。 | 环境变量与评测端点默认区域 |
+| `--json` | 输出原始 JSON。 | `false` |
+
+```bash
+agentkit eval target version-list --source-target-id 75901xxxxxxxxxxxxx
+```

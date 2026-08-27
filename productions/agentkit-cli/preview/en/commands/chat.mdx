@@ -1,0 +1,36 @@
+---
+title: "Chat with a shared Harness"
+---
+
+`chat` talks to a tenant-published shared OAuth Harness. The command resolves the shared agent alias through the current login address and invokes a `custom_jwt` runtime with the current user's OIDC session. Pass a message for a one-shot call, or omit it to enter an interactive chat session.
+
+<Note>
+Log in through the tenant login address first, for example `agentkit login <tenant-address> --identity-only`. Identity-only login stores the user's OIDC session without creating AgentKit management credentials, which fits end users who only need to call a shared runtime.
+</Note>
+
+## chat
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<alias>` | Shared agent alias published by the tenant login control plane; only lowercase letters, numbers, and hyphens are allowed. | Required |
+| `[message]` | One-shot message to send; omit it to enter interactive chat. | — |
+| `--session-id <id>` | Resume one of your own chat sessions; letters, digits, `.`, `_`, `:`, and `-` are allowed, up to 128 characters. | Generated |
+
+```bash
+agentkit login https://login.example.com/team --identity-only
+agentkit chat support "Summarize my open tasks" --session-id support-20260827
+```
+
+In interactive mode, enter messages continuously and type `/exit` or `/quit` to leave:
+
+```bash
+agentkit chat support --session-id support-20260827
+```
+
+## Authentication Behavior
+
+`chat` only accepts shared aliases published by the current tenant login control plane. Before each message, the CLI resolves the alias again and refreshes the local OIDC session, so revoked or changed shared runtime configuration stops being used.
+
+<Warning>
+The shared Harness must use OAuth2/JWT `custom_jwt` authentication. If the active login was not created from a tenant login address, or the alias is not published by that tenant, the command refuses to forward the user token.
+</Warning>

@@ -1,0 +1,36 @@
+---
+title: "共享 Harness 对话"
+---
+
+`chat` 用于和租户发布的共享 OAuth Harness 进行对话。命令会通过当前登录地址解析共享智能体别名，并使用当前用户的 OIDC 会话调用 `custom_jwt` 鉴权的运行时。传入消息时执行单轮对话；不传消息时进入交互式会话。
+
+<Note>
+使用前需要先通过租户登录地址完成身份登录，例如 `agentkit login <tenant-address> --identity-only`。该模式只保存用户 OIDC 会话，不创建 AgentKit 管理凭据，适合只调用共享运行时的终端用户。
+</Note>
+
+## chat
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `<alias>` | 租户登录控制面发布的共享智能体别名；只能包含小写字母、数字和连字符。 | 必填 |
+| `[message]` | 要发送的一次性消息；省略时进入交互式对话。 | — |
+| `--session-id <id>` | 复用自己的对话会话；只能包含字母、数字、`.`、`_`、`:` 和 `-`，最长 128 个字符。 | 自动生成 |
+
+```bash
+agentkit login https://login.example.com/team --identity-only
+agentkit chat support "请总结我的待办事项" --session-id support-20260827
+```
+
+交互式会话中可连续输入消息，输入 `/exit` 或 `/quit` 退出：
+
+```bash
+agentkit chat support --session-id support-20260827
+```
+
+## 鉴权行为
+
+`chat` 只接受由当前租户登录控制面发布的共享别名。每次发送消息前，CLI 都会重新解析别名并刷新本地 OIDC 会话，避免继续使用已经撤销或变更的共享运行时配置。
+
+<Warning>
+共享 Harness 必须使用 OAuth2/JWT 的 `custom_jwt` 鉴权。若当前登录不是从租户登录地址建立，或别名没有在该租户下发布，命令会拒绝转发用户 token。
+</Warning>

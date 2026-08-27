@@ -17,18 +17,20 @@ title: "查看实验与结果"
 agentkit eval experiment list
 ```
 
-## eval experiment get
+## eval experiment show
 
 查看某个实验的详情：状态、数据集、目标、加权总分，以及每个评估器的平均分与分数分布。
+
+该命令也可写作 `eval experiment get`。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
 | `<id>` | 实验 ID（必填） | 无 |
-| `-p, --project <name>` | 项目名称 | `default` |
+| `-p, --project <name>` | 项目名称；TEA 后端会忽略该值。 | `default` |
 | `--json` | 输出原始 JSON | `false` |
 
 ```bash
-agentkit eval experiment get 75901xxxxxxxxxxxxx
+agentkit eval experiment show 75901xxxxxxxxxxxxx
 ```
 
 ```text

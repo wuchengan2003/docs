@@ -16,6 +16,7 @@ Without a subcommand, `release` runs the full pipeline. If `.agentkit/agentkit.y
 | `--im-feishu` | Release a Feishu bot proxy after the runtime release. | `false` |
 | `--im-feishu-app-id <id>` | Feishu App ID for the proxy. | `im.feishu.app_id` or `FEISHU_APP_ID` |
 | `--im-feishu-app-secret <secret>` | Feishu App Secret for the proxy; prefer `FEISHU_APP_SECRET`. | `im.feishu.app_secret` or `FEISHU_APP_SECRET` |
+| `--json` | Emit machine-readable NDJSON events for a managed Sidecar release. | `false` |
 
 ```bash
 agentkit release --name my-agent --region cn-beijing --project default

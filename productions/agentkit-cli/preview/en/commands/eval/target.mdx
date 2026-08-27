@@ -1,0 +1,39 @@
+---
+title: "Manage evaluation targets"
+---
+
+The `eval target` command group inspects Source Eval Targets in the TEA evaluation backend. A target usually represents a runtime or source object already registered in the evaluation platform, so [`eval run`](/productions/agentkit-cli/preview/en/commands/eval/run) can select the target version.
+
+<Note>
+`eval target` is available only on the TEA evaluation backend. Run [`eval backend`](/productions/agentkit-cli/preview/en/commands/eval/run#eval-backend) first to see which backend the current account resolves to.
+</Note>
+
+## eval target list
+
+List Source Eval Targets. You can filter by target type and name substring.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `--target-type <n>` | Target type. | `101` |
+| `--name <name>` | Filter by name substring. | — |
+| `-r, --region <region>` | Volcengine region. | Environment and evaluation endpoint default |
+| `--json` | Output raw JSON. | `false` |
+
+```bash
+agentkit eval target list --name qa-agent
+```
+
+## eval target version-list
+
+List available versions of a Source Eval Target.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `--source-target-id <id>` | Source Eval Target ID. | Required |
+| `--target-type <n>` | Target type. | `101` |
+| `-r, --region <region>` | Volcengine region. | Environment and evaluation endpoint default |
+| `--json` | Output raw JSON. | `false` |
+
+```bash
+agentkit eval target version-list --source-target-id 75901xxxxxxxxxxxxx
+```

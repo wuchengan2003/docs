@@ -41,13 +41,19 @@ Create a memory collection.
 | `--name <name>` | Memory collection name. | — |
 | `--description <text>` | Description. | — |
 | `-p, --project <name>` | Project name. | default |
-| `--provider-type <type>` | Provider type (`MEM0` \| `VIKINGDB_MEMORY`). | — |
-| `-r, --region <region>` | Volcengine region. | from env |
+| `--provider-type <type>` | Provider type (`MEM0` \| `VIKINGDB_MEMORY`). | `MEM0` on Volcengine, `VIKINGDB_MEMORY` on BytePlus |
+| `-r, --region <region>` | Cloud region. | From provider or environment |
 | `--json <jsonString>` | JSON object merged into the request body (for nested fields such as `LongTermConfiguration`, `VpcConfig`, `Tags`). | — |
 
 ```bash
 agentkit memory create --name user-mem --provider-type MEM0
+
+agentkit --provider byteplus memory create --name user-mem
 ```
+
+<Note>
+BytePlus does not support `MEM0` memory collections. When BytePlus is selected and `--provider-type` is omitted, the CLI uses `VIKINGDB_MEMORY`.
+</Note>
 
 ## memory update
 
