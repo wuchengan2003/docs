@@ -1,0 +1,94 @@
+---
+title: "快速开始"
+---
+
+## 安装
+
+无需 Node.js，一行命令即可安装独立二进制，并将 `agentkit`（及别名 `ak`）加入 PATH：
+
+<Tabs>
+  <Tab title="wget">
+    ```bash
+    wget -qO- https://agentkit-cli.tos-cn-beijing.volces.com/install.sh | sh
+    ```
+  </Tab>
+  <Tab title="curl">
+    ```bash
+    curl -fsSL https://agentkit-cli.tos-cn-beijing.volces.com/install.sh | sh
+    ```
+  </Tab>
+</Tabs>
+
+安装完成后验证：
+
+```bash
+agentkit --help
+```
+
+<Tip>
+  二进制安装在 `AGENTKIT_HOME`（默认 `~/.agentkit`），并在 `AGENTKIT_BIN_DIR`（默认 `~/.local/bin`）下创建 `agentkit`、`ak` 两个兼容链接。自定义这两个目录时必须使用绝对路径，且两者不能指向同一目录。安装目录还包含 `templates/`、`lifecycle-templates/`、`harness/`、`skills/`、`im-proxies/` 与 `vendor/` 等运行所需资源；手动移动或解压独立发行包时，请保留这些目录与 `ak` 在同一安装目录。需要安装指定版本时，设置环境变量 `AGENTKIT_VERSION`（默认 `latest`）。若当前终端仍提示命令不存在，请重新打开终端或按安装脚本输出加载 shell 配置。
+</Tip>
+
+<Note>
+  安装脚本会在 zsh、bash 或 fish 的启动配置中写入受管理的 `agentkit` 与 `ak` 调度入口，使独立 CLI 在 shell 重新加载后优先于 pip、pipx、venv 或 Conda 中同名的 Python 命令。若当前环境中已有同名 Python 入口，安装脚本会先保留原入口并写入可恢复的 shim，卸载脚本会在仍由安装脚本管理时恢复原入口。设置 `AGENTKIT_NO_MODIFY_PATH=1` 可跳过自动修改 shell 配置，脚本会打印需要手动加入的配置块。
+</Note>
+
+## 鉴权
+
+CLI 会对每一次云端 OpenAPI 请求签名。按使用的云厂商或登录方式提供凭证：
+
+<Tabs>
+  <Tab title="AK/SK">
+    在环境变量或本地 `.env`（已被 git 忽略）中设置：
+
+    ```bash
+    VOLCENGINE_ACCESS_KEY=...
+    VOLCENGINE_SECRET_KEY=...
+    VOLCENGINE_REGION=cn-beijing   # 可选，默认 cn-beijing
+    ```
+  </Tab>
+  <Tab title="BytePlus">
+    设置 BytePlus 凭证，并把默认云厂商与区域写入用户级配置：
+
+    ```bash
+    BYTEPLUS_ACCESS_KEY=...
+    BYTEPLUS_SECRET_KEY=...
+    agentkit --provider byteplus config --global --region ap-southeast-1
+    ```
+  </Tab>
+  <Tab title="SSO">
+    浏览器登录，存储短期 STS 凭证。
+
+    ```bash
+    agentkit login <sso-address>
+    agentkit whoami
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  SSO 登录会缓存短期 STS 凭证。未显式提供 AK/SK 时，运行时、知识库、记忆、工具和其他云端命令会使用当前登录 profile 的有效凭证；凭证过期后重新运行 `agentkit login`。
+</Tip>
+
+## 三步部署
+
+<Steps>
+  <Step title="脚手架项目">
+    ```bash
+    agentkit init my-agent --template basic
+    cd my-agent
+    ```
+  </Step>
+  <Step title="构建并部署">
+    ```bash
+    agentkit launch
+    ```
+  </Step>
+  <Step title="调用运行时">
+    ```bash
+    agentkit invoke run "hello"
+    ```
+  </Step>
+</Steps>
+
+完整命令见 [命令参考](/productions/agentkit-cli/preview/zh/commands)，或运行 `agentkit tree` 打印命令树。需要切换云厂商或区域时，运行 `agentkit config --cloud_provider byteplus --region ap-southeast-1` 更新项目配置。
