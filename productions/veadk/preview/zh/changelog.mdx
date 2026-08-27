@@ -30,6 +30,8 @@ title: "更新日志"
 | Studio 消息反馈 | 修复 Studio 服务端转发运行时请求时 JSON 请求头重复的问题：此前转发给运行时的请求可能携带重复的 `Accept` 和 `Content-Type` 头，导致部分运行时将请求体视为非 JSON 而解析失败，消息反馈和评测等写入操作可能因此失败。 | [VeADK Frontend](/productions/veadk/preview/zh/components/frontend/veadk-frontend) · [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 智能体目录 | 智能体目录中的每张 Runtime 卡片在连接前自动检测该 Runtime 是否支持 Studio 对话：检测期间显示「检测中」状态并禁用「连接」按钮，检测不通过时显示「不支持对话」或「检测失败」并提供「重试」按钮。检测结果按 Runtime 版本缓存，版本更新后自动重新检测。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 智能体详情 | 加载智能体信息或 Runtime 详情失败时，详情面板现在显示错误信息并提供「重试」按钮，可重新加载对应内容。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能模式 | 每次构建或优化完成后，交付物自动保存为不可变的项目版本，存储在 Studio 私有 TOS 存储桶中。已保存的版本不依赖原始 Sandbox 环境，可在会话过期后查看、下载、部署、恢复到新会话或删除。项目版本库按项目归组浏览所有版本，每个版本展示创建时间、验证状态和产物信息。优化类构建标注优化前后变更，可在源码浏览器中查看。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
+| Studio 智能模式 | 在项目版本库中可选择同一项目的任意两个版本进行文件差异比较，比较结果以并排差异视图逐文件展示，不产生额外存储对象。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 
 ## 1.1.6
 
