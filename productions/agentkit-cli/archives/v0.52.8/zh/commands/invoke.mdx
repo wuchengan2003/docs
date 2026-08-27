@@ -1,0 +1,52 @@
+---
+title: "调用运行时"
+---
+
+`invoke` 命令按名称或 ID 调用一个已部署的运行时，自动解析其访问端点与鉴权信息后发送消息。
+
+## invoke
+
+调用已部署的运行时（自动解析端点与鉴权）。
+
+| 标志/参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `<runtime>` | 运行时 ID（`r-...`）或名称（必填） | 无 |
+| `-m, --message <text>` | 要发送的用户消息 | 无 |
+| `-r, --region <region>` | Volcengine 区域 | 自动感知 |
+| `--rev <n>` | 要调用的运行时版本 | 当前版本 |
+| `-u, --user <id>` | 用户 ID | `default` |
+| `-s, --session <id>` | 会话 ID | `default` |
+| `--user-id <id>` | `--user` 的 Harness SDK 兼容别名。 | `default` |
+| `--session-id <id>` | `--session` 的 Harness SDK 兼容别名。 | `default` |
+| `--token <jwt>` | Bearer token（用于 custom_jwt 运行时） | 无 |
+| `--apikey <key>` | 显式指定 Bearer API Key，优先于运行时解析出的 `key_auth` 凭证。 | 无 |
+| `--path <path>` | 强制指定端点路径 | 自动检测（ADK 用 `/run_sse`，否则用 `/invoke`） |
+| `--json` | 打印完整 JSON 响应 | `false` |
+| `--raw` | 输出完整 Harness 响应，等价于 `--json`。 | `false` |
+| `--model-name <name>` | 仅本次 Harness 调用使用的模型名称。 | 无 |
+| `--system-prompt <text>` | 仅本次 Harness 调用使用的系统提示词。 | 无 |
+| `--tools <list>` | 仅本次 Harness 调用使用的工具，多个值用逗号分隔。 | 无 |
+| `--skills <list>` | 仅本次 Harness 调用使用的 Skill Hub slug、空间或技能引用。 | 无 |
+| `--runtime <backend>` | 仅本次 Harness 调用使用的运行时后端：`adk` 或 `codex`。 | 无 |
+| `--max-llm-calls <n>` | 本次 Harness 调用允许的最大 LLM 调用次数，必须为正整数。 | 无 |
+| `--registry <uri>` | 本次调用使用的 A2A registry：`default`、`agentkit://...` 或 HTTP(S) URL。 | 无 |
+| `--registry-space-id <id>` | A2A registry 空间 ID。 | 无 |
+| `--registry-space-name <name>` | A2A registry 空间名称；CLI 会解析为唯一空间 ID。 | 无 |
+| `--registry-top-k <n>` | 最多检索的 AgentCard 数量，必须为正整数。 | 无 |
+| `--registry-endpoint <url>` | A2A registry 端点。 | 无 |
+| `--registry-region <region>` | A2A registry 区域。 | 当前运行时区域 |
+| `--protocol <protocol>` | Harness 传输协议：`invoke` 或 `run_sse`。 | `invoke` |
+
+```bash
+agentkit invoke my-agent -m "你好，介绍一下你自己"
+```
+
+传入任一 Harness 覆盖项、`--max-llm-calls` 或 `--protocol` 后，CLI 会调用 Harness 的请求级覆盖接口；此时不能同时使用 `--path`。这些覆盖只影响当前请求，不会修改 `harness.yaml`。
+
+```bash
+agentkit invoke my-harness \
+  --message "总结本次会话" \
+  --model-name doubao-pro \
+  --max-llm-calls 10 \
+  --registry default
+```
