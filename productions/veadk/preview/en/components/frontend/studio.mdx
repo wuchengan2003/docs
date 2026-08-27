@@ -1186,6 +1186,10 @@ The General agents list provides owner, region, and name filters. The owner filt
 
 Each agent card shows the Runtime name, description, creator, and creation time. The creation time is displayed as a relative label (e.g., "3 minutes ago"). Click a card to open that Runtime's detail view; the **Connect** button on the card makes the Runtime the agent for the current conversation and switches to the conversation page. The connected agent is pinned to the top of the list. When you have creation permission, the first card in the list is a "Create agent" entry. When loading fails, the directory shows an error message with a **Reload** button; an empty list shows the corresponding empty-state message. Connection failures are diagnosed the same way as when [selecting a cloud Runtime](#select-a-cloud-runtime).
 
+<Note>
+  Each Runtime card in the agent directory automatically checks whether the Runtime supports Studio conversation. While the check is in progress, the card shows a "Checking" status and the **Connect** button is disabled. After the check completes, Runtimes that support conversation show no additional indicator; Runtimes that do not support conversation show an "Unsupported" label; check errors show a "Check failed" label. When the check fails or the Runtime is unsupported, the card provides a **Retry** button to re-run the check. Results are cached per Runtime version and automatically re-checked when the version changes.
+</Note>
+
 ## Select a cloud Runtime
 
 In cloud mode, the agent selector at the top of the chat page lists the AgentKit Runtimes visible to the current user. The visible scope matches the Manage Agents view and is determined by the signed-in account role. Runtimes are paginated by region. Each Runtime exposes two independent actions:
@@ -1210,6 +1214,10 @@ When connecting to a Runtime, Studio first probes read-only endpoints (agent lis
 - **Authentication failure**: the Runtime service rejected the connection request. Check the Runtime's authentication configuration.
 
 This lets you decide whether to refresh, sign in again, inspect the Runtime's readiness, or adjust the network deployment mode without reading logs.
+
+<Note>
+  When loading agent info or Runtime details fails, the detail panel shows the error message and provides a **Retry** button to reload the corresponding content.
+</Note>
 
 ## New-conversation workspace
 
