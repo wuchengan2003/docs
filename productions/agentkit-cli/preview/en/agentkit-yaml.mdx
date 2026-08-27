@@ -120,11 +120,13 @@ docker_build:
 | `runtime_bindings.memory_id` | Bound memory collection id. | — |
 | `runtime_bindings.tool_id` | Bound tool id. | — |
 | `runtime_bindings.mcp_toolset_id` | Bound MCP toolset id. | — |
-| `runtime_network.mode` | Network mode; `private` enables private networking. | Platform default |
-| `runtime_network.vpc_id` | VPC id for private networking. | — |
-| `runtime_network.subnet_ids` | Subnet ids for private networking. | `[]` |
+| `runtime_network.mode` | Network mode: `public`, `private`, or `hybrid`. `private` disables public access and enables private networking; `hybrid` keeps public access and enables private networking. | Platform default |
+| `runtime_network.vpc_id` | VPC id for private networking; required when `mode` is `private` or `hybrid`. | — |
+| `runtime_network.subnet_ids` | Subnet ids for private networking; provide at least one and at most 5 when `mode` is `private` or `hybrid`. | `[]` |
 | `runtime_network.security_group_ids` | Security group ids for private networking. | `[]` |
 | `runtime_network.enable_shared_internet_access` | Whether shared internet access is enabled for private networking. | Platform default |
+
+When deploying a cloud runtime from lifecycle config, `runtime_network.mode: hybrid` enables both public ingress and private VPC networking. Use `runtime_network.mode: private` when the runtime should be private-only, or omit `runtime_network` / use `runtime_network.mode: public` for the platform's default public behavior.
 
 ### Build Fields
 

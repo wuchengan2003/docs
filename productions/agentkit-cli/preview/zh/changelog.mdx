@@ -6,6 +6,10 @@ title: "更新日志"
 
 当前没有未发布的公开变更。
 
+## 0.52.6 - 2026-08-20
+
+- [生命周期配置](/productions/agentkit-cli/preview/zh/agentkit-yaml#云端与混合策略)中的 `runtime_network.mode: hybrid` 会同时启用公网入口和私有网络，避免混合网络运行时在部署后只保留公网访问。
+
 ## 0.52.5 - 2026-08-20
 
 - [`config --init`](/productions/agentkit-cli/preview/zh/commands/config#config) 现在会把同一条命令中的项目级参数写入新建的 `agentkit.yaml`，便于在非交互环境中一次性生成完整生命周期配置。

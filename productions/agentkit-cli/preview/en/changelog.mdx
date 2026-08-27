@@ -6,6 +6,10 @@ title: "Changelog"
 
 There are currently no unreleased public changes.
 
+## 0.52.6 - 2026-08-20
+
+- [Lifecycle configuration](/productions/agentkit-cli/preview/en/agentkit-yaml#cloud-and-hybrid-strategies) now makes `runtime_network.mode: hybrid` enable both public ingress and private networking, so hybrid-network runtimes no longer deploy with public access only.
+
 ## 0.52.5 - 2026-08-20
 
 - [`config --init`](/productions/agentkit-cli/preview/en/commands/config#config) now writes project-level options from the same command into the newly created `agentkit.yaml`, making complete lifecycle config generation usable in non-interactive environments.

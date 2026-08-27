@@ -120,11 +120,13 @@ docker_build:
 | `runtime_bindings.memory_id` | 绑定的记忆库 ID。 | — |
 | `runtime_bindings.tool_id` | 绑定的工具 ID。 | — |
 | `runtime_bindings.mcp_toolset_id` | 绑定的 MCP 工具集 ID。 | — |
-| `runtime_network.mode` | 网络模式；设置为 `private` 时启用私有网络。 | 平台默认 |
-| `runtime_network.vpc_id` | 私有网络使用的 VPC ID。 | — |
-| `runtime_network.subnet_ids` | 私有网络使用的子网 ID 列表。 | `[]` |
+| `runtime_network.mode` | 网络模式：`public`、`private` 或 `hybrid`。`private` 关闭公网并启用私有网络；`hybrid` 保留公网并启用私有网络。 | 平台默认 |
+| `runtime_network.vpc_id` | 私有网络使用的 VPC ID；`mode` 为 `private` 或 `hybrid` 时必填。 | — |
+| `runtime_network.subnet_ids` | 私有网络使用的子网 ID 列表；`mode` 为 `private` 或 `hybrid` 时至少提供一个，最多 5 个。 | `[]` |
 | `runtime_network.security_group_ids` | 私有网络使用的安全组 ID 列表。 | `[]` |
 | `runtime_network.enable_shared_internet_access` | 私有网络下是否启用共享公网出口。 | 平台默认 |
+
+使用生命周期配置部署到云端运行时时，`runtime_network.mode: hybrid` 会同时启用公网入口和私有 VPC 网络。需要只允许私有网络访问时，使用 `runtime_network.mode: private`；需要平台默认公网行为时，可以省略 `runtime_network` 或使用 `runtime_network.mode: public`。
 
 ### 构建字段
 

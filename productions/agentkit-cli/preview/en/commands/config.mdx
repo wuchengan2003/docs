@@ -44,9 +44,9 @@ Without `--global`, the command reads or updates the current project's lifecycle
 | `--knowledge_id <id>` | Bound knowledge base id. | — |
 | `--tool_id <id>` | Bound tool id. | — |
 | `--mcp_toolset_id <id>` | Bound MCP toolset id. | — |
-| `--runtime_network_mode <mode>` / `--runtime-network-mode <mode>` | Runtime network mode, such as `private`. | Current config value |
-| `--runtime_vpc_id <id>` / `--runtime-vpc-id <id>` | VPC id for private networking. | — |
-| `--runtime_subnet_ids <id>` / `--runtime-subnet-ids <id>` | Subnet id; repeatable or comma-separated. | — |
+| `--runtime_network_mode <mode>` / `--runtime-network-mode <mode>` | Runtime network mode: `public`, `private`, or `hybrid`. `hybrid` enables both public ingress and private networking. | Current config value |
+| `--runtime_vpc_id <id>` / `--runtime-vpc-id <id>` | VPC id for private networking; required with `--runtime_network_mode private` or `hybrid`. | — |
+| `--runtime_subnet_ids <id>` / `--runtime-subnet-ids <id>` | Subnet id; repeatable or comma-separated. Provide at least one with `--runtime_network_mode private` or `hybrid`. | — |
 | `--runtime_subnet_id <id>` / `--runtime-subnet-id <id>` | Single subnet id. | — |
 | `--runtime_enable_shared_internet_access` | Enable shared internet access for private networking. | Current config value |
 | `--no-runtime_enable_shared_internet_access` | Disable shared internet access for private networking. | — |
@@ -67,6 +67,13 @@ agentkit config \
   --runtime_auth_type custom_jwt \
   --runtime_jwt_discovery_url https://identity.example.com/.well-known/openid-configuration \
   --runtime_jwt_allowed_clients web-client-id
+
+agentkit config \
+  --launch_type cloud \
+  --runtime_network_mode hybrid \
+  --runtime_vpc_id vpc-xxxxxxxx \
+  --runtime_subnet_ids subnet-xxxxxxxx \
+  --runtime_enable_shared_internet_access
 ```
 
 ## config --global

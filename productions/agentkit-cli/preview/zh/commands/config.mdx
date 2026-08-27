@@ -44,9 +44,9 @@ title: "配置"
 | `--knowledge_id <id>` | 绑定的知识库 ID。 | — |
 | `--tool_id <id>` | 绑定的工具 ID。 | — |
 | `--mcp_toolset_id <id>` | 绑定的 MCP 工具集 ID。 | — |
-| `--runtime_network_mode <mode>` / `--runtime-network-mode <mode>` | 运行时网络模式，例如 `private`。 | 当前配置值 |
-| `--runtime_vpc_id <id>` / `--runtime-vpc-id <id>` | 私有网络使用的 VPC ID。 | — |
-| `--runtime_subnet_ids <id>` / `--runtime-subnet-ids <id>` | 子网 ID，可重复或用逗号分隔。 | — |
+| `--runtime_network_mode <mode>` / `--runtime-network-mode <mode>` | 运行时网络模式：`public`、`private` 或 `hybrid`。`hybrid` 会同时启用公网入口和私有网络。 | 当前配置值 |
+| `--runtime_vpc_id <id>` / `--runtime-vpc-id <id>` | 私有网络使用的 VPC ID；`--runtime_network_mode private` 或 `hybrid` 时必填。 | — |
+| `--runtime_subnet_ids <id>` / `--runtime-subnet-ids <id>` | 子网 ID，可重复或用逗号分隔；`--runtime_network_mode private` 或 `hybrid` 时至少提供一个。 | — |
 | `--runtime_subnet_id <id>` / `--runtime-subnet-id <id>` | 单个子网 ID。 | — |
 | `--runtime_enable_shared_internet_access` | 私有网络下启用共享公网出口。 | 当前配置值 |
 | `--no-runtime_enable_shared_internet_access` | 私有网络下禁用共享公网出口。 | — |
@@ -67,6 +67,13 @@ agentkit config \
   --runtime_auth_type custom_jwt \
   --runtime_jwt_discovery_url https://identity.example.com/.well-known/openid-configuration \
   --runtime_jwt_allowed_clients web-client-id
+
+agentkit config \
+  --launch_type cloud \
+  --runtime_network_mode hybrid \
+  --runtime_vpc_id vpc-xxxxxxxx \
+  --runtime_subnet_ids subnet-xxxxxxxx \
+  --runtime_enable_shared_internet_access
 ```
 
 ## config --global
