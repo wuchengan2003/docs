@@ -208,6 +208,10 @@ agentkit env create
 
 Start a local web dashboard for viewing and operating sandbox tools and sessions. The command listens on a local port and opens a browser in an interactive terminal by default; in CI or with `--no-open`, it only prints the URL.
 
+<Note>
+Standalone binaries installed through the install script or `agentkit upgrade` include the assets required by the dashboard terminal UI, so no extra Node.js dependencies are needed. When manually extracting a standalone release, keep the `vendor/` directory beside `ak` in the same install directory; otherwise the dashboard page may not load the terminal component.
+</Note>
+
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `--host <host>` | Local bind host. | `127.0.0.1` |

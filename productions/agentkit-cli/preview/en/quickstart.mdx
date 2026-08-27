@@ -26,7 +26,7 @@ agentkit --help
 ```
 
 <Tip>
-  The binary installs to `~/.agentkit`, with `agentkit` and `ak` symlinks in `~/.local/bin`. If the command isn't found, add `~/.local/bin` to your PATH. To install a specific version, set the `AGENTKIT_VERSION` environment variable (defaults to `latest`).
+  The binary installs to `~/.agentkit`, with `agentkit` and `ak` symlinks in `~/.local/bin`. The install directory also contains required runtime assets such as `templates/`, `lifecycle-templates/`, `harness/`, `skills/`, `im-proxies/`, and `vendor/`; when manually moving or extracting a standalone release, keep these directories beside `ak` in the same install directory. If the command isn't found, add `~/.local/bin` to your PATH. To install a specific version, set the `AGENTKIT_VERSION` environment variable (defaults to `latest`).
 </Tip>
 
 ## Authentication
