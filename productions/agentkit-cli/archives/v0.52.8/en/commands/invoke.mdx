@@ -1,0 +1,52 @@
+---
+title: "Invoke a runtime"
+---
+
+The `invoke` command invokes a deployed runtime by name or id, resolving its endpoint and authentication automatically before sending a message.
+
+## invoke
+
+Invoke a deployed runtime (resolves endpoint + auth).
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<runtime>` | Runtime id (`r-...`) or name (required) | None |
+| `-m, --message <text>` | User message to send | None |
+| `-r, --region <region>` | Volcengine region | Auto-sense |
+| `--rev <n>` | Runtime version to invoke | Current |
+| `-u, --user <id>` | User id | `default` |
+| `-s, --session <id>` | Session id | `default` |
+| `--user-id <id>` | Harness SDK-compatible alias for `--user`. | `default` |
+| `--session-id <id>` | Harness SDK-compatible alias for `--session`. | `default` |
+| `--token <jwt>` | Bearer token (for custom_jwt runtimes) | None |
+| `--apikey <key>` | Explicit bearer API key; takes precedence over resolved `key_auth` credentials. | None |
+| `--path <path>` | Force a specific endpoint path | Auto-detect (ADK `/run_sse`, else `/invoke`) |
+| `--json` | Print the full JSON response | `false` |
+| `--raw` | Print the full Harness response; alias for `--json`. | `false` |
+| `--model-name <name>` | Model override for this Harness invocation. | None |
+| `--system-prompt <text>` | System-prompt override for this Harness invocation. | None |
+| `--tools <list>` | Comma-separated tool override for this Harness invocation. | None |
+| `--skills <list>` | Skill Hub slugs, spaces, or skill references for this Harness invocation. | None |
+| `--runtime <backend>` | Harness runtime override: `adk` or `codex`. | None |
+| `--max-llm-calls <n>` | Maximum LLM calls for this Harness invocation; must be a positive integer. | None |
+| `--registry <uri>` | A2A registry for this invocation: `default`, `agentkit://...`, or an HTTP(S) URL. | None |
+| `--registry-space-id <id>` | A2A registry space ID. | None |
+| `--registry-space-name <name>` | A2A registry space name; the CLI resolves it to one unique space ID. | None |
+| `--registry-top-k <n>` | Maximum AgentCards to retrieve; must be a positive integer. | None |
+| `--registry-endpoint <url>` | A2A registry endpoint. | None |
+| `--registry-region <region>` | A2A registry region. | Current Runtime region |
+| `--protocol <protocol>` | Harness transport: `invoke` or `run_sse`. | `invoke` |
+
+```bash
+agentkit invoke my-agent -m "Hello, introduce yourself"
+```
+
+Passing any Harness override, `--max-llm-calls`, or `--protocol` selects the Harness request-level override endpoint. In that mode, `--path` cannot be used. Overrides apply only to the current request and do not modify `harness.yaml`.
+
+```bash
+agentkit invoke my-harness \
+  --message "Summarize this session" \
+  --model-name doubao-pro \
+  --max-llm-calls 10 \
+  --registry default
+```
