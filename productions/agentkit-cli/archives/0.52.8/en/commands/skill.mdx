@@ -1,0 +1,104 @@
+---
+title: "Manage platform and local skills"
+---
+
+The `skill` command group manages skills on the AgentKit skill platform: list, show details, list versions, list skill spaces, and delete skills. The `skills` command group works with local AgentKit skill packages and currently provides bulk secure Skill generation.
+
+## Command overview
+
+| Command | Description |
+| --- | --- |
+| `skill list` | List platform skills. |
+| `skill show` | Show skill details. |
+| `skill versions` | List skill versions. |
+| `skill spaces` | List skill spaces. |
+| `skill delete` | Delete a platform skill. |
+| `skills secure` | Generate secure Skill wrappers from a local skills directory. |
+
+## skill list
+
+List skills.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `-r, --region <region>` | Volcengine region | None |
+| `-p, --project <name>` | Project name | default |
+| `--json` | Output raw JSON | `false` |
+
+```bash
+agentkit skill list
+```
+
+## skill show
+
+Show a skill's details.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<id>` | Skill id (required) | None |
+| `-r, --region <region>` | Volcengine region | None |
+| `--json` | Output raw JSON | `false` |
+
+```bash
+agentkit skill show sk-xxxxxxxx
+```
+
+## skill versions
+
+List a skill's versions.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<id>` | Skill id (required) | None |
+| `-r, --region <region>` | Volcengine region | None |
+| `--json` | Output raw JSON | `false` |
+
+```bash
+agentkit skill versions sk-xxxxxxxx
+```
+
+## skill spaces
+
+List skill spaces.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `-r, --region <region>` | Volcengine region | None |
+| `--json` | Output raw JSON | `false` |
+
+```bash
+agentkit skill spaces
+```
+
+## skill delete
+
+Delete a skill.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<id>` | Skill id (required) | None |
+| `-r, --region <region>` | Volcengine region | None |
+| `-y, --yes` | Skip the confirmation prompt | `false` |
+
+```bash
+agentkit skill delete sk-xxxxxxxx --yes
+```
+
+## skills secure
+
+Generate secure Skill wrappers in bulk from a local skills directory. The source directory should contain one or more child directories, each with a `SKILL.md` whose frontmatter includes at least `name` and `description`. The command creates a same-name output directory for each skill and keeps only the invocation instructions needed by a managed agent; it does not copy the real Skill prompt, references, scripts, dependencies, or credentials.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<sourceSkillsDir>` | Local skills root directory; each skill subdirectory should contain `SKILL.md`. | Required |
+| `-o, --output <dir>` | Output directory. | Sibling `<sourceSkillsDir>-secure` |
+| `--force` | Overwrite existing generated files. | `false` |
+| `--json` | Output raw JSON. | `false` |
+
+```bash
+agentkit skills secure ./skills
+
+agentkit skills secure ./skills --output ./skills-secure --force
+```
+
+The generated wrappers are intended for managed agents that only need to submit a task, poll progress, and show the result. The real Skill still runs inside the AgentKit Skill Sandbox.
