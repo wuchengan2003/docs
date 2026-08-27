@@ -10,6 +10,8 @@ Most sandbox commands read the AgentKit control-plane region from `.agentkit/san
 
 Session-oriented commands share the same tool and session selectors: `-s, --session-id <id>, --sid <id>` selects the user session id; `--tool-id <id>` selects a sandbox tool id; `--tool-name <name>` resolves by tool name; `--tool-type <type>` selects the tool type. If local config already stores `tool-id`, `tool-name`, `tool-type`, or `session-id`, commands use those defaults as described in each option table when the corresponding option is omitted.
 
+Tool selection usually resolves explicit CLI options first, then `.agentkit/sandbox.yaml`, `AGENTKIT_SANDBOX_TOOL_ID`, and local cache or a remote `Ready` tool. Whether a command may auto-create a tool or prompt for selection depends on that command's behavior below.
+
 ## Command overview
 
 | Subcommand | Description |
@@ -20,7 +22,7 @@ Session-oriented commands share the same tool and session selectors: `-s, --sess
 | `create` | Create a sandbox tool. |
 | `delete` | Delete a sandbox tool or a specific session. |
 | `dashboard` (`ui`) | Start a local sandbox web dashboard. |
-| `list` | List local or remote sandbox sessions, or list sandbox Tools. |
+| `list` | List sandbox sessions or tools from local cache or remote data. |
 | `mount` | Open a TOS-mounted sandbox session directory in TosBrowser. |
 | `exec` | Connect to a sandbox terminal and execute a command. |
 | `invoke` | Invoke an agent in a `SkillEnv` sandbox through A2A. |
@@ -270,26 +272,32 @@ agentkit sandbox delete --tool-name private-dev --force
 
 ## sandbox list
 
-List sandbox sessions or sandbox Tools and print JSON. By default, the command reads the local cache; with `--remote`, it queries cloud data. Remote session listing requires `--tool-id`.
+List sandbox sessions or tools and always print JSON. When neither `--tools` nor `--sessions` is passed, the command defaults to `--sessions --local` and reads the local session cache; with `--tools`, it reads the local tool cache by default. Pass `--remote` explicitly to query remote data.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `-s, --session-id <id>, --sid <id>` | User session id to look up. | — |
-| `--tool-id <id>` | Filter by sandbox Tool id; required for remote session listing. | — |
-| `--sessions` | List sandbox sessions. | Default mode |
-| `--tools` | List sandbox Tools. | `false` |
-| `--tool-name <name>` | Filter by Tool name in `--tools` mode. | — |
-| `--tool-type <type>` | Filter by Tool type in `--tools` mode. | — |
-| `--status <status>` | Filter by status in `--tools` mode. | — |
-| `--local` | Query only the local cache. | Default |
-| `--remote` | Query only cloud data. | `false` |
+| `--tool-id <id>` | Filter sessions by sandbox tool id; with `--tools`, filter tools by tool id. Required for remote session listing. | — |
+| `--sessions` | List sandbox sessions. | `true` when `--tools` is omitted |
+| `--tools` | List sandbox tools instead of sessions. | `false` |
+| `--tool-name <name>` | Filter tools by name; only available with `--tools`. | — |
+| `--tool-type <type>` | Filter tools by type; only available with `--tools`. | — |
+| `--status <status>` | Filter tools by status; only available with `--tools`. | — |
+| `--local` | Read only local cache. | `true` when `--remote` is omitted |
+| `--remote` | Query remote data; remote session listing also requires `--tool-id`. | `false` |
+
+<Note>
+`sandbox list` is an inspection command and does not auto-create or select a sandbox tool through the tool resolution chain used by session-oriented commands. `--tools` and `--sessions` are mutually exclusive, as are `--local` and `--remote`; `--tool-name`, `--tool-type`, and `--status` are valid only in tool mode.
+</Note>
 
 ```bash
 agentkit sandbox list
 
 agentkit sandbox list --tool-id tool-123 --session-id dev
 
-agentkit sandbox list --tools --remote --tool-name private-dev
+agentkit sandbox list --tools --tool-type CodeEnv --status Ready
+
+agentkit sandbox list --tools --remote --tool-name dev-code
 
 agentkit sandbox list --sessions --remote --tool-id tool-123
 ```
@@ -352,7 +360,7 @@ Invoke an agent in a sandbox through A2A. The default tool type is `SkillEnv`, a
 | `--prompt <prompt>` | Prompt to send to the sandbox A2A agent; required unless `--task-id` is set. | — |
 | `--tool-id <id>` | Sandbox tool id. | Config value, `AGENTKIT_SANDBOX_TOOL_ID`, or — |
 | `--tool-name <name>` | Sandbox tool name. | Config value or — |
-| `--tool-type <type>` | Sandbox tool type. | Config value or `SkillEnv` |
+| `--tool-type <type>` | Sandbox tool type; when omitted, the CLI reads the config value first, then uses `SkillEnv`. | Config value or `SkillEnv` |
 | `--async` | Return immediately after creating the task. | `false` |
 | `--task-id <id>` | Poll an existing A2A task id. | — |
 | `--ttl <seconds>` | Sandbox session TTL. | Config value or `28800` |

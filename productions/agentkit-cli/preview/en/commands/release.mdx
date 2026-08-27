@@ -51,6 +51,10 @@ agentkit release config --name my-agent --force
 
 Build the image in the cloud from `.agentkit/agentkit.yaml` and write build artifacts under `.agentkit/artifacts/`.
 
+When managed Harness Sidecar is enabled, the build stage installs application dependencies on top of the platform-managed base image. `veadk-python` and `agentkit_sdk_python` entries in `requirements.txt` are preserved with the application so you can select explicit public package versions; the retired standalone `agentkit-harness-sidecar-integration` package is removed from the build context and from the base image to avoid conflicting with the implementation shipped in VeADK.
+
+Cloud builds upload the build context to TOS before starting Code Pipeline. The CLI allows each upload request to run for up to 120 seconds and automatically retries once after retryable network errors such as connection resets, transient DNS failures, or upload timeouts.
+
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | _(no options)_ | This subcommand takes no options. | — |
@@ -62,6 +66,10 @@ agentkit release build
 ## release apply
 
 Create or update the runtime from the latest built artifact.
+
+For managed Harness Sidecar releases, `release apply` waits for the `key_auth` APIG binding after the runtime reaches `Ready`, then runs the Sidecar, model proxy, and MCP gateway checks. If the release API response is ambiguous but the runtime is already releasing or the new version is ready, the CLI continues from the observed runtime state instead of triggering the release again.
+
+When an existing Sidecar runtime is in `Error`, but the current version is still the only serving `Ready` version and every newer version has failed, the CLI preserves the current serving version and updates in place to a new version. If a newer non-failed version exists, more than one serving instance is present, or the recovery conditions cannot be confirmed, the command fails and requires explicit runtime reconciliation first.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |

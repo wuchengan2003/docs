@@ -10,6 +10,8 @@ title: "使用沙箱"
 
 常用会话命令使用同一组工具和会话定位参数：`-s, --session-id <id>, --sid <id>` 指定用户会话 ID；`--tool-id <id>` 指定沙箱工具 ID；`--tool-name <name>` 按工具名称查找；`--tool-type <type>` 指定工具类型。若本地配置中已经保存 `tool-id`、`tool-name`、`tool-type` 或 `session-id`，相关命令会按各自参数表在未显式传参时读取配置默认值。
 
+工具选择通常按显式 CLI 参数、`.agentkit/sandbox.yaml`、`AGENTKIT_SANDBOX_TOOL_ID`、本地缓存或远端 `Ready` 工具的顺序解析；具体命令是否允许自动创建或提示选择，以对应命令说明为准。
+
 ## 命令总览
 
 | 子命令 | 说明 |
@@ -20,7 +22,7 @@ title: "使用沙箱"
 | `create` | 创建沙箱工具。 |
 | `delete` | 删除沙箱工具或指定会话。 |
 | `dashboard` (`ui`) | 启动本地沙箱 Web 控制台。 |
-| `list` | 列出本地或云端沙箱会话，也可列出沙箱 Tool。 |
+| `list` | 列出沙箱会话或工具，可查看本地缓存或远端数据。 |
 | `mount` | 使用 TosBrowser 打开已挂载 TOS 的沙箱会话目录。 |
 | `exec` | 连接沙箱终端并执行命令。 |
 | `invoke` | 通过 A2A 调用 `SkillEnv` 沙箱中的智能体。 |
@@ -270,26 +272,32 @@ agentkit sandbox delete --tool-name private-dev --force
 
 ## sandbox list
 
-列出沙箱会话或沙箱 Tool，并输出 JSON。默认读取本地缓存；传入 `--remote` 时从云端查询，列出远端会话时必须提供 `--tool-id`。
+列出沙箱会话或工具，并始终输出 JSON。未传 `--tools` 或 `--sessions` 时默认按 `--sessions --local` 工作，读取本地会话缓存；传入 `--tools` 时默认读取本地工具缓存。需要查询远端数据时显式传入 `--remote`。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
 | `-s, --session-id <id>, --sid <id>` | 要查找的用户会话 ID。 | — |
-| `--tool-id <id>` | 按沙箱 Tool ID 过滤；远端会话列表必填。 | — |
-| `--sessions` | 列出沙箱会话。 | 默认模式 |
-| `--tools` | 列出沙箱 Tool。 | `false` |
-| `--tool-name <name>` | `--tools` 模式下按 Tool 名称过滤。 | — |
-| `--tool-type <type>` | `--tools` 模式下按 Tool 类型过滤。 | — |
-| `--status <status>` | `--tools` 模式下按状态过滤。 | — |
-| `--local` | 仅查询本地缓存。 | 默认 |
-| `--remote` | 仅查询云端数据。 | `false` |
+| `--tool-id <id>` | 按沙箱工具 ID 过滤会话；与 `--tools` 一起使用时按工具 ID 过滤工具。远端会话查询必填。 | — |
+| `--sessions` | 列出沙箱会话。 | `true`（未传 `--tools` 时） |
+| `--tools` | 列出沙箱工具，而不是会话。 | `false` |
+| `--tool-name <name>` | 按工具名称过滤工具，仅可与 `--tools` 搭配使用。 | — |
+| `--tool-type <type>` | 按工具类型过滤工具，仅可与 `--tools` 搭配使用。 | — |
+| `--status <status>` | 按工具状态过滤工具，仅可与 `--tools` 搭配使用。 | — |
+| `--local` | 仅读取本地缓存。 | `true`（未传 `--remote` 时） |
+| `--remote` | 查询远端数据；查询远端会话时必须同时传入 `--tool-id`。 | `false` |
+
+<Note>
+`sandbox list` 是查看类命令，不会按常用会话命令的工具解析链自动创建或选择沙箱工具。`--tools` 与 `--sessions` 互斥，`--local` 与 `--remote` 互斥；`--tool-name`、`--tool-type` 和 `--status` 只适用于工具模式。
+</Note>
 
 ```bash
 agentkit sandbox list
 
 agentkit sandbox list --tool-id tool-123 --session-id dev
 
-agentkit sandbox list --tools --remote --tool-name private-dev
+agentkit sandbox list --tools --tool-type CodeEnv --status Ready
+
+agentkit sandbox list --tools --remote --tool-name dev-code
 
 agentkit sandbox list --sessions --remote --tool-id tool-123
 ```
@@ -352,7 +360,7 @@ agentkit sandbox exec \
 | `--prompt <prompt>` | 发送给沙箱 A2A 智能体的提示词；未传 `--task-id` 时必填。 | — |
 | `--tool-id <id>` | 沙箱工具 ID。 | 配置值、`AGENTKIT_SANDBOX_TOOL_ID` 或 — |
 | `--tool-name <name>` | 沙箱工具名称。 | 配置值或 — |
-| `--tool-type <type>` | 沙箱工具类型。 | 配置值或 `SkillEnv` |
+| `--tool-type <type>` | 沙箱工具类型；未传时优先读取配置值，否则使用 `SkillEnv`。 | 配置值或 `SkillEnv` |
 | `--async` | 创建任务后立即返回。 | `false` |
 | `--task-id <id>` | 轮询已有 A2A 任务 ID。 | — |
 | `--ttl <seconds>` | 沙箱会话 TTL。 | 配置值或 `28800` |

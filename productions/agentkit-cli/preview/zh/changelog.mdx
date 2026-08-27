@@ -6,6 +6,12 @@ title: "更新日志"
 
 当前没有未发布的公开变更。
 
+## 0.52.3 - 2026-08-18
+
+- [`sandbox list`](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-list) 可查看沙箱会话或工具：默认列出本地会话缓存，支持 `--tools` 查看工具缓存，支持 `--remote` 查询远端工具或指定工具下的远端会话，并可按工具 ID、名称、类型和状态过滤。
+- [托管 Harness Sidecar 发布](/productions/agentkit-cli/preview/zh/commands/release#release-apply)增强运行时恢复流程：当当前版本仍可服务且所有更新版本均失败时，可保留现有服务版本并原地更新；无法确认安全恢复条件时会失败并要求显式处理。
+- [发布构建](/productions/agentkit-cli/preview/zh/commands/release#release-build)在托管 Sidecar 场景下保留应用声明的 `veadk-python` 与 `agentkit_sdk_python` 依赖，移除已废弃的 `agentkit-harness-sidecar-integration` 独立包，并提升 TOS 构建上下文上传的超时与重试能力。
+
 ## 0.52.2 - 2026-08-14
 
 - 新增 [`chat`](/productions/agentkit-cli/preview/zh/commands/chat) 命令，可通过租户登录发现文档中的共享 Harness 别名发起 OAuth 绑定聊天，并按已验证用户身份隔离会话。

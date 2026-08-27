@@ -51,6 +51,10 @@ agentkit release config --name my-agent --force
 
 根据 `.agentkit/agentkit.yaml` 在云端构建镜像，并把构建产物写入 `.agentkit/artifacts/`。
 
+启用托管 Harness Sidecar 时，构建阶段会把应用依赖作为应用层依赖安装在平台托管基础镜像之上。`requirements.txt` 中的 `veadk-python` 与 `agentkit_sdk_python` 会随应用一起保留，以便选择明确的公开包版本；已废弃的 `agentkit-harness-sidecar-integration` 独立包会从构建上下文和基础镜像中移除，避免与 VeADK 内置实现冲突。
+
+云端构建需要先将构建上下文上传到 TOS。CLI 为每次上传请求预留最长 120 秒，并在连接重置、临时解析失败或超时等可重试网络错误后自动重试一次。
+
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
 | _（无选项）_ | 该子命令不接受任何选项。 | — |
@@ -62,6 +66,10 @@ agentkit release build
 ## release apply
 
 基于最新构建产物创建或更新运行时。
+
+对于托管 Harness Sidecar 发布，`release apply` 会在运行时进入 `Ready` 后等待 `key_auth` APIG 绑定可用，再执行 Sidecar、模型代理和 MCP 网关校验。如果发布接口返回结果不明确，但运行时已经进入发布中或新版本已就绪，CLI 会继续按已观察到的运行时状态完成流程，避免重复触发发布。
+
+当已有 Sidecar 运行时处于 `Error`，但当前版本仍是唯一可服务的 `Ready` 版本，且所有更新的版本都已经失败时，CLI 会保留当前服务版本并直接更新到新版本。若存在更新的非失败版本、多个可服务实例，或无法确认安全恢复条件，命令会失败并要求先显式处理该运行时。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |

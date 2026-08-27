@@ -6,6 +6,12 @@ title: "Changelog"
 
 There are currently no unreleased public changes.
 
+## 0.52.3 - 2026-08-18
+
+- [`sandbox list`](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-list) can inspect sandbox sessions or tools: it lists the local session cache by default, supports `--tools` for the local tool cache, supports `--remote` for remote tools or remote sessions under a specified tool, and filters by tool id, name, type, and status.
+- [Managed Harness Sidecar release](/productions/agentkit-cli/preview/en/commands/release#release-apply) improves runtime recovery: when the current version is still serving and every newer version has failed, the CLI can keep the serving version and update in place; when safe recovery cannot be confirmed, it fails and requires explicit reconciliation.
+- [Release builds](/productions/agentkit-cli/preview/en/commands/release#release-build) preserve application-declared `veadk-python` and `agentkit_sdk_python` dependencies for managed Sidecar builds, remove the retired standalone `agentkit-harness-sidecar-integration` package, and improve timeout and retry handling for TOS build-context uploads.
+
 ## 0.52.2 - 2026-08-14
 
 - Added the [`chat`](/productions/agentkit-cli/preview/en/commands/chat) command for OAuth-bound conversations with shared Harnesses published through tenant login discovery aliases, with sessions isolated by verified user identity.
