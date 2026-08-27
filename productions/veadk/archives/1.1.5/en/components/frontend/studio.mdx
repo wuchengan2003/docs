@@ -10,6 +10,10 @@ Intelligent development, custom configuration, code-package deployment, and exis
   When selecting an agent in the workspace, Studio prepares the session list, agent information, capabilities, and automatic evaluation statuses before changing the visible selection, eliminating intermediate loading states during the switch.
 </Note>
 
+<Note>
+  When you send a message or run a test agent, Studio receives responses over a streaming endpoint. If no first event arrives within 30 seconds, Studio aborts the stream and prompts you to check shared public egress network configuration and retry, preventing the request from hanging indefinitely.
+</Note>
+
 ## Start locally
 
 Run the command from the parent directory of your agent applications:
@@ -25,7 +29,7 @@ veadk studio --agents-dir ./agents --open
 
 Volcengine credentials are used for models, cloud-resource queries, and AgentKit deployment from the workbench. In production, provide them through environment variables or a secret manager rather than project files.
 
-To use BytePlus as the cloud provider, pass `--provider byteplus` and supply credentials via `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN` environment variables. Runtime listings default to the region in `BYTEPLUS_REGION` or `ap-southeast-1`. Without an explicit `--provider`, the local CLI always uses Volcengine.
+To use BytePlus as the cloud provider, pass `--provider byteplus` and supply credentials via `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN` environment variables. Runtime listings default to the region in `BYTEPLUS_REGION` or `ap-southeast-1`. Without an explicit `--provider`, the CLI reads `AGENTKIT_CLOUD_PROVIDER` then `CLOUD_PROVIDER` to determine the cloud provider, falling back to Volcengine when neither is set.
 
 
 ## Studio persistent storage
@@ -79,7 +83,7 @@ The logo can be up to 5 MB in PNG, JPEG, GIF, WebP, AVIF, or ICO format. The equ
 2. Configure the model, instruction, tools, memory, and knowledge base, and add skills from Skill Hub, a local upload, or an AgentKit SkillSpace. Multi-agent projects can also use sequential, parallel, loop, or A2A nodes, and the canvas lets you inspect and arrange the agent topology.
 3. Review the generated files and run them in a restricted temporary process; download a ZIP if you need to work offline.
 4. In the Optimization step, optionally enable Harness Sidecar optimizations for the agent; this step is optional and no Sidecar starts when nothing is selected.
-5. In the Environment step, select command-line tools to bake into the cloud Runtime image, or customize the Dockerfile used to build the image; this step is optional.
+5. In the Environment step, select a pre-built runtime environment image, or use the default AgentKit runtime environment; this step is optional.
 6. Select AgentKit deployment and monitor the build-image, deploy, and publish stages from the workspace. After deployment, the agent appears as published in the workspace and can be updated on the same Runtime.
 
 <Note>
@@ -87,7 +91,10 @@ The logo can be up to 5 MB in PNG, JPEG, GIF, WebP, AVIF, or ICO format. The equ
 </Note>
 
 <Note>
-  When deployment enters the build-image stage, Studio streams build logs in real time within the deployment progress card. Logs are redacted and length-bounded on the server before being sent to the browser. The panel shows the sync status (syncing, synced, or read failed) and line count, and can be expanded, collapsed, and copied; on a build failure the failure detail is appended to the log. Log syncing depends on the Volcengine credentials used for deployment; if logs cannot be read, the panel shows a failed status without interrupting the deployment. Both custom creation and code-package deployment support this.
+  When deployment enters the build-image stage, Studio streams build logs in real time within the deployment progress card. Logs are redacted and length-bounded on the server before being sent to the browser. The panel shows the sync status (syncing, synced, or read failed) and line count, and can be expanded, collapsed, and copied; on a build failure Studio retries syncing the final build log and marks it as failed, so the real failure cause is visible at the end of the log. Log syncing depends on the Volcengine credentials used for deployment; if logs cannot be read, the panel shows a failed status without interrupting the deployment. Both custom creation and code-package deployment support this.
+</Note>
+<Note>
+  When a build has been submitted but its final status cannot be confirmed, Studio marks the stage as “Build status pending confirmation,” prompting you to check the result later in Code Pipeline and disabling the retry button to prevent duplicate deployments. Previously this situation was displayed as “Deploy failed.”
 </Note>
 <Note>
   While a deployment is in progress, the workspace detail page focuses on the deployment progress: it keeps the agent heading and a scrollable deployment panel visible and hides the other detail tabs and content; the normal detail tabs return after the deployment ends. Custom creation, code-package deployment, and updating a deployed agent all follow this behavior.
@@ -224,7 +231,7 @@ Selecting the Operations scenario automatically loads SQL read-only protection. 
 After enabling optimization items, the Publish step requires the runtime settings they depend on:
 
 - When Context governance, Context and result compression, Answer verification and repair, or Goal-task control is selected and a Volcengine Ark model is used, model-gateway settings are required. Studio fills in the model provider, model API base, and model name automatically; the Ark API Key is injected from the selected API Key and does not need to be entered manually.
-- When MCP-resilience governance is selected, provide the MCP unified gateway address (`MCP_URLS`) and API Key (`MCP_API_KEY`).
+- When MCP-resilience governance is selected, Studio injects `MCP_URLS` and `MCP_API_KEY` automatically from the HTTP MCP tools configured earlier in the Add MCP Tool step—no manual entry is needed. At least one MCP tool using HTTP transport must be configured with a valid service URL and Bearer Token; multiple HTTP MCP tools must share the same credential. If these conditions are not met, the Publish step directs you back to the Add MCP Tool step to complete the configuration before republishing. MCP tools using stdio transport are not supported for MCP-resilience governance.
 
 <Warning>
   After enabling Harness Sidecar optimizations, the related enhancement behavior runs in a managed runtime and accesses the model and MCP gateway. Confirm that the configured model credentials, MCP gateway address, and access scope meet your data-handling and security requirements.
@@ -232,47 +239,101 @@ After enabling optimization items, the Publish step requires the runtime setting
 
 ### Configure the cloud environment
 
-The custom-creation lifecycle follows five steps: Architecture, Debug, Optimization, Environment, and Publish. The Environment step sits between Optimization and Publish and lets you select official command-line tools to bake into the cloud Runtime image, or customize the Dockerfile used to build the image. The step is optional: when no tools are selected and no custom Dockerfile is provided, deployment uses the default AgentKit image build and the generated project contains no `Dockerfile`.
+The custom-creation lifecycle follows five steps: Architecture, Debug, Optimization, Environment, and Publish. The Environment step sits between Optimization and Publish and lets you select a pre-built runtime environment image. The step is optional: choosing "Default environment" uses the default AgentKit image build and the generated project contains no `Dockerfile`.
 
-#### Select command-line tools
+In the Environment step, select a successfully built runtime environment from the dropdown. The dropdown shows the environment name, operating system, Python version, and build status (preparing, queued, building, scanning, available, or failed); only environments with "available" build status are selectable. Once selected, the environment image is used as the base image for the agent image build during deployment, and the chosen environment version is pinned to that deployment. When no environment is selected, the default AgentKit runtime environment is used.
 
-The following official command-line tools can be selected in the Environment step; selected tools are installed into the deployment image:
+<Note>
+  Runtime environments must be pre-created and built on the Environments page. Once the build status reaches "available," the environment appears in the Environment step dropdown. See [Manage runtime environments](#manage-runtime-environments).
+</Note>
+
+## Manage runtime environments
+
+The Studio sidebar provides an "Environments" page for creating, managing, and building reusable runtime environments. A runtime environment is a configuration definition containing an operating system, Python version, command-line tools, skills, and a Dockerfile. After building, it produces a container image that can be selected as the base image when deploying an agent. Environment definitions, generated Dockerfiles, build versions, log metadata, and image references are stored in the Studio-private TOS bucket.
+
+<Note>
+  The Environments page requires persistent storage to be configured by an administrator. When persistent storage is not configured, environment-related features are unavailable.
+</Note>
+
+### Create a runtime environment
+
+On the Environments page, click "Create environment" and fill in the following configuration:
+
+| Setting | Options | Description |
+| :--- | :--- | :--- |
+| Environment name | Free text, up to 128 characters | A unique name for the environment. |
+| Description | Free text, up to 2000 characters | A description of the environment's purpose. |
+| Operating system | Ubuntu 22.04, Ubuntu 24.04 | The base image operating system. |
+| Python version | Python 3.10, Python 3.12 | The Python version in the image. |
+| Command-line tools | See the table below | Official tools to pre-install in the image. |
+| Skills | Skill Hub, local upload, AgentKit SkillSpace | Skills to pre-install in the image, up to 20. |
+| Dockerfile | Auto-generated or custom | The Dockerfile content used to build the image. |
+
+When selecting command-line tools, you can choose from the following official tools. Selected tools are pre-installed into the environment image:
 
 | Tool | Category | Description |
 | :--- | :--- | :--- |
-| Lark CLI | Productivity | Run Lark OpenPlatform development and management commands in the cloud. |
-| GitHub CLI | Development | Work with GitHub repositories, issues, and pull requests in the cloud. |
-| Pandoc | Productivity | Convert between Markdown, HTML, Word, and other document formats. |
+| lark-cli | Tools | Lark OpenPlatform command-line tool. |
+| pandoc | Tools | Document format conversion tool. |
+| opencli | Tools | Converts websites and desktop apps into command-line tools. |
+| uv | Productivity | Fast Python package and project manager. |
+| ripgrep | Productivity | High-performance text search tool. |
+| jq | Productivity | JSON query and transformation tool. |
+| GitHub CLI | Productivity | Manage GitHub workflows from the terminal. |
+| Playwright | Browser automation | Browser automation and end-to-end testing. |
+| Chromium | Browser automation | Headless browser runtime. |
+| Git | System & media | Version control. |
+| curl | System & media | Network requests and file downloads. |
+| FFmpeg | System & media | Audio and video transcoding and processing. |
+| ImageMagick | System & media | Image conversion and batch processing. |
 
-After selecting any tool, Studio generates a provider-specific Dockerfile and adds it to the generated project (path `Dockerfile`). The Dockerfile builds on the AgentKit-provided base image (Volcengine uses the Beijing-region image, BytePlus uses the Singapore-region image), installs the system dependencies required by the selected tools, and downloads the binaries from the official GitHub Release archives, verifying SHA-256 checksums for both amd64 and arm64 before installing them; Pandoc is installed from system packages. The image then installs Python dependencies, copies the application code, and uses `python -m app` as the entrypoint.
+When creating or saving an environment, Studio auto-generates a Dockerfile based on the operating system, Python version, and selected tools. When no custom Dockerfile is provided, the auto-generated version is used. The image is built on the official Ubuntu image for the selected operating system, installs the Python runtime and system dependencies for the selected tools, and pre-installs VeADK runtime dependencies. Volcengine builds use the Aliyun PyPI mirror, Huawei Cloud Python source mirror, and npmmirror for Playwright browsers; BytePlus builds use the corresponding official sources. Cross-version Python combinations (e.g., Ubuntu 22.04 + Python 3.12) are compiled from pinned source releases instead of depending on GitHub-hosted binaries.
 
 <Note>
   The generated Dockerfile never contains access keys or credentials. Provide any tokens or credentials the tools need as runtime environment variables after deployment; do not write them into the Dockerfile.
 </Note>
 
-#### Customize the Dockerfile
-
-Use "Advanced configuration" at the bottom of the Environment step to open the Dockerfile editor and edit the build content directly.
-
-| Action | Description |
-| :--- | :--- |
-| Edit Dockerfile | The editor initially shows the content auto-generated from the cloud provider and tool selection; once you save custom content, changing the tool selection will not overwrite your edits. |
-| Restore auto-generated | Resets the Dockerfile to the version generated from the current cloud provider and tool selection. |
-
-The Dockerfile is limited to 64 KiB and cannot be empty; an empty or oversized Dockerfile blocks the Publish step, and Studio keeps you on the Environment step with a message.
-
 <Warning>
   Never write access keys, tokens, or other credentials into the Dockerfile. The Dockerfile is submitted to the cloud build service together with the project and may be readable by anyone with access to the build artifacts.
 </Warning>
 
-Whenever tools are selected or a custom Dockerfile is provided, the generated project includes a `Dockerfile`, which the cloud build service uses during deployment. Providing only a custom Dockerfile without selecting any tools also generates a `Dockerfile` and uses it verbatim.
+### Build environment images
+
+After creating or saving an environment, click "Build" to start an asynchronous image build. Studio uploads the build context to the TOS bucket, runs the build pipeline through CodePipeline, and pushes the resulting image to Container Registry. The build proceeds through preparing, queued, building, and scanning phases, with a final status of "available" or "failed."
+
+After the build completes, the environment list shows the latest version's build status and image reference. You can view build steps, progress, and logs on the environment detail page. When the build fails, the end of the log shows the error message to help locate the failure cause.
+
+<Note>
+  On the first environment image build, Studio automatically creates or reuses managed CodePipeline Workspace, Pipeline, and Container Registry resources. When using the account-level default TOS bucket, Container Registry reuses the account's `agentkit-cli-<account-id>` instance and creates the `runtime-environments/base-images` repository inside it.
+</Note>
+
+### Environment build resources
+
+When deploying Studio, you can specify existing environment build resources using the following flags:
+
+```bash
+veadk studio deploy \
+  --vefaas-app-name <app-name> \
+  --environment-cp-workspace <workspace-id-or-name> \
+  --environment-cr-repository <registry/namespace/repository>
+```
+
+Both flags can be used independently. `--environment-cr-repository` must use the `registry/namespace/repository` format; each segment must not contain spaces or `.`/`..`. When omitted, Studio creates or reuses managed resources. These settings are not read from environment variables and take effect only in the deploy command. After deployment, the System Information page shows the resolved CodePipeline and Container Registry names, source, and console links; these values are resource identifiers and do not contain credentials.
+
+<Note>
+  Environment build resources are managed independently from agent deployment build resources. Environment image builds use the CodePipeline and Container Registry described above; agent deployments use the resources managed in "Configure build resources." When an agent selects a pre-built environment, deployment builds the agent image into the Container Registry namespace of the environment's base image, ensuring the build credential can both pull the base image and push the agent image.
+</Note>
 
 ### Intelligent development
 
 Intelligent development is a goal-driven creation flow: on Add Agent, select "Intelligent development" and describe the problem your agent should solve in natural language. Codex in the sandbox then determines the intent, builds the project, debugs it, and performs a temporary cloud validation, producing a deployable source artifact.
 
 <Note>
-  Intelligent development requires a configured Dev Sandbox Tool (`SANDBOX_DEV` or `--sandbox-dev-tool-id`). When not configured, the entry shows "Unavailable." `veadk studio deploy` creates this Tool automatically by default; for local startup you can specify an existing Tool ID manually.
+  Intelligent development requires a configured Dev Sandbox Tool (`SANDBOX_DEV` or `--sandbox-dev-tool-id`) with model credentials configured on that Tool (a model ID, an API Key, and a model API base URL pointing to the current cloud's official Ark endpoint). When the Tool is not configured, the entry shows "Unavailable." When the Tool is configured but model credentials are missing or do not match, the entry is also unavailable and prompts you to redeploy Studio. `veadk studio deploy` creates this Tool and completes the model configuration automatically by default; for local startup you can specify an existing Tool ID manually.
+</Note>
+
+<Note>
+  The "Intelligent development" page provides a model selector below the goal input, used to specify the model Codex uses for the current intelligent-development session. The model list is fetched by the Studio server from Ark models activated under the current account, showing only available or retiring models with their display name, ID, vendor, and lifecycle status, and supports search filtering. The default is the model configured on the Dev Sandbox Tool; after selecting a different model, the selected model's name, provider, and API base URL are injected into the session environment by the Studio server without sending model credentials to the browser. The model list can be reloaded on load failure.
 </Note>
 
 #### Workflow
@@ -299,7 +360,7 @@ When deploying from intelligent development, the source is materialized server-s
 
 #### Session management
 
-Intelligent-development sessions appear in the sidebar history list, mixed with regular conversations and sorted by time. An in-progress session shows a "Building" status; you can switch to other pages and return to resume the session. When resuming or reopening a completed session, the conversation history shows only user messages and assistant responses; internal intent-gate and task-scheduling steps are not displayed. Completed sessions can be reopened to continue the conversation or deleted; deleting an in-progress session requires stopping the active build first.
+Intelligent-development sessions run in the current browser session and do not appear in the sidebar history list. An in-progress session shows a "Building" status; you can switch to other pages and return to resume the current session. When you try to navigate away during a build, Studio prompts that leaving will stop the current build, but the session is preserved. When resuming a session, the conversation history shows only user messages and assistant responses; internal intent-gate and task-scheduling steps are not displayed.
 
 <Note>
   Tool calls, thinking content, and progress messages from intelligent development are redacted server-side before being sent to the browser: task credentials and private paths are removed and never appear in the browser.
@@ -384,7 +445,10 @@ The following frameworks are supported:
   When deploying a migration artifact to AgentKit, Studio automatically adapts model environment variables (`MODEL_AGENT_API_BASE`, `MODEL_AGENT_NAME`, and `MODEL_NAME`) to the current cloud provider, ensuring the migrated project uses the correct model endpoint and model name in the target cloud environment.
 </Note>
 <Note>
-  During analysis and migration, the "Codex activity" panel renders Codex's progress in a structured form: analysis and migration plans show per-item completion status and progress; command execution, file updates, external tool calls, web searches, and sub-task coordination each display their input, output, and exit code or error details, with error details shown when execution fails. All activity content is redacted server-side before reaching the browser; keys, tokens, and other sensitive fields are removed.
+  During analysis and migration, the "Codex activity" panel renders Codex's progress in a structured form: analysis and migration plans show per-item completion status and progress, with the first incomplete plan step automatically marked as in progress; command execution, file updates, external tool calls, web searches, and sub-task coordination each display their input, output, and exit code or error details, and activity items that fail are automatically expanded to show error details. All activity content is redacted server-side before reaching the browser; keys, tokens, and other sensitive fields are removed.
+</Note>
+<Note>
+  The migration composer includes a model selector next to the archive upload button, used to specify the model the Dev Sandbox Codex uses for migration analysis and conversion. The model list is fetched by the Studio server from Ark models activated under the current account, showing only available or retiring models with their display name, ID, vendor, and lifecycle status; models incompatible with project migration are excluded, and the list supports search filtering. The default model comes from the migration capabilities; when none is configured, the first available model is selected. The list can be reloaded on load failure. Once a task is created, the model cannot be changed. The selected model's name, provider, and API base URL are injected into the migration session environment by the Studio server without sending model credentials to the browser.
 </Note>
 
 | Check | Limit | Description |
@@ -561,6 +625,10 @@ The temporary test process is retained for 1,800 seconds by default and can be c
   Debug runs support only the official Ark model endpoint for the current cloud provider. Agents configured with a custom model endpoint cannot start in a debug run; use the official endpoint or test through a deployed Runtime instead.
 </Note>
 
+<Note>
+  When Studio is deployed in the cloud (running on VeFaaS), debug runs validate MCP and A2A endpoint addresses: only private endpoints within the VPC attached to the Studio function are allowed; private addresses outside that VPC, loopback addresses, link-local addresses, and cloud metadata addresses are blocked. Locally started Studio is unaffected and still allows local resources. If Studio cannot determine the VPC ranges (for example, when VPC is not enabled on the function or the function role lacks VPC and subnet read permissions), the debug run fails with guidance to check VPC configuration and IAM permissions. VPC range information is cached for 5 minutes on the Studio server.
+</Note>
+
 ### Configure memory
 
 After enabling long-term memory for an agent, select one of these backends in Studio:
@@ -677,7 +745,21 @@ The “Tracing flame graph” button next to an assistant reply opens the call-t
 - For a connected cloud Runtime, the Studio server queries APMPlus for the session trace using its own cloud-provider credentials; the browser never touches the credentials. The APMPlus OpenAPI endpoint follows the configured cloud provider: `open.volcengineapi.com` for Volcengine and `open.byteplusapi.com` for BytePlus.
 
 <Note>
-  Trace observation for a cloud Runtime requires enabling APMPlus tracing for the corresponding agent in the Volcengine console. Runtimes deployed through Studio have APMPlus tracing enabled by default. Opening the trace panel for a Runtime without tracing enabled prompts you to enable APMPlus tracing in the console first, and a failed trace query prompts you to retry later.
+  Trace observation for a cloud Runtime requires enabling APMPlus tracing for the corresponding agent in the Volcengine console. Runtimes deployed through Studio have APMPlus tracing enabled by default. When the trace panel opens, Studio displays different states depending on the query result:
+
+| State | Description |
+| :--- | :--- |
+| Loading | Querying APMPlus for trace data. |
+| Collecting | Trace data has not arrived in APMPlus yet; the panel shows a collecting state with a retry button. Studio retries automatically up to two times before requiring a manual retry. |
+| Not enabled | The Runtime does not have tracing enabled; the panel prompts you to enable it in the console and retry. |
+| Forbidden | The Studio runtime role lacks APMPlus read permission; the panel prompts you to contact an administrator to grant access. |
+| Load failed | The trace query encountered another error; the panel provides a reload button. |
+
+  When querying traces, the Studio server first locates the target trace by the `POST /run_sse` entry span; if no match is found, it falls back to a broad scan of the session time window and selects the trace closest to the reply end time. Trace data may be temporarily unavailable due to collection latency and should appear after a short retry.
+</Note>
+
+<Note>
+  When displaying model output in the trace panel, Studio automatically removes empty placeholders (`null` entries) produced during streaming progression, showing only the actual content parts.
 </Note>
 
 ### Issue feedback
@@ -1076,23 +1158,19 @@ print(response.json())
 
 The **Agents** entry in the sidebar opens the agent directory, where you browse, connect to, and inspect the AgentKit Runtimes under your account. The agent selector in the conversation top bar also provides an entry point into this directory.
 
-The directory switches between agent types using the tabs at the top, defaulting to **General agents**:
+The directory switches between agent types using the filter at the top, defaulting to **General agents**:
 
 | Type | Description |
 | :--- | :--- |
-| General agents | Lists all AgentKit Runtimes created by the signed-in user. |
-| Codex agents | Opens the Codex temporary session creation entry. |
-| DeepSeek Harness | Opens the DeepSeek Harness workspace session creation entry. |
-| OpenClaw agents | Not yet available. |
-| Hermes agents | Not yet available. |
+| General agents | Lists the AgentKit Runtimes visible to the current user. Visibility depends on role permissions. |
+| Codex | Opens the Codex temporary session creation entry. |
+| DeepSeek | Opens the DeepSeek workspace session creation entry. |
+| OpenClaw | Not yet available. |
+| Hermes | Not yet available. |
 
-The General agents list loads the signed-in user's own Runtimes across all regions and automatically loads the next page as you scroll to the bottom of the list, showing "All agents loaded" when complete. Use the search box at the top to filter the loaded agents by name.
+The General agents list provides owner, region, and name filters. The owner filter toggles between "All" and "Created by me": "All" is available only to the `admin` role; `developer` and regular users can only view their own Runtimes. The region filter defaults to the Studio's current region and can be switched to other regions supported by the current cloud provider. The list paginates by the selected region and automatically loads the next page as you scroll to the bottom, showing "All agents loaded" when complete. Use the search box to filter the loaded agents by name.
 
-Each agent card shows the Runtime name and creation time. Click a card to open that Runtime's detail view; the **Connect** button on the card makes the Runtime the agent for the current conversation and switches to the conversation page. The connected agent is pinned to the top of the list. When loading fails, the directory shows an error message with a **Reload** button; an empty list shows the corresponding empty-state message. Connection failures are diagnosed the same way as when [selecting a cloud Runtime](#select-a-cloud-runtime).
-
-<Note>
-  The agent directory lists only the Runtimes created by the signed-in user and is not filtered by region. To browse other users' or all Runtimes, use the agent selector in the top bar or the management page; the visible scope depends on role permissions.
-</Note>
+Each agent card shows the Runtime name, description, creator, and creation time. The creation time is displayed as a relative label (e.g., "3 minutes ago"). Click a card to open that Runtime's detail view; the **Connect** button on the card makes the Runtime the agent for the current conversation and switches to the conversation page. The connected agent is pinned to the top of the list. When you have creation permission, the first card in the list is a "Create agent" entry. When loading fails, the directory shows an error message with a **Reload** button; an empty list shows the corresponding empty-state message. Connection failures are diagnosed the same way as when [selecting a cloud Runtime](#select-a-cloud-runtime).
 
 ## Select a cloud Runtime
 
@@ -1645,6 +1723,10 @@ After entering a skill space, you can browse all skills within it and filter by 
   The skill name must be unique within the target skill space. If a skill with the same name already exists in the target space, the upload is rejected; rename the skill and re-upload, or use the optimize function to overwrite the existing skill.
 </Note>
 
+<Note>
+  When viewing files or downloading a ZIP, Studio downloads the skill package from the skill space's region and ignores macOS metadata files such as `__MACOSX` directories, `.DS_Store`, and `._`-prefixed files while extracting. For skills using the legacy SkillSpace interface type, Studio falls back to resolving the skill by name so their file list and `SKILL.md` still load. A download or parsing failure returns a structured retryable error; retry after verifying the region, credentials, and network.
+</Note>
+
 #### Generate skills with the Dev Sandbox
 
 Selecting "Create skill" on a skill space page opens the Dev Sandbox skill generation workbench. The workbench creates an independent development sandbox session via the DevEnv Tool and generates a `SKILL.md` and associated files in ADK skill format from a natural-language description.
@@ -1859,7 +1941,7 @@ When running Studio locally with `veadk studio --vite`, the Studio backend start
 | `--site-logo` | `str \| None` | `VEADK_SITE_LOGO` | Custom logo as a local image path or HTTP(S) URL. |
 | `--host` | `str` | `127.0.0.1` | Bind address. |
 | `--port` | `int` | `8000` | Bind port. |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | Cloud provider for AgentKit services. BytePlus is used only when explicitly selected and reads credentials from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`. |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`, then `volcengine` | Cloud provider for AgentKit services. Defaults to `AGENTKIT_CLOUD_PROVIDER` then `CLOUD_PROVIDER`, falling back to `volcengine` when neither is set; selecting `byteplus` reads credentials from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`. |
 | `--dev` | Boolean flag | `false` | Load local agents in the picker instead of cloud AgentKit Runtimes. |
 | `--vite` | Boolean flag | `false` | Serve only the API and allow CORS from the Vite development server at `http://localhost:5173` (and the fallback port `http://localhost:5174`). |
 | `--oauth2-user-pool` | `str \| None` | `None` | VeIdentity user-pool name. Combine with a client name or UID to enable SSO. |
@@ -1906,7 +1988,11 @@ Deployment credentials are resolved in the following order: explicit `--volcengi
 
 On success, the terminal prints the public URL, VeFaaS application ID, Identity region, user pool ID, user pool domain, and client ID. Opening the URL redirects the user through VeIdentity login.
 
-When the deployment automatically provisions an Identity user pool, a TOS bucket, or sandbox Tools (i.e., existing resources were not specified via `--user-pool-id` with `--allowed-client-id`, `VEADK_STUDIO_TOS_BUCKET`, or sandbox Tool ID options), the terminal additionally prints a summary of the configured cloud resources. The summary lists each sandbox Tool type and its ID, the private TOS storage address, the user pool ID, and the client ID, along with a link to the Identity console for the corresponding cloud provider. It also notes that password sign-in is disabled by default for security and that an SSO identity provider must be configured before inviting users.
+When the deployment automatically provisions an Identity user pool, a TOS bucket, or sandbox Tools (i.e., existing resources were not specified via `--user-pool-id` with `--allowed-client-id`, `VEADK_STUDIO_TOS_BUCKET`, or sandbox Tool ID options), the terminal additionally prints a summary of the configured cloud resources. The summary lists each sandbox Tool type and its ID, the private TOS storage address, the user pool ID, and the client ID, along with a link to the Identity console for the corresponding cloud provider. When Studio manages the user pool (i.e., no existing pool is passed via `--user-pool-id`), deployment configures the pool for SSO-only sign-in by default: password sign-in, passwordless sign-in, sign-up, recovery, and unconfirmed-user login are disabled, and an SSO identity provider must be configured in the Identity console before inviting users. Pass `--allow-dangerous-login` to explicitly enable those local login flows on a Studio-managed user pool; the flag only applies to Studio-managed pools. When an existing user pool is provided via `--user-pool-id`, deployment preserves that pool's existing login settings and ignores this flag.
+
+<Warning>
+  `--allow-dangerous-login` enables local account login flows on the user pool and weakens sign-in security. Use it only in controlled or testing environments; production deployments should keep the default SSO-only configuration.
+</Warning>
 
 The deployment also creates or updates two stateless VeFaaS functions and corresponding minute timers for scheduled-task scheduling: a scanner copies due tasks into a durable execution queue and advances schedules once per minute, while an asynchronous worker drains the queue, invokes the Runtime, and writes results. After deployment, the terminal prints the scanner and worker function IDs and timer IDs.
 
@@ -1926,7 +2012,9 @@ The model, endpoint, and candidate regions for sandbox Tools differ by cloud pro
 
 `veadk studio deploy` automatically runs a read-only IAM permission pre-check before creating any cloud resources. The pre-check reads the caller's attached IAM policies and evaluates each required IAM Action for the deployment. The required permission scope depends on the deployment configuration: when existing identity resources are not specified via `--user-pool-id` and `--allowed-client-id`, permissions for creating user pools are required; when `--iam-role` is not provided, role management permissions are required; when no existing bucket is specified via `VEADK_STUDIO_TOS_BUCKET`, bucket creation permissions are required; when sandbox Tool IDs are not specified, Tool creation permissions are required; when `--gateway-name` is not provided, gateway management permissions are required (including `apig:UpdateRoute` to enable the HTTP methods required by Studio APIs); the deployment also requires VeFaaS permissions to create and update the scheduled-task scheduler functions and minute timers (`vefaas:ListFunctions`, `vefaas:GetFunction`, `vefaas:ListTriggers`, `vefaas:CreateTimer`, `vefaas:UpdateTimer`); when `--keep-failed-deploy` is not enabled, permissions for cleaning up failed resources are also required.
 
-After the pre-check completes, the terminal prints a permission table listing each IAM Action, its purpose, and whether it is satisfied. If any permission is missing, the deployment stops before creating cloud resources; the terminal also prints the IAM configuration URL for the corresponding cloud provider to help you add the missing permissions. The Volcengine URL is `https://console.volcengine.com/iam/policymanage` and the BytePlus URL is `https://console.byteplus.com/iam/policymanage`.
+After the pre-check completes, the terminal prints a permission table listing each IAM Action, its purpose, and whether it is satisfied. If any permission is missing, the terminal also prints the IAM configuration URL for the corresponding cloud provider to help you add the missing permissions. The Volcengine URL is `https://console.volcengine.com/iam/policymanage` and the BytePlus URL is `https://console.byteplus.com/iam/policymanage`.
+
+In a formal deployment (without `--precheck-only`), if any permission is missing, the command prompts for confirmation before continuing; the default is to decline, which stops the deployment, and confirming allows the deployment to proceed despite the missing permissions. When `--precheck-only` is specified, a missing permission causes the command to exit immediately without a confirmation prompt.
 
 Use `--precheck-only` to run only the permission pre-check without creating any cloud resources, which is useful for verifying credential permissions before a formal deployment:
 
@@ -1944,6 +2032,8 @@ The pre-check uses the deployment credentials to query IAM policies in a read-on
 Studio reads new releases from the centrally maintained `veadk-studio` TOS source in `cn-beijing`, regardless of the deployment region, so administrators can update the frontend and Python backend together from the navbar without extra options. Use `--studio-update-bucket` and `--studio-update-prefix` (or the matching `VEADK_STUDIO_UPDATE_BUCKET` and `VEADK_STUDIO_UPDATE_PREFIX` environment variables) to override the default release source; the release source region is always `cn-beijing`. The release bundle is not tied to a cloud provider — Volcengine and BytePlus deployments share the same source. During the update, the cloud-provider entry point is selected automatically based on the `CLOUD_PROVIDER` (or `AGENTKIT_CLOUD_PROVIDER`) environment variable in the deployment; BytePlus deployments also have `BYTEPLUS_REGION` written during the update.
 
 Studio checks for updates every three minutes and lists available versions with their change notes. After an administrator confirms an update, Studio verifies the complete release bundle, replaces the Python backend and frontend assets together, and re-releases the existing Application. The Application and Function IDs, public URL, SSO client, and server-side secrets are preserved.
+
+Before starting the update, Studio pre-checks whether the current VeFaaS Function role has all the IAM permissions required to complete the OTA update (including reading the release bundle, creating and updating scheduler functions, releasing the application and functions, installing dependencies, and managing scheduled-task triggers). The pre-check queries the attached IAM policies in read-only mode and does not modify any resources. If any permission is missing, the update is blocked before any mutation begins; the update dialog lists the missing permissions and provides a link to the corresponding provider's IAM console for authorization. After completing authorization, the administrator can retry the update. The update progress panel shows a "Pre-checking Studio update permissions" stage.
 
 During the update, Studio checks the current VeFaaS Function for missing cloud resources and provisions them automatically: if persistent storage (`VEADK_STUDIO_TOS_BUCKET` and `VEADK_STUDIO_TOS_REGION`) is not configured, a TOS bucket is created or reused in the deployment region; if sandbox snapshot Tools (`SANDBOX_CHAT_CODEX_SNAPSHOT`, `SANDBOX_CHAT_OPENCLAW_SNAPSHOT`, `SANDBOX_CHAT_HERMES_SNAPSHOT`) are missing, they are created for the current cloud provider. The provisioned resources are written as environment variables into the Function configuration so that older Studio versions gain the new persistent-storage and sandbox capabilities after upgrading. The update progress panel shows a "Checking and provisioning Studio cloud resources" stage.
 
@@ -1975,11 +2065,14 @@ veadk studio deploy \
 | `--user-pool-id` | `str \| None` | `None` | Existing VeIdentity user-pool UID. When omitted, a named user pool is created or reused in the deployment region. |
 | `--allowed-client-id` | `str \| None` | `None` | Existing user-pool client UID. When omitted, a named web client is created or reused in the user pool; requires `--user-pool-id` when provided. |
 | `--client-secret` | `str` | `""` | Supply only if the secret cannot be read from the client UID. Direct arguments can enter shell history, so omit it when lookup is available. |
+| `--allow-dangerous-login` | Boolean flag | `false` | Enable local password, passwordless, sign-up, recovery, and unconfirmed-user login flows on a Studio-managed Identity user pool. Only takes effect when no existing pool is specified via `--user-pool-id`; when an existing pool is provided, deployment preserves its existing login settings. |
 | `--vefaas-app-name` | `str` | Required | VeFaaS application name, 4–64 characters containing letters, digits, and hyphens, but no underscores. |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | Cloud provider for the deployment. When `byteplus` is selected, credentials are read from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`; the default region is `ap-southeast-1`. |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`, then `volcengine` | Cloud provider for the deployment. Defaults to `AGENTKIT_CLOUD_PROVIDER` then `CLOUD_PROVIDER`, falling back to `volcengine` when neither is set; when `byteplus` is selected, credentials are read from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`, with the default region `ap-southeast-1`. |
 | `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | Derived from `--provider` | Studio deployment region; also determines the region for VeFaaS, API Gateway, and related resources. When `--user-pool-id` and `--allowed-client-id` are provided, the deploy command searches existing VeIdentity user pools across Beijing and Shanghai. |
 | `--project` | `str` | `default` | VeFaaS function project. |
 | `--iam-role` | `str \| None` | `None` | Existing IAM role TRN for the function. If omitted, the default role is created or reused. |
+| `--environment-cp-workspace` | `str \| None` | `None` | Existing CodePipeline workspace ID or name for Studio environment image builds. When omitted, Studio creates or reuses a managed workspace. This option is not read from environment variables. |
+| `--environment-cr-repository` | `str \| None` | `None` | Existing Container Registry repository as `registry/namespace/repository` for Studio environment images. When omitted, Studio creates or reuses managed CR resources. This option is not read from environment variables. |
 | `--vefaas-application-template-id` | `str \| None` | Built-in template | Override the built-in VeFaaS Application Center template ID. Also read from `VEFAAS_APPLICATION_TEMPLATE_ID`. |
 | `--admin` | `str \| None` | `None` | Comma-separated admin list (usernames or OAuth emails). Omitting both `--admin` and `--developer` treats every signed-in user as an `admin`. Also reads `VEADK_STUDIO_ADMINS`. |
 | `--developer` | `str \| None` | `None` | Comma-separated developer list (usernames or OAuth emails). Also reads `VEADK_STUDIO_DEVELOPERS`. |
@@ -2015,10 +2108,10 @@ This feature requires the Runtime to explicitly enable the `enable_studio_tools`
 
 Studio frontend product-behavior data is reported through TEA to track instance visits, sign-in usage, and the outcomes of agent deployment, sandbox creation, agent connection, message sending, debug test runs, and source code downloads. Telemetry is automatically enabled when running `veadk studio` (both local startup and `veadk studio deploy` instances) and requires no configuration; `veadk frontend` does not enable it. Reporting failures do not affect normal Studio usage. After the page loads, Studio records a single anonymous page entry before the user signs in; user identity is associated only after sign-in, distinguishing anonymous visits from authenticated visits.
 
-During deployment, Studio automatically provides the deploy ID, user-pool ID, application ID, function ID, deployment region, project, and cloud account ID context to the frontend through the `/web/ui-config` endpoint for event correlation; no manual setup is required. The cloud account ID is resolved automatically by `veadk studio deploy` and `veadk studio update` during deployment or update and written to the runtime environment; it does not represent an individual user identity.
+During deployment, Studio automatically provides the deploy ID, user-pool ID, application ID, function ID, deployment region, project, and cloud account ID context to the frontend through the `/web/ui-config` endpoint for event correlation; no manual setup is required. The cloud account ID is resolved automatically by `veadk studio deploy` and `veadk studio update` during deployment or update and written to the runtime environment; it does not represent an individual user identity. When account ID resolution fails, the deployment or update is not interrupted; the sanitized resolution error is recorded as `account_id_resolution_error` in the telemetry context.
 
 <Note>
-  Telemetry collects only usage dimensions, including deploy ID, cloud account ID, user ID, role, region, source, creation mode, whether AI-assisted generation was used, and the success or failure outcomes and failure phases of agent deployment, sandbox creation, agent connection, message sending, debug test runs, and source code downloads. Anonymous entry visits do not include a user ID, which is associated only after sign-in. Failure events retain only a stable error kind and optional error code; error stacks, error text, and free-form text are never collected. Telemetry does not collect conversation content, prompts, generated code, environment variable values, or any secrets.
+  Telemetry collects only usage dimensions, including deploy ID, cloud account ID, user ID, role, region, source, creation mode, whether AI-assisted generation was used, and the success or failure outcomes and failure phases of agent deployment, sandbox creation, agent connection, message sending, debug test runs, and source code downloads. Anonymous entry visits do not include a user ID, which is associated only after sign-in. Failure events retain a stable error kind and optional error code; agent deployment failure events additionally report a sanitized, length-limited error message, which during the build phase is taken from the build log text. Telemetry does not collect conversation content, prompts, generated code, environment variable values, or any secrets.
 </Note>
 
 <Note>
@@ -2042,7 +2135,7 @@ The update also creates or updates the scheduled-task scheduler functions and co
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `--provider` | `volcengine` \| `byteplus` | `volcengine` | Cloud provider of the existing Studio deployment. When `byteplus` is selected, credentials are read from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`. |
+| `--provider` | `volcengine` \| `byteplus` | `AGENTKIT_CLOUD_PROVIDER`/`CLOUD_PROVIDER`, then `volcengine` | Cloud provider of the existing Studio deployment. Defaults to `AGENTKIT_CLOUD_PROVIDER` then `CLOUD_PROVIDER`, falling back to `volcengine` when neither is set; when `byteplus` is selected, credentials are read from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`. |
 | `--vefaas-app-name` | `str` | Required | Existing VeFaaS Application name. |
 | `--region` | `cn-beijing` \| `cn-shanghai` \| `ap-southeast-1` | Search both regions | Limit lookup to one region. In BytePlus mode, the default search region is `ap-southeast-1`. |
 | `--project` | `str \| None` | Search all visible projects | Limit lookup to one project. |
@@ -2090,6 +2183,18 @@ Studio restricts Runtime visibility according to the signed-in account. Existing
 <Warning>
   A local username is stored in the browser and can be changed or impersonated. Use it only for local development and feature testing. Production deployments must use OAuth or gateway authentication so identity and permissions are determined from verified sign-in information.
 </Warning>
+
+### Local session ownership
+
+When Studio is running with OAuth or gateway authentication, local ADK session reads, creates, updates, and deletes, as well as agent run requests, are bound to the signed-in identity. A user can only access sessions that belong to their own identity; matching is case-insensitive and considers the username, email, and other identifiers in the sign-in token.
+
+Requests that target local sessions without a trusted signed-in identity receive a 401. A non-admin user who attempts to access another user's sessions receives a 403.
+
+<Note>
+  Even when neither `--admin` nor `--developer` is configured (so every signed-in user has full Studio capabilities), cross-user session access still requires an explicit entry in the administrator list. This restriction is independent of role permissions and is not relaxed by the legacy "all users are admins" mode.
+</Note>
+
+Identities listed in the `--admin` administrator list may access other users' local sessions for troubleshooting and support; such access is recorded in an audit log containing the actor, target user, request method, and path.
 
 
 ## View system information
