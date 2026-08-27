@@ -244,20 +244,34 @@ The custom-creation lifecycle follows five steps: Architecture, Debug, Optimizat
 In the Environment step, select a successfully built runtime environment from the dropdown. The dropdown shows the environment name, operating system, Python version, and build status (preparing, queued, building, scanning, available, or failed); only environments with "available" build status are selectable. Once selected, the environment image is used as the base image for the agent image build during deployment, and the chosen environment version is pinned to that deployment. When no environment is selected, the default AgentKit runtime environment is used.
 
 <Note>
-  Runtime environments must be pre-created and built on the Environments page. Once the build status reaches "available," the environment appears in the Environment step dropdown. See [Manage runtime environments](#manage-runtime-environments).
+  Runtime environments must be pre-created and built in the Environments tab of the Workspaces page. Once the build status reaches "available," the environment appears in the Environment step dropdown. See [Manage runtime environments](#manage-runtime-environments).
+</Note>
+
+## Workspaces
+
+The Studio sidebar provides a "Workspaces" entry for organizing reusable runtime environments into workspaces by purpose. A workspace can contain multiple environments, and the same environment can belong to multiple workspaces; deleting a workspace only removes the association and does not delete the environments. Agent creation and deployment still directly select a specific environment and its build version — workspaces only organize and manage environments.
+
+The workspaces page provides "Workspaces" and "Environments" tabs that you can switch between. The workspaces list shows each workspace's name, description, the number of environments it contains, and the number of available environments. Click "Manage" to open the workspace detail, where you can add or remove environments. Each environment card also shows the number of workspaces that reference it.
+
+<Note>
+  Workspace metadata is stored in the same Studio-private TOS bucket as environments. Workspaces require persistent storage to be configured by an administrator. When persistent storage is not configured, workspace features are unavailable.
+</Note>
+
+<Note>
+  Environments referenced by workspaces cannot be deleted directly. Before deleting an environment, remove it from all workspaces that reference it.
 </Note>
 
 ## Manage runtime environments
 
-The Studio sidebar provides an "Environments" page for creating, managing, and building reusable runtime environments. A runtime environment is a configuration definition containing an operating system, Python version, command-line tools, skills, and a Dockerfile. After building, it produces a container image that can be selected as the base image when deploying an agent. Environment definitions, generated Dockerfiles, build versions, log metadata, and image references are stored in the Studio-private TOS bucket.
+In the "Environments" tab of the Workspaces page, you can create, manage, and build reusable runtime environments. A runtime environment is a configuration definition containing an operating system, Python version, command-line tools, skills, and a Dockerfile. After building, it produces a container image that can be selected as the base image when deploying an agent. Environment definitions, generated Dockerfiles, build versions, log metadata, and image references are stored in the Studio-private TOS bucket.
 
 <Note>
-  The Environments page requires persistent storage to be configured by an administrator. When persistent storage is not configured, environment-related features are unavailable.
+  Environment management requires persistent storage to be configured by an administrator. When persistent storage is not configured, environment-related features are unavailable.
 </Note>
 
 ### Create a runtime environment
 
-On the Environments page, click "Create environment" and fill in the following configuration:
+In the Environments tab, click "Create environment" and fill in the following configuration:
 
 | Setting | Options | Description |
 | :--- | :--- | :--- |
