@@ -2,10 +2,10 @@
 title: "Evaluation loop"
 ---
 
-Evaluation closes the "develop → deploy → evaluate → tune" loop: use a fixed dataset and one or more evaluators to score a deployed runtime, then iterate on the quantified results. This page walks through the full flow — from initializing a project to viewing evaluation results — using a question-answering agent as the example. For details on each command, see [Manage datasets](/productions/agentkit-cli/preview/en/commands/eval/dataset), [Manage evaluators](/productions/agentkit-cli/preview/en/commands/eval/evaluator), [Run an experiment](/productions/agentkit-cli/preview/en/commands/eval/run), and [View experiments and results](/productions/agentkit-cli/preview/en/commands/eval/experiment).
+Evaluation closes the "develop → deploy → evaluate → tune" loop: use a fixed dataset and one or more evaluators to score a deployed runtime, then iterate on the quantified results. This page walks through the full flow from initializing a project to viewing evaluation results using a question-answering agent as the example. For details on each command, see [View evaluation backend](/productions/agentkit-cli/preview/en/commands/eval/backend), [Manage datasets](/productions/agentkit-cli/preview/en/commands/eval/dataset), [Manage evaluators](/productions/agentkit-cli/preview/en/commands/eval/evaluator), [Manage evaluation targets](/productions/agentkit-cli/preview/en/commands/eval/target), [Run an experiment](/productions/agentkit-cli/preview/en/commands/eval/run), and [View experiments and results](/productions/agentkit-cli/preview/en/commands/eval/experiment).
 
 <Note>
-Before you start, configure Volcengine AK/SK credentials or obtain valid short-lived STS credentials through `agentkit login`. Evaluation is currently in Preview. Commands automatically route to the region where the evaluation service is available; evaluation dataset commands also accept `-r, --region` to select a region explicitly.
+Before you start, configure Volcengine AK/SK credentials or obtain valid short-lived STS credentials through `agentkit login`. Evaluation is currently in Preview. The CLI first resolves whether the current account uses the Coze or TEA evaluation backend; run `agentkit eval backend` to inspect the resolved backend.
 </Note>
 
 ## End-to-end flow
@@ -55,7 +55,7 @@ Before you start, configure Volcengine AK/SK credentials or obtain valid short-l
 
     ```bash
     # Browse built-in templates
-    agentkit eval evaluator templates
+    agentkit eval evaluator template list
 
     # Derive from the "relevance" template and swap in your own endpoint
     agentkit eval evaluator create \
@@ -63,19 +63,29 @@ Before you start, configure Volcengine AK/SK credentials or obtain valid short-l
       --from-template "relevance" \
       --model ep-xxxxxxxx
     ```
+
+    The TEA backend requires an evaluator version when submitting an experiment. After creating or updating the draft, submit a version:
+
+    ```bash
+    agentkit eval evaluator version submit 0.0.1 --evaluator relevance
+    ```
   </Step>
 
   <Step title="Run an experiment">
-    Submit the dataset, evaluator, and target runtime as one experiment. On the first run, add `--dry-run` to confirm the resolved dataset version, target, and field mapping are correct:
+    Submit the dataset, evaluator, and target runtime as one experiment. On the first run, add `--dry-run` to confirm the resolved dataset version, evaluator version, target, and field mapping are correct:
 
     ```bash
     # Check first
-    agentkit eval run --dataset qa-set --evaluator relevance --target qa-agent --dry-run
+    agentkit eval run --dataset qa-set --evaluator relevance --evaluator-version 0.0.1 --target qa-agent --dry-run
 
     # Submit
-    agentkit eval run --dataset qa-set --evaluator relevance --target qa-agent
+    agentkit eval run --dataset qa-set --evaluator relevance --evaluator-version 0.0.1 --target qa-agent
     # → returns an experiment id, e.g. 75901...
     ```
+
+    <Note>
+      On Coze you may omit `--evaluator-version`; on TEA you must pass one `--evaluator-version` for each `--evaluator`. To confirm available target versions, first run `agentkit eval target version-list --source-target-id <source-target-id>`.
+    </Note>
   </Step>
 
   <Step title="View results">
@@ -95,7 +105,7 @@ Before you start, configure Volcengine AK/SK credentials or obtain valid short-l
 
     ```bash
     agentkit launch
-    agentkit eval run --dataset qa-set --evaluator relevance --target qa-agent
+    agentkit eval run --dataset qa-set --evaluator relevance --evaluator-version 0.0.1 --target qa-agent
     ```
   </Step>
 </Steps>
@@ -106,7 +116,7 @@ The evaluation commands need no browser login and all support `--json`, so they 
 
 ```bash
 # A minimal loop you can drop into CI
-EXP=$(agentkit eval run --dataset qa-set --evaluator relevance --target qa-agent --json | jq -r .experimentId)
+EXP=$(agentkit eval run --dataset qa-set --evaluator relevance --evaluator-version 0.0.1 --target qa-agent --json | jq -r .experimentId)
 agentkit eval experiment show "$EXP" --json
 ```
 
@@ -114,7 +124,7 @@ agentkit eval experiment show "$EXP" --json
 
 - **Fix the dataset**: use the same dataset across iterations so results can be compared side by side. Stabilize it before changing the agent.
 - **Keep only stable inputs and reference answers**: a dataset typically needs only `input` and `reference_output`. The model's actual output is produced by the evaluated target during the experiment and should not be written into the dataset.
-- **Prefer deriving evaluators from built-in templates**: `evaluator templates` provides mature scoring rubrics; clone one and swap in your own model endpoint rather than writing one from scratch.
+- **Prefer deriving evaluators from built-in templates**: `evaluator template list` provides mature scoring rubrics; clone one and swap in your own judge model rather than writing one from scratch.
 - **Use a strong judging model**: point `--model` at a capable Ark endpoint; weaker models produce noisier scores.
 - **Weight multiple evaluators**: a single `eval run` can take several `--evaluator` flags to score across dimensions such as relevance and completeness.
 - **Confirm the target runtime is online**: `--target` must point to a deployed, responsive runtime, or cases will fail. When cases fail without an experiment-level error, the target runtime usually did not respond correctly — it is not an evaluation-config problem.

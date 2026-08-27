@@ -45,16 +45,59 @@ harness_name: "my-harness"
 cloud:
   provider: volcengine
   region: cn-beijing
+  # A horizontally scaled OAuth Harness should use a private connection to its
+  # shared session database. Keep public network enabled for authenticated APIG
+  # ingress, and use a dedicated least-privilege security group.
+  # network:
+  #   enable_public_network: true
+  #   enable_private_network: true
+  #   vpc_id: ${HARNESS_RUNTIME_VPC_ID}
+  #   subnet_ids: [${HARNESS_RUNTIME_SUBNET_ID}]
+  #   security_group_ids: [${HARNESS_RUNTIME_SECURITY_GROUP_ID}]
+  #   enable_shared_internet_access: true
 
-# Reasoning model name (Ark auth comes from the runtime's IAM role on deploy).
-#   env: MODEL_NAME            flag: --model-name
+# Reasoning model. Direct mode preserves the legacy Runtime-IAM key lookup.
+# For a shared OAuth Harness, obo_broker sends a short-lived user+Runtime TIP to
+# a fixed APIG model egress; the gateway/Broker replaces it with the hosted
+# downstream credential, so the real provider key never enters this process.
+#   env: MODEL_*               flag: --model-name
 model:
   name: ""
+  # provider: openai
+  # api_base: https://<model-egress-apig>/v1
+  # credential_mode: obo_broker
+  # target_alias: model
+  # target_audience: trn:agentkit:model-gateway
+  # workload_discovery_url: https://<workload-issuer>/.well-known/openid-configuration
+  # workload_issuer: https://<workload-issuer>
+  # workload_pool: default
+  # identity_region: cn-beijing
+
+# Runtime and model-call admission capacity. In OAuth mode, max_instance > 1
+# requires a shared MySQL/PostgreSQL short-term-memory backend; local/sqlite
+# sessions cannot safely span replicas. The model limits are per Runtime
+# instance; enforce tenant-wide TPM/TPD again at Model Gateway.
+capacity:
+  # cpu_milli: 4000
+  # memory_mb: 8192
+  # min_instance: 4
+  # max_instance: 10
+  # max_concurrency: 32
+  # model_max_inflight: 12
+  # model_max_inflight_per_user: 1
+  # model_queue_timeout_seconds: 45
+  # model_request_timeout_seconds: 120
+  # model_max_output_tokens: 1024
+  # session_db_pool_size: 5
+  # session_db_max_overflow: 3
+  # session_db_pool_timeout_seconds: 10
+  # session_db_pool_recycle_seconds: 300
 
 # Built-in tool names.   env: TOOLS   flag: --tools (comma-separated)
 tools: []
 
-# Skill hub names.       env: SKILLS  flag: --skills (comma-separated)
+# Skill Hub slugs, ss-... spaces, or ss-...:s-... refs.
+#   env: SKILLS  flag: --skills (comma-separated)
 skills: []
 
 # Agent instruction (empty = server default).
@@ -77,7 +120,20 @@ runtime: adk
 # structured_tool_calls: false
 # include_tools_every_turn: true
 
+# Managed Harness Sidecar optimizations (optional). SQL readonly protection is
+# server-owned and is enabled automatically with mcp_resilience.
+# sidecar:
+#   enabled: true
+#   profile: default
+#   component_overrides:
+#     context_engine: true
+#     compressor: false
+#     verifier: false
+#     long_run_control: false
+#     mcp_resilience: false
+
 # --- A2A registry (optional) ------------------------------------------------
+# Configure with --registry / --registry-space-id / --registry-space-name.
 # registry:
 #   type: agentkit_a2a
 #   space_id: ""
@@ -141,18 +197,19 @@ short_term_memory:
   # password: ""
   # database: harness
   # charset: utf8
-  # -- postgresql --  flags: --short-term-memory-host / -port / -user / -password / -database
+  # -- postgresql --  flags: --short-term-memory-host / -port / -user / -password / -database / -schema
   # host: 1.2.3.4
   # port: 5432
   # user: postgres
   # password: ""
   # database: harness
+  # schema: pdsa_shared_harness
 
 # --- Authentication (optional) -----------------------------------------------
 # Omit this block to deploy with the default API-key auth (key_auth). Add it to
 # gate the runtime with OAuth2/JWT (custom_jwt): the API gateway then only accepts
 # tokens issued by `discovery_url`'s user pool whose audience is one of
-# `allowed_ids`. Set up the user pool / client in the Volcengine Identity console.
+# `allowed_ids`. Set up the user pool / client in the selected cloud's Identity console.
 #   flags: --discovery-url / --allowed-id
 # auth:
 #   discovery_url: "https://userpool-<id>.userpool.auth.id.cn-beijing.volces.com/.well-known/openid-configuration"
@@ -163,22 +220,60 @@ short_term_memory:
 
 - **`harness_name`**：harness 与运行时名称，同时用作知识库、长期记忆的索引名（env `HARNESS_NAME`，flag `--name`）。
 - **`cloud`**：部署使用的云厂商和区域，由 `harness init` 写入；云厂商为 `volcengine` 或 `byteplus`。
-- **`model.name`**：推理模型名称；部署后模型的火山方舟鉴权由运行时 IAM 角色提供，无需在此填写（env `MODEL_NAME`，flag `--model-name`）。
+- **`cloud.network`（可选）**：运行时网络配置。`enable_public_network` 控制公网入口，`enable_private_network` 启用私有 VPC，`vpc_id`、`subnet_ids` 与 `security_group_ids` 指定私有网络资源，`enable_shared_internet_access` 控制私有网络共享公网出口。启用私有网络时必须提供 VPC 与子网。
+- **`model.name`**：推理模型名称（env `MODEL_NAME`，flag `--model-name`）。
+- **`model.credential_mode`（可选）**：设为 `obo_broker` 时启用共享 OAuth Harness 的托管模型出口。该模式要求同时配置 `auth`，并提供 `model.provider`、`model.api_base`、`model.target_alias`、`model.target_audience`、`model.workload_discovery_url` 与 `model.workload_issuer`；不要在该模式下写入模型 API Key。
+- **`capacity`（可选）**：运行时资源、并发和模型请求准入配置。可设置 `cpu_milli`、`memory_mb`、`min_instance`、`max_instance`、`max_concurrency`、`model_max_inflight`、`model_max_inflight_per_user`、`model_queue_timeout_seconds`、`model_request_timeout_seconds`、`model_max_output_tokens`、`session_db_pool_size`、`session_db_max_overflow`、`session_db_pool_timeout_seconds` 与 `session_db_pool_recycle_seconds`。
 - **`tools`**：内置工具名列表（env `TOOLS`，flag `--tools`）。
-- **`skills`**：技能中心名称列表（env `SKILLS`，flag `--skills`）。
+- **`skills`**：Skill Hub slug、空间或 `space:skill` 引用列表（env `SKILLS`，flag `--skills`）。
 - **`system_prompt`**：智能体指令，留空则使用服务端默认（env `SYSTEM_PROMPT`，flag `--system-prompt`）。
 - **`description`**：用于发现和生成 AgentCard 的智能体描述（env `DESCRIPTION`，flag `--description`）。
 - **`runtime`**：智能体运行时后端，`adk`（默认）或 `codex`（env `RUNTIME`，flag `--runtime`）。
 - **`max_llm_calls`**：每次运行允许的默认最大 LLM 调用次数；`agentkit harness invoke --max-llm-calls` 可为单次请求覆盖。
 - **`structured_tool_calls`** / **`include_tools_every_turn`**：控制工具调用格式，以及是否在每轮模型调用中重复发送工具定义。
+- **`sidecar`（可选）**：托管 Harness Sidecar 配置。`profile` 选择组件 profile，`component_overrides` 控制 `context_engine`、`compressor`、`verifier`、`long_run_control` 与 `mcp_resilience` 等组件。
 - **`registry`**：可选 A2A registry。`space_id` 选择空间，`top_k` 控制最多检索的 AgentCard 数量，`endpoint` 与 `region` 指定服务位置。
 - **`knowledgebase`**：知识库。`type` 留空即禁用，支持 `viking`、`opensearch`、`redis`；设好 `type` 后取消注释该后端下对应的连接参数。
 - **`long_term_memory`**：长期记忆。`type` 留空即禁用，支持 `viking`、`opensearch`、`redis`、`mem0`。
 - **`short_term_memory`**：短期会话存储。`type` 为 `local`（默认）、`sqlite`、`mysql` 或 `postgresql`。
 - **`auth`（可选）**：省略则使用默认的 API Key 鉴权 `key_auth`；填入 `discovery_url` 与 `allowed_ids` 则改用 OAuth2/JWT `custom_jwt`，网关仅接受该用户池签发、受众在白名单内的 token。
 
+下列字段需要直接编辑 `harness.yaml`，当前不由 `harness set` 生成。
+
+| 字段 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `cloud.network.enable_public_network` | boolean | `true` | 是否保留 Runtime 公网入口。 |
+| `cloud.network.enable_private_network` | boolean | `false` | 是否启用私有 VPC 网络。 |
+| `cloud.network.vpc_id` | string | — | 私有网络使用的 VPC ID；启用私有网络时必填。 |
+| `cloud.network.subnet_ids` | string[] | — | 私有网络使用的子网 ID，最多 5 个；启用私有网络时必填。 |
+| `cloud.network.security_group_ids` | string[] | — | 私有网络使用的安全组 ID，最多 5 个。 |
+| `cloud.network.enable_shared_internet_access` | boolean | `false` | 私有网络下是否启用共享公网出口。 |
+| `model.provider` | string | — | 托管模型出口的模型提供方标识。 |
+| `model.api_base` | string | — | 托管模型出口的 HTTPS API Base URL。 |
+| `model.credential_mode` | `obo_broker` | — | 启用代表用户的托管模型凭据代理；必须同时配置 `auth`。 |
+| `model.target_alias` | string | — | 模型出口的固定小写别名。 |
+| `model.target_audience` | string | — | 模型出口校验的目标受众。 |
+| `model.workload_discovery_url` | string | — | 工作负载身份的 OIDC discovery URL，必须属于 `model.workload_issuer`。 |
+| `model.workload_issuer` | string | — | 工作负载身份 issuer。 |
+| `model.workload_pool` | string | `default` | 工作负载身份池。 |
+| `model.identity_region` | string | 部署区域 | 工作负载身份区域。 |
+| `capacity.cpu_milli` | integer | 平台默认 | Runtime CPU，范围为 `250` 到 `32000`。 |
+| `capacity.memory_mb` | integer | 平台默认 | Runtime 内存，范围为 `512` 到 `131072`。 |
+| `capacity.min_instance` | integer | OAuth 或 Sidecar 启用时为 `1` | Runtime 最小实例数，范围为 `1` 到 `100`。 |
+| `capacity.max_instance` | integer | OAuth 或 Sidecar 启用时为 `1` | Runtime 最大实例数，范围为 `1` 到 `100`。 |
+| `capacity.max_concurrency` | integer | 平台默认 | Runtime 单实例并发上限，范围为 `1` 到 `1000`。 |
+| `capacity.model_max_inflight` | integer | — | 单个 Runtime 实例允许的模型并发请求上限，范围为 `1` 到 `1000`。 |
+| `capacity.model_max_inflight_per_user` | integer | — | 单用户模型并发请求上限，范围为 `1` 到 `100`；不能超过 `model_max_inflight`。 |
+| `capacity.model_queue_timeout_seconds` | integer | — | 模型请求排队超时秒数，范围为 `1` 到 `600`。 |
+| `capacity.model_request_timeout_seconds` | integer | — | 模型请求执行超时秒数，范围为 `1` 到 `900`。 |
+| `capacity.model_max_output_tokens` | integer | — | 单次模型响应 token 上限，范围为 `128` 到 `16384`。 |
+| `capacity.session_db_pool_size` | integer | — | 每个 Runtime 副本的共享会话数据库连接池大小，范围为 `1` 到 `100`。 |
+| `capacity.session_db_max_overflow` | integer | — | 每个 Runtime 副本可额外打开的共享会话数据库连接数，范围为 `0` 到 `100`。 |
+| `capacity.session_db_pool_timeout_seconds` | integer | — | 获取共享会话数据库连接的等待秒数，范围为 `1` 到 `120`。 |
+| `capacity.session_db_pool_recycle_seconds` | integer | — | 共享会话数据库连接回收秒数，范围为 `30` 到 `3600`。 |
+
 <Note>
-  展开规则：`harness deploy` 将顶层字段与 `model` 扁平化为环境变量（如 `model.name` → `MODEL_NAME`），组件参数映射为该后端读取的 `DATABASE_<BACKEND>_*` 等变量；空值会被跳过，由服务端回退到默认值。`harness init` 同时生成的 `.env.example` 只包含可选的 Volcengine AK/SK 占位符，智能体配置全部在 `harness.yaml` 中。
+  展开规则：`harness deploy` 将顶层字段与 `model` 扁平化为环境变量（如 `model.name` → `MODEL_NAME`），组件参数映射为该后端读取的 `DATABASE_<BACKEND>_*` 等变量；空值会被跳过，由服务端回退到默认值。`auth`、`cloud`、`capacity` 与 Sidecar 配置用于部署控制面，不作为普通用户配置传入智能体进程。`harness init` 同时生成的 `.env.example` 只包含可选的云厂商 AK/SK 占位符，智能体配置全部在 `harness.yaml` 中。
 </Note>
 
 ## harness set
@@ -279,6 +374,19 @@ agentkit harness dev --reload --port 8000
 
 ```bash
 agentkit harness deploy --project default --region cn-beijing
+```
+
+配置 `auth` 后，部署会创建 `custom_jwt` Runtime。部署完成后，将返回的 Runtime ID 与 HTTPS endpoint 发布到租户登录发现文档的 `shared_harnesses` 中，用户即可通过 [`agentkit chat <alias>`](/productions/agentkit-cli/preview/zh/commands/chat) 使用共享聊天。
+
+```json
+{
+  "shared_harnesses": {
+    "harness": {
+      "runtime_id": "r-1234567890abcdef",
+      "endpoint": "https://runtime.example.com"
+    }
+  }
+}
 ```
 
 ## harness invoke

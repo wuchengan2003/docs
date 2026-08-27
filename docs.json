@@ -2791,13 +2791,16 @@
                       "productions/agentkit-cli/preview/zh/commands/status",
                       "productions/agentkit-cli/preview/zh/commands/release",
                       "productions/agentkit-cli/preview/zh/commands/destroy",
+                      "productions/agentkit-cli/preview/zh/commands/chat",
                       "productions/agentkit-cli/preview/zh/commands/invoke",
                       "productions/agentkit-cli/preview/zh/commands/migrate",
                       {
                         "group": "评测",
                         "pages": [
+                          "productions/agentkit-cli/preview/zh/commands/eval/backend",
                           "productions/agentkit-cli/preview/zh/commands/eval/dataset",
                           "productions/agentkit-cli/preview/zh/commands/eval/evaluator",
+                          "productions/agentkit-cli/preview/zh/commands/eval/target",
                           "productions/agentkit-cli/preview/zh/commands/eval/run",
                           "productions/agentkit-cli/preview/zh/commands/eval/experiment",
                           "productions/agentkit-cli/preview/zh/commands/eval/target"
@@ -6690,13 +6693,16 @@
                       "productions/agentkit-cli/preview/en/commands/status",
                       "productions/agentkit-cli/preview/en/commands/release",
                       "productions/agentkit-cli/preview/en/commands/destroy",
+                      "productions/agentkit-cli/preview/en/commands/chat",
                       "productions/agentkit-cli/preview/en/commands/invoke",
                       "productions/agentkit-cli/preview/en/commands/migrate",
                       {
                         "group": "Evaluation",
                         "pages": [
+                          "productions/agentkit-cli/preview/en/commands/eval/backend",
                           "productions/agentkit-cli/preview/en/commands/eval/dataset",
                           "productions/agentkit-cli/preview/en/commands/eval/evaluator",
+                          "productions/agentkit-cli/preview/en/commands/eval/target",
                           "productions/agentkit-cli/preview/en/commands/eval/run",
                           "productions/agentkit-cli/preview/en/commands/eval/experiment",
                           "productions/agentkit-cli/preview/en/commands/eval/target"

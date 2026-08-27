@@ -169,6 +169,7 @@ Create a sandbox tool. After creation, the CLI waits until the tool reaches `Rea
 | `--no-network-shared-internet` | Disable shared internet access. | — |
 | `--network-vpc-id <id>` | VPC ID for private networking; required when `--network-private` is enabled. | Config value or — |
 | `--network-subnet-ids <ids>` | Comma-separated subnet IDs. | Config value or — |
+| `--llm-shield-app-id <app-id>` | Enable LLM Shield for a `Skill` sandbox tool and inject the given app ID. | — |
 | `--envs <KEY=VALUE>` | Environment variable to inject into the sandbox tool; repeatable. When it has the same key as a built-in variable, this value overrides the built-in value. | — |
 | `--json` | Output JSON. | `false` |
 
@@ -180,6 +181,15 @@ agentkit sandbox create \
   --tool-name dev-code \
   --envs NODE_ENV=development \
   --envs FEATURE_FLAG=enabled
+```
+
+To enable LLM Shield for a `Skill` tool, pass the app ID explicitly. This option is supported only with `Skill` tool type.
+
+```bash
+agentkit sandbox create \
+  --tool-type Skill \
+  --tool-name guarded-skill \
+  --llm-shield-app-id <app-id>
 ```
 
 To create a custom `Private` tool, prepare an image URL first:

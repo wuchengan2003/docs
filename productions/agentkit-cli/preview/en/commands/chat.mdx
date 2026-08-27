@@ -1,36 +1,61 @@
 ---
-title: "Chat with a shared Harness"
+title: "Shared chat"
 ---
 
-`chat` talks to a tenant-published shared OAuth Harness. The command resolves the shared agent alias through the current login address and invokes a `custom_jwt` runtime with the current user's OIDC session. Pass a message for a one-shot call, or omit it to enter an interactive chat session.
+The `chat` command connects to an OAuth-enabled shared Harness through an alias published by the tenant login discovery document. It is intended for many users sharing one Harness Runtime without sharing chat history: users provide only a trusted alias, and the CLI refreshes tenant discovery, resolves the Runtime endpoint, and obtains a fresh `id_token` from the current OIDC session for each message.
 
 <Note>
-Log in through the tenant login address first, for example `agentkit login <tenant-address> --identity-only`. Identity-only login stores the user's OIDC session without creating AgentKit management credentials, which fits end users who only need to call a shared runtime.
+Before using this command, log in with the tenant login address in identity-only mode. The shared Harness must use `custom_jwt` authentication and be published by an administrator in `shared_harnesses` on the same tenant login discovery document.
 </Note>
+
+```bash
+agentkit login https://login.example.com/team-a --identity-only
+agentkit chat harness
+```
 
 ## chat
 
+Chat with a shared Harness once or in an interactive session. Passing `[message]` sends one message; omitting `[message]` starts a prompt where `/exit` or `/quit` ends the session.
+
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
-| `<alias>` | Shared agent alias published by the tenant login control plane; only lowercase letters, numbers, and hyphens are allowed. | Required |
-| `[message]` | One-shot message to send; omit it to enter interactive chat. | — |
-| `--session-id <id>` | Resume one of your own chat sessions; letters, digits, `.`, `_`, `:`, and `-` are allowed, up to 128 characters. | Generated |
+| `<alias>` | Shared Harness alias published in `shared_harnesses` by the tenant login discovery document. | Required |
+| `[message]` | One user message to send; omit it for an interactive session. | — |
+| `--session-id <id>` | Resume one of your chat sessions; 1 to 128 characters, starting with a letter or digit, followed by letters, digits, `.`, `_`, `:`, or `-`. | Generated |
 
 ```bash
-agentkit login https://login.example.com/team --identity-only
-agentkit chat support "Summarize my open tasks" --session-id support-20260827
+agentkit chat harness "Summarize this conversation context"
+
+agentkit chat harness --session-id support-demo
 ```
 
-In interactive mode, enter messages continuously and type `/exit` or `/quit` to leave:
+## Shared Aliases
 
-```bash
-agentkit chat support --session-id support-20260827
+Shared Harness aliases are resolved only from the tenant login control plane stored in the active profile. The CLI re-reads that control plane's `/.well-known/agentkit-cli` document when connecting and before each message, and requires the issuer, OAuth client, and control-plane address to still match the active profile.
+
+Administrators publish non-secret bindings in the discovery document:
+
+```json
+{
+  "shared_harnesses": {
+    "harness": {
+      "runtime_id": "r-1234567890abcdef",
+      "endpoint": "https://runtime.example.com"
+    }
+  }
+}
 ```
 
-## Authentication Behavior
+| Field | Description | Default |
+| --- | --- | --- |
+| `shared_harnesses.<alias>` | Shared Harness alias; 2 to 63 characters, starting and ending with a lowercase letter or digit, with lowercase letters, digits, and hyphens in between. | — |
+| `runtime_id` | Runtime ID backing the shared Harness. | Required |
+| `endpoint` | HTTPS origin of the shared Harness; usernames, passwords, paths, query strings, and fragments are not allowed. | Required |
 
-`chat` only accepts shared aliases published by the current tenant login control plane. Before each message, the CLI resolves the alias again and refreshes the local OIDC session, so revoked or changed shared runtime configuration stops being used.
+## Session Isolation
+
+`chat` does not accept caller-selected Runtime IDs, endpoints, `user_id`, model overrides, or tool overrides. The server scopes sessions to the verified OIDC user identity; two users may pass the same visible `--session-id` without sharing a server-side session.
 
 <Warning>
-The shared Harness must use OAuth2/JWT `custom_jwt` authentication. If the active login was not created from a tenant login address, or the alias is not published by that tenant, the command refuses to forward the user token.
+Runtime `custom_jwt` authentication verifies identity; it is not an employee or team authorization policy. To restrict which signed-in users may access the shared Harness, place a gateway or policy enforcement point before the Runtime and deny unauthorized requests before they reach the Harness.
 </Warning>

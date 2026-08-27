@@ -37,11 +37,14 @@ agentkit auth login --identity-only <sso-address>
 | `region` | 云区域，必须与 `issuer` 中的区域一致。 | 必填 |
 | `transport` | 使用 STS 坐标时必须为 `sts`。 | — |
 | `scope` | OAuth scope 列表，必须包含 `openid`。 | `openid profile email offline_access` |
+| `shared_harnesses` | 可选的共享 Harness 别名映射，供 [`chat`](/productions/agentkit-cli/preview/zh/commands/chat) 解析 Runtime ID 与 HTTPS endpoint。 | — |
 
 ```bash
 agentkit auth login https://login.example.com/team-a
 agentkit auth login --identity-only ./local-discovery.json
 ```
+
+`shared_harnesses` 中最多发布 32 个别名；每个别名长度为 2 到 63，必须以小写字母或数字开头和结尾，中间可包含小写字母、数字和连字符。每个条目包含 `runtime_id` 与 `endpoint`，其中 `endpoint` 必须是无凭证、无路径、无查询参数、无 fragment 的 HTTPS origin。
 
 <Note>
   身份仅登录不会提供控制面权限。需要解析 Runtime、管理资源或查询项目时，请另外配置 AK/SK，或使用普通 `agentkit login` 获取 STS 凭据。通过远程发现文档登录时，CLI 只会在浏览器登录和后续凭据处理成功后保存 profile。

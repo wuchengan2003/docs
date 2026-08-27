@@ -1,36 +1,61 @@
 ---
-title: "共享 Harness 对话"
+title: "共享聊天"
 ---
 
-`chat` 用于和租户发布的共享 OAuth Harness 进行对话。命令会通过当前登录地址解析共享智能体别名，并使用当前用户的 OIDC 会话调用 `custom_jwt` 鉴权的运行时。传入消息时执行单轮对话；不传消息时进入交互式会话。
+`chat` 命令用于通过租户登录发现文档中发布的别名，连接一个启用 OAuth 的共享 Harness。它面向多名用户共用同一个 Harness Runtime 的场景：用户只输入受信任别名，CLI 会刷新租户登录发现文档、解析 Runtime 端点，并用当前 OIDC 会话为每条消息换取最新的 `id_token`。
 
 <Note>
-使用前需要先通过租户登录地址完成身份登录，例如 `agentkit login <tenant-address> --identity-only`。该模式只保存用户 OIDC 会话，不创建 AgentKit 管理凭据，适合只调用共享运行时的终端用户。
+使用前需要先通过租户登录地址完成身份仅登录。共享 Harness 必须使用 `custom_jwt` 鉴权，并由管理员在同一个租户登录发现文档的 `shared_harnesses` 中发布。
 </Note>
+
+```bash
+agentkit login https://login.example.com/team-a --identity-only
+agentkit chat harness
+```
 
 ## chat
 
+与共享 Harness 进行一次或连续多轮对话。传入 `[message]` 时只发送一条消息；省略 `[message]` 时进入交互式会话，输入 `/exit` 或 `/quit` 退出。
+
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<alias>` | 租户登录控制面发布的共享智能体别名；只能包含小写字母、数字和连字符。 | 必填 |
-| `[message]` | 要发送的一次性消息；省略时进入交互式对话。 | — |
-| `--session-id <id>` | 复用自己的对话会话；只能包含字母、数字、`.`、`_`、`:` 和 `-`，最长 128 个字符。 | 自动生成 |
+| `<alias>` | 租户登录发现文档中 `shared_harnesses` 发布的共享 Harness 别名。 | 必填 |
+| `[message]` | 要发送的一条用户消息；省略时进入交互式会话。 | — |
+| `--session-id <id>` | 继续使用自己的某个聊天会话；长度 1 到 128，必须以字母或数字开头，后续只接受字母、数字、`.`、`_`、`:`、`-`。 | 自动生成 |
 
 ```bash
-agentkit login https://login.example.com/team --identity-only
-agentkit chat support "请总结我的待办事项" --session-id support-20260827
+agentkit chat harness "总结这段对话的上下文"
+
+agentkit chat harness --session-id support-demo
 ```
 
-交互式会话中可连续输入消息，输入 `/exit` 或 `/quit` 退出：
+## 共享别名
 
-```bash
-agentkit chat support --session-id support-20260827
+共享 Harness 别名只从当前活跃 profile 记录的租户登录控制面解析。CLI 每次连接和每轮消息前都会重新读取该控制面的 `/.well-known/agentkit-cli`，并要求 issuer、OAuth client、控制面地址与当前 profile 保持一致。
+
+管理员在发现文档中发布的 `shared_harnesses` 只包含非机密绑定信息：
+
+```json
+{
+  "shared_harnesses": {
+    "harness": {
+      "runtime_id": "r-1234567890abcdef",
+      "endpoint": "https://runtime.example.com"
+    }
+  }
+}
 ```
 
-## 鉴权行为
+| 字段 | 说明 | 默认值 |
+| --- | --- | --- |
+| `shared_harnesses.<alias>` | 共享 Harness 别名；长度 2 到 63，必须以小写字母或数字开头和结尾，中间可包含小写字母、数字和连字符。 | — |
+| `runtime_id` | 共享 Harness 对应的 Runtime ID。 | 必填 |
+| `endpoint` | 共享 Harness 的 HTTPS origin，不能包含用户名、密码、路径、查询参数或 fragment。 | 必填 |
 
-`chat` 只接受由当前租户登录控制面发布的共享别名。每次发送消息前，CLI 都会重新解析别名并刷新本地 OIDC 会话，避免继续使用已经撤销或变更的共享运行时配置。
+## 会话隔离
+
+`chat` 不接受调用者指定 Runtime ID、端点、`user_id`、模型覆盖或工具覆盖。服务端会按已验证的 OIDC 用户身份隔离会话；即使两个用户传入相同的可见 `--session-id`，也不会共享同一个服务端会话。
 
 <Warning>
-共享 Harness 必须使用 OAuth2/JWT 的 `custom_jwt` 鉴权。若当前登录不是从租户登录地址建立，或别名没有在该租户下发布，命令会拒绝转发用户 token。
+Runtime 的 `custom_jwt` 鉴权只验证用户身份，不等同于员工或团队授权策略。若需要限制哪些已登录用户可以访问共享 Harness，请在 Runtime 前配置网关或策略执行点，并在请求进入 Harness 前拒绝未授权用户。
 </Warning>

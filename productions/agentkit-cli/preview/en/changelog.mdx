@@ -6,6 +6,14 @@ title: "Changelog"
 
 There are currently no unreleased public changes.
 
+## 0.52.2 - 2026-08-14
+
+- Added the [`chat`](/productions/agentkit-cli/preview/en/commands/chat) command for OAuth-bound conversations with shared Harnesses published through tenant login discovery aliases, with sessions isolated by verified user identity.
+- [Evaluation commands](/productions/agentkit-cli/preview/en/commands/eval/backend) now resolve Coze or TEA through the AgentKit evaluation gateway by default and add `eval backend`, `--cache-refresh`, and `--verbose` for inspecting backend coordinates and troubleshooting TEA requests.
+- [Dataset, evaluator, and target commands](/productions/agentkit-cli/preview/en/commands/eval/dataset) expand TEA evaluation support with dataset updates and versions, evaluator template details, draft updates and version submission, plus source evaluation target and target-version listing.
+- [`eval run`](/productions/agentkit-cli/preview/en/commands/eval/run) supports explicit TEA dataset versions, evaluator versions, source target types, and target versions, and returns the TEA run ID with the experiment ID.
+- [Harness](/productions/agentkit-cli/preview/en/commands/harness) configuration supports private networking, capacity, shared database sessions, managed model egress, and Sidecar settings for shared OAuth Harnesses; [`sandbox create`](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-create) adds `--llm-shield-app-id` for enabling LLM Shield on `Skill` sandbox tools.
+
 ## 0.52.1 - 2026-08-12
 
 - [Harness](/productions/agentkit-cli/preview/en/commands/harness#harness-sidecar-catalog) adds `harness sidecar catalog` and `harness sidecar resolve` for printing the Product Component Catalog and resolving profiles plus component switches into a verifiable Sidecar plan before release.

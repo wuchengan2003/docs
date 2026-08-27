@@ -2,10 +2,10 @@
 title: "评测闭环"
 ---
 
-评测把「开发 → 部署 → 评测 → 调优」的闭环补齐：用一份固定的评测集与一个或多个评估器，对已部署的运行时打分，再依据量化结果迭代。本页以一个问答智能体为例，走通从初始化项目到看到评测结果的完整流程。各命令的详细用法见[管理评测集](/productions/agentkit-cli/preview/zh/commands/eval/dataset)、[管理评估器](/productions/agentkit-cli/preview/zh/commands/eval/evaluator)、[运行评测实验](/productions/agentkit-cli/preview/zh/commands/eval/run)与[查看实验与结果](/productions/agentkit-cli/preview/zh/commands/eval/experiment)。
+评测把「开发 → 部署 → 评测 → 调优」的闭环补齐：用一份固定的评测集与一个或多个评估器，对已部署的运行时打分，再依据量化结果迭代。本页以一个问答智能体为例，走通从初始化项目到看到评测结果的完整流程。各命令的详细用法见[查看评测后端](/productions/agentkit-cli/preview/zh/commands/eval/backend)、[管理评测集](/productions/agentkit-cli/preview/zh/commands/eval/dataset)、[管理评估器](/productions/agentkit-cli/preview/zh/commands/eval/evaluator)、[管理评测目标](/productions/agentkit-cli/preview/zh/commands/eval/target)、[运行评测实验](/productions/agentkit-cli/preview/zh/commands/eval/run)与[查看实验与结果](/productions/agentkit-cli/preview/zh/commands/eval/experiment)。
 
 <Note>
-开始前请确认已配置火山引擎 AK/SK，或已通过 `agentkit login` 获取有效的短期 STS 凭证。评测能力当前处于 Preview 阶段，命令会自动路由到评测服务所在区域；评测集命令也可以用 `-r, --region` 显式指定区域。
+开始前请确认已配置火山引擎 AK/SK，或已通过 `agentkit login` 获取有效的短期 STS 凭证。评测能力当前处于 Preview 阶段，CLI 会先解析当前账号使用的 Coze 或 TEA 评测后端；可用 `agentkit eval backend` 查看解析结果。
 </Note>
 
 ## 端到端流程
@@ -55,7 +55,7 @@ title: "评测闭环"
 
     ```bash
     # 查看预置模板
-    agentkit eval evaluator templates
+    agentkit eval evaluator template list
 
     # 从「相关性」模板派生，换成自己的模型端点
     agentkit eval evaluator create \
@@ -63,19 +63,29 @@ title: "评测闭环"
       --from-template "相关性" \
       --model ep-xxxxxxxx
     ```
+
+    TEA 后端提交实验时需要指定评估器版本。创建或更新草稿后，可先提交版本：
+
+    ```bash
+    agentkit eval evaluator version submit 0.0.1 --evaluator 相关性
+    ```
   </Step>
 
   <Step title="运行实验">
-    将评测集、评估器与目标运行时提交为一次实验。首次运行建议先加 `--dry-run`，确认解析出的评测集版本、目标与字段映射无误：
+    将评测集、评估器与目标运行时提交为一次实验。首次运行建议先加 `--dry-run`，确认解析出的评测集版本、评估器版本、目标与字段映射无误：
 
     ```bash
     # 先核对
-    agentkit eval run --dataset qa-set --evaluator 相关性 --target qa-agent --dry-run
+    agentkit eval run --dataset qa-set --evaluator 相关性 --evaluator-version 0.0.1 --target qa-agent --dry-run
 
     # 正式提交
-    agentkit eval run --dataset qa-set --evaluator 相关性 --target qa-agent
+    agentkit eval run --dataset qa-set --evaluator 相关性 --evaluator-version 0.0.1 --target qa-agent
     # → 返回实验 ID，例如 75901...
     ```
+
+    <Note>
+      在 Coze 后端上可以省略 `--evaluator-version`；在 TEA 后端上必须为每个 `--evaluator` 传入一个对应的 `--evaluator-version`。如需确认可用目标版本，先运行 `agentkit eval target version-list --source-target-id <source-target-id>`。
+    </Note>
   </Step>
 
   <Step title="查看结果">
@@ -95,7 +105,7 @@ title: "评测闭环"
 
     ```bash
     agentkit launch
-    agentkit eval run --dataset qa-set --evaluator 相关性 --target qa-agent
+    agentkit eval run --dataset qa-set --evaluator 相关性 --evaluator-version 0.0.1 --target qa-agent
     ```
   </Step>
 </Steps>
@@ -106,7 +116,7 @@ title: "评测闭环"
 
 ```bash
 # 一个可放入 CI 的最小闭环示例
-EXP=$(agentkit eval run --dataset qa-set --evaluator 相关性 --target qa-agent --json | jq -r .experimentId)
+EXP=$(agentkit eval run --dataset qa-set --evaluator 相关性 --evaluator-version 0.0.1 --target qa-agent --json | jq -r .experimentId)
 agentkit eval experiment show "$EXP" --json
 ```
 
@@ -114,7 +124,7 @@ agentkit eval experiment show "$EXP" --json
 
 - **固定评测集**：以同一份评测集贯穿多次迭代，结果才可横向对比。评测集稳定后再改动智能体。
 - **只放稳定的输入与参考答案**：评测集一般只需 `input` 与 `reference_output`。模型的实际输出由被评测的目标在实验中产生，不应写入评测集。
-- **优先从预置模板派生评估器**：`evaluator templates` 提供了成熟的评分标准，克隆后换成自己的模型端点即可，无需从零编写。
+- **优先从预置模板派生评估器**：`evaluator template list` 提供了成熟的评分标准，克隆后换成自己的评判模型即可，无需从零编写。
 - **评判模型要足够强**：以 `--model` 指定一个能力足够的方舟端点，能力偏弱的模型打分噪声较大。
 - **多评估器加权**：一次 `eval run` 可传入多个 `--evaluator`，从相关性、完整性等多个维度打分。
 - **确认目标运行时在线**：`--target` 必须指向一个已部署且可响应的运行时，否则用例会执行失败。当结果中用例失败却无实验级错误时，通常是目标运行时未正常响应，而非评测配置问题。

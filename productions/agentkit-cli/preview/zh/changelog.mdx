@@ -6,6 +6,14 @@ title: "更新日志"
 
 当前没有未发布的公开变更。
 
+## 0.52.2 - 2026-08-14
+
+- 新增 [`chat`](/productions/agentkit-cli/preview/zh/commands/chat) 命令，可通过租户登录发现文档中的共享 Harness 别名发起 OAuth 绑定聊天，并按已验证用户身份隔离会话。
+- [评测命令](/productions/agentkit-cli/preview/zh/commands/eval/backend) 默认使用 AgentKit 评测网关解析 Coze 或 TEA 后端，并新增 `eval backend`、`--cache-refresh` 与 `--verbose`，便于查看后端坐标和排查 TEA 请求。
+- [评测集、评估器与目标命令](/productions/agentkit-cli/preview/zh/commands/eval/dataset) 补充 TEA 评测能力：支持评测集更新与版本管理、评估器模板查看、草稿更新与版本提交，以及源评测目标列表和版本列表。
+- [`eval run`](/productions/agentkit-cli/preview/zh/commands/eval/run) 支持指定 TEA 评测集版本、评估器版本、源评测目标类型和目标版本，并在结果中返回 TEA run ID。
+- [Harness](/productions/agentkit-cli/preview/zh/commands/harness) 配置支持共享 OAuth Harness 的私有网络、容量、共享数据库会话、托管模型出口和 Sidecar 配置；[`sandbox create`](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-create) 新增 `--llm-shield-app-id`，可为 `Skill` 沙箱工具启用 LLM Shield。
+
 ## 0.52.1 - 2026-08-12
 
 - [Harness](/productions/agentkit-cli/preview/zh/commands/harness#harness-sidecar-catalog) 新增 `harness sidecar catalog` 与 `harness sidecar resolve`，可输出 Product Component Catalog，并在发布前把 profile 与组件开关解析为可校验的 Sidecar plan。
