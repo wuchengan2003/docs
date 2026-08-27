@@ -2,7 +2,7 @@
 title: "Develop apps in a Codex sandbox"
 ---
 
-AgentKit sandboxes provide cloud development environments where you can build applications with coding agents such as Codex. A tool defines environment properties such as compute and networking, while a session retains the files and running state for one development flow. See [Use sandboxes](/productions/agentkit-cli/archives/0.51.1/en/commands/sandbox) for all options.
+AgentKit sandboxes provide cloud development environments where you can build applications with coding agents such as Codex. A tool defines environment properties such as compute and networking, while a session retains the files and running state for one development flow. See [Use sandboxes](/productions/agentkit-cli/preview/en/commands/sandbox) for all options.
 
 <Note>
 Configure AK/SK credentials or obtain valid short-lived STS credentials through `agentkit login`. To inject a local Codex subscription into the sandbox, first complete `codex login` on your machine.
@@ -103,7 +103,7 @@ agentkit sandbox shell \
   --command "cd /home/gem/my-app && npm test"
 ```
 
-To orchestrate multiple `sandbox exec` tasks, write entries in `agentkit-sandbox-run.yaml`, then run `agentkit sandbox run --config agentkit-sandbox-run.yaml`. See the [sandbox command reference](/productions/agentkit-cli/archives/0.51.1/en/commands/sandbox#sandbox-run) for the configuration format.
+To orchestrate multiple `sandbox exec` tasks, write entries in `agentkit-sandbox-run.yaml`, then run `agentkit sandbox run --config agentkit-sandbox-run.yaml`. See the [sandbox command reference](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-run) for the configuration format.
 
 ## Practical guidance
 

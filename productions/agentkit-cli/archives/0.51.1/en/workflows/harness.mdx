@@ -5,7 +5,7 @@ title: "Using Harness"
 The harness path suits cases that need no custom code: the agent's model, tools, knowledge base, memory, and prompt all live in a single `harness.yaml`, which the CLI builds and deploys as a runtime. The whole loop revolves around that one file — initialize, configure, deploy, invoke, then return to configuration to iterate.
 
 <Note>
-  Configure AK/SK credentials first, or obtain short-lived STS credentials through [SSO login](/productions/agentkit-cli/archives/0.51.1/en/commands/auth). `harness deploy` and `invoke` use the same credential precedence to resolve valid credentials. See the Authentication section of the [Quickstart](/productions/agentkit-cli/archives/0.51.1/en/quickstart).
+  Configure AK/SK credentials first, or obtain short-lived STS credentials through [SSO login](/productions/agentkit-cli/preview/en/commands/auth). `harness deploy` and `invoke` use the same credential precedence to resolve valid credentials. See the Authentication section of the [Quickstart](/productions/agentkit-cli/preview/en/quickstart).
 </Note>
 
 <Warning>
@@ -33,7 +33,7 @@ The harness path suits cases that need no custom code: the agent's model, tools,
     ```
 
     <Tip>
-      To configure a component such as a knowledge base or memory, set its `--<component>-type` first, then add the connection parameters; pass an empty string `""` to disable one. Running `agentkit harness set` with no flags lists the current fields. See [Harness](/productions/agentkit-cli/archives/0.51.1/en/commands/harness) for the full field list.
+      To configure a component such as a knowledge base or memory, set its `--<component>-type` first, then add the connection parameters; pass an empty string `""` to disable one. Running `agentkit harness set` with no flags lists the current fields. See [Harness](/productions/agentkit-cli/preview/en/commands/harness) for the full field list.
     </Tip>
   </Step>
   <Step title="Build and deploy">
@@ -71,4 +71,4 @@ Runtime deletion cannot be undone and stops production calls. Confirm the name, 
 agentkit runtime delete my-harness -y
 ```
 
-When you need custom logic, tools, or multi-agent orchestration, use [High-code agents](/productions/agentkit-cli/archives/0.51.1/en/workflows/high-code) instead.
+When you need custom logic, tools, or multi-agent orchestration, use [High-code agents](/productions/agentkit-cli/preview/en/workflows/high-code) instead.

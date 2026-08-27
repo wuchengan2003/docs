@@ -11,7 +11,7 @@ flowchart LR
 ```
 
 <Note>
-  开始前：按照[鉴权与登录](/productions/agentkit-cli/archives/0.51.1/zh/commands/auth)配置 AK/SK 或完成 SSO 登录。并在[飞书开放平台](https://open.feishu.cn/)创建一个应用，开启**机器人**能力，记下 **App ID** 与 **App Secret**（飞书没有创建应用的开放接口，这一步在控制台手动完成）。
+  开始前：按照[鉴权与登录](/productions/agentkit-cli/preview/zh/commands/auth)配置 AK/SK 或完成 SSO 登录。并在[飞书开放平台](https://open.feishu.cn/)创建一个应用，开启**机器人**能力，记下 **App ID** 与 **App Secret**（飞书没有创建应用的开放接口，这一步在控制台手动完成）。
 </Note>
 
 <Steps>
@@ -62,4 +62,4 @@ flowchart LR
 - **凭证**：App ID 与 App Secret 用 `${VAR}`，不写进仓库；`agentkit release` 幂等复用同一个 proxy 函数，重复部署只更新、不新建。
 - **消息体验**：收到消息即回一个「收到」表情作为确认，回复以流式卡片实时呈现；模型的思考过程与工具调用折叠在单独的面板中，默认收起，需要时展开查看。
 - **会话与多租**：以飞书用户映射运行时的用户、飞书会话映射运行时的会话，并按租户隔离，因此同一个 proxy 可同时服务多个租户，彼此的会话与记忆互不干扰。
-- **运行时鉴权**：飞书链路下运行时用 `key_auth`，由 proxy 持有 API key。若要网页登录并透传用户身份，见[部署带 SSO 登录的前端](/productions/agentkit-cli/archives/0.51.1/zh/workflows/frontend-sso)。
+- **运行时鉴权**：飞书链路下运行时用 `key_auth`，由 proxy 持有 API key。若要网页登录并透传用户身份，见[部署带 SSO 登录的前端](/productions/agentkit-cli/preview/zh/workflows/frontend-sso)。

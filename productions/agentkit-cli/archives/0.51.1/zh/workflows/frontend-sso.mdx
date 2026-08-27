@@ -11,7 +11,7 @@ flowchart LR
 ```
 
 <Note>
-  开始前：按照[鉴权与登录](/productions/agentkit-cli/archives/0.51.1/zh/commands/auth)配置 AK/SK 或完成 SSO 登录；并在 [Agent Identity](https://console.volcengine.com/identity) 准备一个**用户池**与一个 **WEB 客户端**，记下 `user_pool_id` 与 `client_id`（客户端 secret 由 CLI 自动获取，无需手动填）。要用飞书登录，则在用户池里把飞书配成身份来源（第三方身份联合）。
+  开始前：按照[鉴权与登录](/productions/agentkit-cli/preview/zh/commands/auth)配置 AK/SK 或完成 SSO 登录；并在 [Agent Identity](https://console.volcengine.com/identity) 准备一个**用户池**与一个 **WEB 客户端**，记下 `user_pool_id` 与 `client_id`（客户端 secret 由 CLI 自动获取，无需手动填）。要用飞书登录，则在用户池里把飞书配成身份来源（第三方身份联合）。
 </Note>
 
 <Steps>
@@ -58,4 +58,4 @@ flowchart LR
 - **网关**：前端跑在 serverless 网关上，默认复用账号里已有的 serverless 网关，避免占用网关配额；需要固定时在 `frontend.gateway` 指定。
 - **仅 Python**：前端界面由 VeADK Frontend（`veadk frontend`）提供，当前仅支持 Python 项目。用 `basic` 模板脚手架出来的智能体已是 VeADK 前端可发现的布局（智能体定义在包内并暴露 `root_agent`）。
 
-只需要机器人渠道、不需要网页登录时，改用[接入飞书机器人](/productions/agentkit-cli/archives/0.51.1/zh/workflows/feishu)。
+只需要机器人渠道、不需要网页登录时，改用[接入飞书机器人](/productions/agentkit-cli/preview/zh/workflows/feishu)。

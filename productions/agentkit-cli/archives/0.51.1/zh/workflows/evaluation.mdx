@@ -2,7 +2,7 @@
 title: "评测闭环"
 ---
 
-评测把「开发 → 部署 → 评测 → 调优」的闭环补齐：用一份固定的评测集与一个或多个评估器，对已部署的运行时打分，再依据量化结果迭代。本页以一个问答智能体为例，走通从初始化项目到看到评测结果的完整流程。各命令的详细用法见[管理评测集](/productions/agentkit-cli/archives/0.51.1/zh/commands/eval/dataset)、[管理评估器](/productions/agentkit-cli/archives/0.51.1/zh/commands/eval/evaluator)、[运行评测实验](/productions/agentkit-cli/archives/0.51.1/zh/commands/eval/run)与[查看实验与结果](/productions/agentkit-cli/archives/0.51.1/zh/commands/eval/experiment)。
+评测把「开发 → 部署 → 评测 → 调优」的闭环补齐：用一份固定的评测集与一个或多个评估器，对已部署的运行时打分，再依据量化结果迭代。本页以一个问答智能体为例，走通从初始化项目到看到评测结果的完整流程。各命令的详细用法见[管理评测集](/productions/agentkit-cli/preview/zh/commands/eval/dataset)、[管理评估器](/productions/agentkit-cli/preview/zh/commands/eval/evaluator)、[运行评测实验](/productions/agentkit-cli/preview/zh/commands/eval/run)与[查看实验与结果](/productions/agentkit-cli/preview/zh/commands/eval/experiment)。
 
 <Note>
 开始前请确认已配置火山引擎 AK/SK，或已通过 `agentkit login` 获取有效的短期 STS 凭证。评测能力当前处于 Preview 阶段，命令会自动路由到评测服务所在区域；评测集命令也可以用 `-r, --region` 显式指定区域。

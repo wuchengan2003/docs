@@ -57,7 +57,7 @@ agentkit eval run --dataset qa-set --evaluator relevance --target my-agent --dry
 An experiment requires the dataset to have a **committed version**. If the dataset only has an uncommitted draft, `eval run` will **automatically publish a version** before submitting — version management is transparent to you and requires no manual action.
 </Note>
 
-Once submitted successfully it returns an experiment id, which you can track with [`eval experiment get`](/productions/agentkit-cli/archives/0.51.1/en/commands/eval/experiment):
+Once submitted successfully it returns an experiment id, which you can track with [`eval experiment get`](/productions/agentkit-cli/preview/en/commands/eval/experiment):
 
 ```bash
 agentkit eval run --dataset qa-set --evaluator relevance --target my-agent --json

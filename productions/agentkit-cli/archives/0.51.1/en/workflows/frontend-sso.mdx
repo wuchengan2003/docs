@@ -11,7 +11,7 @@ flowchart LR
 ```
 
 <Note>
-  First, follow [Authentication and login](/productions/agentkit-cli/archives/0.51.1/en/commands/auth) to configure AK/SK credentials or complete SSO login. In [Agent Identity](https://console.volcengine.com/identity), prepare a **user pool** and a **WEB client**, noting `user_pool_id` and `client_id` (the client secret is fetched automatically by the CLI). To sign in with Feishu, configure Feishu as an identity source (third-party federation) on the user pool.
+  First, follow [Authentication and login](/productions/agentkit-cli/preview/en/commands/auth) to configure AK/SK credentials or complete SSO login. In [Agent Identity](https://console.volcengine.com/identity), prepare a **user pool** and a **WEB client**, noting `user_pool_id` and `client_id` (the client secret is fetched automatically by the CLI). To sign in with Feishu, configure Feishu as an identity source (third-party federation) on the user pool.
 </Note>
 
 <Steps>
@@ -58,4 +58,4 @@ Notes:
 - **Gateway**: the frontend runs on a serverless gateway; by default an existing one is reused so it doesn't consume gateway quota. Pin a specific one with `frontend.gateway`.
 - **Python only**: the frontend UI is served by the VeADK Frontend (`veadk frontend`), so this flow currently supports Python projects. An agent scaffolded with the `basic` template is already in a layout the frontend can discover (the agent is defined in a package exposing `root_agent`).
 
-When you only need a bot channel and no web login, use [Deploy as a Feishu bot](/productions/agentkit-cli/archives/0.51.1/en/workflows/feishu) instead.
+When you only need a bot channel and no web login, use [Deploy as a Feishu bot](/productions/agentkit-cli/preview/en/workflows/feishu) instead.
