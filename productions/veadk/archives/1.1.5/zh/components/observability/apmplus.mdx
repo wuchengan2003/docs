@@ -70,12 +70,16 @@ exporter = APMPlusExporter(
 
 | 配置项 | 环境变量 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- | :--- |
-| `endpoint` | `OBSERVABILITY_OPENTELEMETRY_APMPLUS_ENDPOINT` | `str` | `http://apmplus-cn-beijing.volces.com:4317` | APMPlus OTLP 接入点（gRPC）。 |
+| `endpoint` | `OBSERVABILITY_OPENTELEMETRY_APMPLUS_ENDPOINT` | `str` | 根据云服务商与地域自动生成 | APMPlus OTLP 接入点（gRPC），格式为 `http://apmplus-{region}.volces.com:4317`。 |
 | `app_key` | `OBSERVABILITY_OPENTELEMETRY_APMPLUS_API_KEY` | `str` | 未设置时自动获取 APMPlus 令牌 | 应用程序密钥，用于认证。 |
 | `service_name` | `OBSERVABILITY_OPENTELEMETRY_APMPLUS_SERVICE_NAME` | `str` | `veadk_tracing` | 服务名，显示在 APMPlus 控制台，用于标识来源。 |
 
 <Note>
-`app_key` 未通过环境变量提供时，导出器会调用火山引擎鉴权自动获取 APMPlus 令牌，因此需要配置有效的火山引擎凭证。`endpoint` 使用 gRPC 协议、以非加密方式连接。
+`app_key` 未通过环境变量提供时，导出器会根据云服务商自动获取 APMPlus 令牌：火山引擎模式使用 `open.volcengineapi.com`，BytePlus 模式使用 `open.byteplusapi.com`，因此需要配置对应云服务商的有效凭证（火山引擎使用 `VOLCENGINE_ACCESS_KEY` / `VOLCENGINE_SECRET_KEY`，BytePlus 使用 `BYTEPLUS_ACCESS_KEY` / `BYTEPLUS_SECRET_KEY`；使用临时凭证时还需提供对应的 Session Token）。`endpoint` 使用 gRPC 协议、以非加密方式连接。
+</Note>
+
+<Note>
+`endpoint` 的默认值根据云服务商与地域动态生成。火山引擎模式下，地域依次取自 `REGION` 环境变量与默认值 `cn-beijing`；BytePlus 模式下，地域依次取自 `BYTEPLUS_REGION` 环境变量与默认值 `ap-southeast-1`。云服务商由 `AGENTKIT_CLOUD_PROVIDER` 或 `CLOUD_PROVIDER` 环境变量决定，默认为火山引擎。
 </Note>
 
 ## 环境变量配置
