@@ -10,7 +10,7 @@ List all memory collections.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
-| `-r, --region <region>` | Volcengine region. | auto-detect |
+| `-r, --region <region>` | Cloud region. | auto-detect |
 | `-p, --project <name>` | Project name. | default |
 | `--json` | Output raw JSON. | `false` |
 
@@ -25,7 +25,7 @@ Show details of a memory collection.
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `<id>` | Memory id, e.g. `m-xxxxxxxx`. Required. | — |
-| `-r, --region <region>` | Volcengine region. | auto-detect |
+| `-r, --region <region>` | Cloud region. | auto-detect |
 | `--json` | Output raw JSON. | `false` |
 
 ```bash
@@ -42,18 +42,18 @@ Create a memory collection.
 | `--description <text>` | Description. | — |
 | `-p, --project <name>` | Project name. | default |
 | `--provider-type <type>` | Provider type (`MEM0` \| `VIKINGDB_MEMORY`). | `MEM0` on Volcengine, `VIKINGDB_MEMORY` on BytePlus |
-| `-r, --region <region>` | Cloud region. | From provider or environment |
+| `-r, --region <region>` | Cloud region. | Current cloud provider or environment |
 | `--json <jsonString>` | JSON object merged into the request body (for nested fields such as `LongTermConfiguration`, `VpcConfig`, `Tags`). | — |
 
 ```bash
 agentkit memory create --name user-mem --provider-type MEM0
 
-agentkit --provider byteplus memory create --name user-mem
+agentkit --provider byteplus memory create \
+  --name user-mem \
+  --provider-type VIKINGDB_MEMORY
 ```
 
-<Note>
-BytePlus does not support `MEM0` memory collections. When BytePlus is selected and `--provider-type` is omitted, the CLI uses `VIKINGDB_MEMORY`.
-</Note>
+`--provider-type` values are normalized by casing. BytePlus does not support creating `MEM0` memory collections; explicitly passing `--provider-type MEM0`, or overriding `ProviderType` to `MEM0` through `--json`, fails before the request is sent.
 
 ## memory update
 
@@ -63,7 +63,7 @@ Update a memory collection.
 | --- | --- | --- |
 | `<id>` | Memory id, e.g. `m-xxxxxxxx`. Required. | — |
 | `--description <text>` | New description. | — |
-| `-r, --region <region>` | Volcengine region. | auto-detect |
+| `-r, --region <region>` | Cloud region. | auto-detect |
 | `--json <jsonString>` | JSON object merged into the request body (for nested fields such as `LongTermConfiguration`, `VpcConfig`). | — |
 
 ```bash
@@ -77,7 +77,7 @@ Delete a memory collection.
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `<id>` | Memory id, e.g. `m-xxxxxxxx`. Required. | — |
-| `-r, --region <region>` | Volcengine region. | auto-detect |
+| `-r, --region <region>` | Cloud region. | auto-detect |
 | `-y, --yes` | Skip the confirmation prompt. | `false` |
 
 ```bash

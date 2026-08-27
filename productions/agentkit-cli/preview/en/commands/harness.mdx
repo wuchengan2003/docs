@@ -463,4 +463,4 @@ agentkit harness sidecar resolve \
   --component mcp_resilience=true
 ```
 
-In the output, `effective_components` is the final enabled component list, `activation_targets` describes whether runtime components, the model proxy, and the MCP gateway are enabled, and `plan_hash` is used after release to verify the plan loaded by the runtime. `mcp_resilience` automatically includes SQL read-only protection; `sql_readonly` cannot be selected directly with `--component`.
+In the output, `effective_components` is the final enabled component list, `activation_targets` describes whether runtime components, the model proxy, and the MCP gateway are enabled, `warnings` lists valid selections that need attention, and `plan_hash` is used after release to verify the plan loaded by the runtime. `mcp_resilience` automatically includes SQL read-only protection; `sql_readonly` cannot be selected directly with `--component`. When you use the `ops` profile but disable `mcp_resilience`, the plan warns that SQL read-only protection is disabled.

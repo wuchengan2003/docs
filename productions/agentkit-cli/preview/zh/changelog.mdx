@@ -6,6 +6,13 @@ title: "更新日志"
 
 当前没有未发布的公开变更。
 
+## 0.52.4 - 2026-08-19
+
+- [`memory create`](/productions/agentkit-cli/preview/zh/commands/memory#memory-create) 在 BytePlus 上默认创建 `VIKINGDB_MEMORY` 记忆库，并在显式或通过 `--json` 传入 `MEM0` 时提前失败；Volcengine 默认仍为 `MEM0`。
+- [Dify 迁移](/productions/agentkit-cli/preview/zh/commands/migrate#dify-迁移范围)改为按 YAML 内容识别 Dify DSL，可处理任意文件名和子目录中的 Dify 导出，同时避免把同名普通 YAML 误判为 Dify。
+- [发布构建](/productions/agentkit-cli/preview/zh/commands/release#release-build)增强托管 Harness Sidecar 构建：使用符合当前结构的 CLI 托管 Dockerfile，按托管基础镜像摘要隔离并启用 Code Pipeline 缓存，并根据归档大小调整 TOS 上传超时。
+- [`harness sidecar resolve`](/productions/agentkit-cli/preview/zh/commands/harness#harness-sidecar-resolve) 在 `ops` profile 关闭 `mcp_resilience` 时输出 SQL 只读保护已关闭的警告，便于发布前识别风险选择。
+
 ## 0.52.3 - 2026-08-18
 
 - [`sandbox list`](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-list) 可查看沙箱会话或工具：默认读取本地会话缓存，支持 `--tools` 查看工具缓存，支持 `--remote` 查询远端工具或指定工具下的远端会话，并可按工具 ID、名称、类型和状态过滤。

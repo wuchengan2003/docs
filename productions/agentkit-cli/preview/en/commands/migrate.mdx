@@ -14,7 +14,9 @@ agentkit migrate [project-dir] --framework dify|any create|list|status [job-id] 
 
 ## Dify Migration Scope
 
-With `--framework dify create`, the input directory should contain `workflow.yml` or `workflow.yaml`. Before the remote migration starts, the CLI reads the Dify DSL and provides read-only context to the migration process: DSL version, app mode, nodes and edges, variables, app features, dependencies, diagnostics, and locations of truncated content. Credential fields and common authentication text are redacted.
+With `--framework dify create`, the input path must be an existing directory and should contain at least one Dify DSL YAML document. The migration flow recursively scans `.yml` and `.yaml` files in that directory and treats a file as Dify only when its content matches the Dify DSL structure: the root object is `kind: app`, `app` contains a non-empty `mode`, and `workflow.graph` contains both `nodes` and `edges` lists. File names and directory depth are not part of detection; an ordinary YAML file named `workflow.yml` is not treated as Dify DSL by name alone.
+
+Before the remote migration starts, the CLI reads the matched Dify DSL and provides read-only context to the migration process: DSL version, app mode, nodes and edges, variables, app features, dependencies, diagnostics, and locations of truncated content. Credential fields and common authentication text are redacted. If the directory contains multiple valid Dify DSL files, migration selects the first path in lexicographic order and records the candidates in diagnostics. Node-level supplemental configuration is also matched by content: only YAML that can be associated with a main DSL node through node ID, node type, or explicit override fields is used as node supplemental configuration.
 
 Both Dify `workflow` and `advanced-chat` apps are in scope. For Chatflow, migration also pays attention to conversation variables, `sys.query`, `sys.files`, `sys.conversation_id`, LLM node memory windows, Answer node order, file upload, speech features, citation resources, and content moderation context.
 

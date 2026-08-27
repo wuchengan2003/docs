@@ -6,6 +6,13 @@ title: "Changelog"
 
 There are currently no unreleased public changes.
 
+## 0.52.4 - 2026-08-19
+
+- [`memory create`](/productions/agentkit-cli/preview/en/commands/memory#memory-create) now defaults to `VIKINGDB_MEMORY` on BytePlus and fails early when `MEM0` is passed explicitly or through `--json`; Volcengine still defaults to `MEM0`.
+- [Dify migration](/productions/agentkit-cli/preview/en/commands/migrate#dify-migration-scope) now detects Dify DSL by YAML content, so it can handle Dify exports with arbitrary file names or nested paths while avoiding ordinary YAML files with matching names.
+- [Release builds](/productions/agentkit-cli/preview/en/commands/release#release-build) improve managed Harness Sidecar builds: they require the current CLI-managed Dockerfile structure, isolate and enable Code Pipeline cache by managed base image digest, and size TOS upload timeouts from the archive size.
+- [`harness sidecar resolve`](/productions/agentkit-cli/preview/en/commands/harness#harness-sidecar-resolve) now warns when the `ops` profile disables `mcp_resilience`, making the disabled SQL read-only protection visible before release.
+
 ## 0.52.3 - 2026-08-18
 
 - [`sandbox list`](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-list) can inspect sandbox sessions or tools: it reads the local session cache by default, supports `--tools` for the local tool cache, supports `--remote` for remote tools or remote sessions under a specified tool, and filters by tool id, name, type, and status.

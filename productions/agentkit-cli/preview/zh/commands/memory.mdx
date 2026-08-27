@@ -10,7 +10,7 @@ title: "管理记忆库"
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `-r, --region <region>` | Volcengine 区域。 | 自动检测 |
+| `-r, --region <region>` | 云区域。 | 自动检测 |
 | `-p, --project <name>` | 项目名称。 | default |
 | `--json` | 输出原始 JSON。 | `false` |
 
@@ -25,7 +25,7 @@ agentkit memory list --project demo
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
 | `<id>` | 记忆库 id，例如 `m-xxxxxxxx`。必填。 | — |
-| `-r, --region <region>` | Volcengine 区域。 | 自动检测 |
+| `-r, --region <region>` | 云区域。 | 自动检测 |
 | `--json` | 输出原始 JSON。 | `false` |
 
 ```bash
@@ -42,18 +42,18 @@ agentkit memory show m-12345678
 | `--description <text>` | 描述。 | — |
 | `-p, --project <name>` | 项目名称。 | default |
 | `--provider-type <type>` | 提供方类型（`MEM0` \| `VIKINGDB_MEMORY`）。 | Volcengine 为 `MEM0`，BytePlus 为 `VIKINGDB_MEMORY` |
-| `-r, --region <region>` | 云区域。 | 来自云厂商或环境变量 |
+| `-r, --region <region>` | 云区域。 | 来自当前云厂商或环境变量 |
 | `--json <jsonString>` | 合并进请求体的 JSON 对象（用于 `LongTermConfiguration`、`VpcConfig`、`Tags` 等嵌套字段）。 | — |
 
 ```bash
 agentkit memory create --name user-mem --provider-type MEM0
 
-agentkit --provider byteplus memory create --name user-mem
+agentkit --provider byteplus memory create \
+  --name user-mem \
+  --provider-type VIKINGDB_MEMORY
 ```
 
-<Note>
-BytePlus 不支持 `MEM0` 记忆库。使用 BytePlus 时如未显式传入 `--provider-type`，CLI 会使用 `VIKINGDB_MEMORY`。
-</Note>
+`--provider-type` 的值会按大小写规范化。BytePlus 不支持创建 `MEM0` 记忆库；显式传入 `--provider-type MEM0`，或在 `--json` 中把 `ProviderType` 覆盖为 `MEM0`，都会在请求发出前失败。
 
 ## memory update
 
@@ -63,7 +63,7 @@ BytePlus 不支持 `MEM0` 记忆库。使用 BytePlus 时如未显式传入 `--p
 | --- | --- | --- |
 | `<id>` | 记忆库 id，例如 `m-xxxxxxxx`。必填。 | — |
 | `--description <text>` | 新的描述。 | — |
-| `-r, --region <region>` | Volcengine 区域。 | 自动检测 |
+| `-r, --region <region>` | 云区域。 | 自动检测 |
 | `--json <jsonString>` | 合并进请求体的 JSON 对象（用于 `LongTermConfiguration`、`VpcConfig` 等嵌套字段）。 | — |
 
 ```bash
@@ -77,7 +77,7 @@ agentkit memory update m-12345678 --description "更新后的记忆"
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
 | `<id>` | 记忆库 id，例如 `m-xxxxxxxx`。必填。 | — |
-| `-r, --region <region>` | Volcengine 区域。 | 自动检测 |
+| `-r, --region <region>` | 云区域。 | 自动检测 |
 | `-y, --yes` | 跳过确认提示。 | `false` |
 
 ```bash

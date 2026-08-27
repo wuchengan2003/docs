@@ -14,7 +14,9 @@ agentkit migrate [project-dir] --framework dify|any create|list|status [job-id] 
 
 ## Dify 迁移范围
 
-使用 `--framework dify create` 时，输入目录应包含 `workflow.yml` 或 `workflow.yaml`。CLI 会在远程迁移开始前读取 Dify DSL，向迁移过程提供只读上下文：DSL 版本、应用模式、节点与边、变量、App Features、依赖、诊断信息以及被截断内容的位置。凭证字段和常见认证文本会被脱敏。
+使用 `--framework dify create` 时，输入目录必须是已存在的目录，并应包含至少一个 Dify DSL YAML 文档。迁移流程会递归扫描目录中的 `.yml` 与 `.yaml` 文件，只有内容符合 Dify DSL 结构时才按 Dify 迁移处理：根对象为 `kind: app`，`app` 中包含非空 `mode`，并且 `workflow.graph` 同时包含 `nodes` 与 `edges` 列表。文件名和目录层级不参与判定；普通 YAML 即使命名为 `workflow.yml` 也不会被当作 Dify DSL。
+
+在远程迁移开始前，CLI 会读取匹配到的 Dify DSL，向迁移过程提供只读上下文：DSL 版本、应用模式、节点与边、变量、App Features、依赖、诊断信息以及被截断内容的位置。凭证字段和常见认证文本会被脱敏。若目录中存在多个有效 Dify DSL，迁移会选择路径按字典序排列后的第一个文件，并在诊断信息中记录候选文件。节点级补充配置也按内容关联主 DSL 中的节点；只有能通过节点 ID、节点类型或明确覆盖字段建立对应关系的 YAML，才会作为节点补充配置。
 
 Dify `workflow` 与 `advanced-chat` 都属于迁移范围。对于 Chatflow，迁移会额外关注会话变量、`sys.query`、`sys.files`、`sys.conversation_id`、LLM 节点记忆窗口、Answer 节点顺序、文件上传、语音、引用溯源和内容审核等上下文。
 

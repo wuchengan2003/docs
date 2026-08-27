@@ -463,4 +463,4 @@ agentkit harness sidecar resolve \
   --component mcp_resilience=true
 ```
 
-输出中的 `effective_components` 是最终启用组件；`activation_targets` 描述运行时组件、模型代理和 MCP 网关是否会被启用；`plan_hash` 用于发布后核验运行时实际加载的计划。`mcp_resilience` 会自动带上 SQL 只读保护，`sql_readonly` 不能作为 `--component` 直接选择。
+输出中的 `effective_components` 是最终启用组件；`activation_targets` 描述运行时组件、模型代理和 MCP 网关是否会被启用；`warnings` 列出有效但需要关注的选择结果；`plan_hash` 用于发布后核验运行时实际加载的计划。`mcp_resilience` 会自动带上 SQL 只读保护，`sql_readonly` 不能作为 `--component` 直接选择。使用 `ops` profile 但关闭 `mcp_resilience` 时，计划会提示 SQL 只读保护已关闭。
