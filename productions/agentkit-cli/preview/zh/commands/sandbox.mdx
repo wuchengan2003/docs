@@ -2,7 +2,7 @@
 title: "使用沙箱"
 ---
 
-`sandbox` 命令组用于创建和管理 AgentKit 沙箱工具，并在沙箱会话中执行命令、调用智能体、传输文件、打开 Web 预览或注入本地模型订阅凭据。`sandbox create` 与 `sandbox config` 对外支持的工具类型包括 `All-in-one`、`Skill`、`CodeEnv`、`DevEnv`、`ArkClawEnv`、`HermesEnv` 和 `Private`。
+`sandbox` 命令组用于创建和管理 AgentKit 沙箱工具，并在沙箱会话中执行命令、调用智能体、传输文件、打开 Web 预览或注入本地模型订阅凭据。它也可以初始化 Claude 自托管沙箱项目，并把 Tool 信息交给 [`env`](/productions/agentkit-cli/preview/zh/commands/env) 创建对应 Runtime。`sandbox create` 与 `sandbox config` 对外支持的工具类型包括 `All-in-one`、`Skill`、`CodeEnv`、`DevEnv`、`ArkClawEnv`、`HermesEnv` 和 `Private`。
 
 <Note>
 多数沙箱命令从 `.agentkit/sandbox.yaml` 或 `AGENTKIT_SANDBOX_REGION` 读取 AgentKit 控制面区域；`sandbox dashboard` 还支持用 `--region` 指定本地控制台会话的区域。TOS 挂载区域可通过 `AGENTKIT_SANDBOX_TOS_REGION` 指定；未设置时，CLI 会根据 TOS bucket 或当前云环境推断。
@@ -16,8 +16,8 @@ title: "使用沙箱"
 
 | 子命令 | 说明 |
 | --- | --- |
-| `build` | 在云端 Code Pipeline 中构建自定义沙箱镜像，并写入 `Private` 工具配置。 |
-| `init` | 生成沙箱 Dockerfile 模板，或初始化自托管沙箱项目。 |
+| `build` | 在云端 Code Pipeline 中构建自定义沙箱镜像，并写入 `Private` 工具配置和构建状态。 |
+| `init` | 生成沙箱 Dockerfile 模板，或初始化 Claude 自托管沙箱项目文件。 |
 | `config` | 读取、写入或删除沙箱命令默认值。 |
 | `create` | 创建沙箱工具。 |
 | `delete` | 删除沙箱工具或指定会话。 |
@@ -35,7 +35,7 @@ title: "使用沙箱"
 
 ## sandbox build
 
-在云端 Code Pipeline 中构建自定义沙箱镜像。构建完成后，CLI 会把 `tool-type` 设置为 `Private`，并把生成的镜像地址写入 `.agentkit/sandbox.yaml`，便于后续 `sandbox create` 使用。
+在云端 Code Pipeline 中构建自定义沙箱镜像。构建完成后，CLI 会把 `tool-type` 设置为 `Private`，把生成的镜像地址与构建状态写入 `.agentkit/sandbox.yaml`，便于后续 `sandbox create` 使用。若 `.agentkit/sandbox.yaml` 包含 `build` 配置，`sandbox build` 会从中读取构建上下文、Dockerfile、镜像名称、命名空间和标签；命令行标志优先于配置文件。
 
 <Warning>
 `sandbox build` 会使用 TOS、Container Registry 和 Code Pipeline 等云资源，可能产生费用。执行前确认账号权限、项目目录和镜像命名。
@@ -56,26 +56,29 @@ agentkit sandbox build --project-dir . --dockerfile Dockerfile --image-name cust
 
 ## sandbox init
 
-生成沙箱 Dockerfile 模板。未指定模板时，默认生成 `skill` 模板。命令会按模板对应的工具类型解析当前内置基础镜像，并把实际镜像地址写入生成的 Dockerfile。
+生成沙箱 Dockerfile 模板。未指定模板时，默认生成 `skill` 模板。普通模板会按模板对应的工具类型解析当前内置基础镜像，并把实际镜像地址写入生成的 Dockerfile。`self-host` 模板会初始化 Claude 自托管沙箱项目，写入 `Dockerfile`、`.gitignore`、`.dockerignore`、`README.md` 和 `.agentkit/sandbox.yaml`。
 
 <Note>
-  解析内置基础镜像需要可用的 AgentKit 控制面凭据和区域配置。离线环境或无权限环境无法生成带实际基础镜像的模板。
+  除 `self-host` 外，解析内置基础镜像需要可用的 AgentKit 控制面凭据和区域配置。离线环境或无权限环境无法生成带实际基础镜像的普通模板。
 </Note>
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
 | `-t, --template <name>` | Dockerfile 模板名称：`skill`、`skills`、`aio`、`code`、`code-install-package`、`code-install-skills`、`code-web-server`、`self-host`。 | `skill` |
-| `-o, --output <path>` | 输出 Dockerfile 路径。 | 模板默认路径 |
-| `-f, --force` | 覆盖已经存在的输出文件。 | `false` |
+| `-o, --output <path>` | 输出 Dockerfile 路径；`self-host` 模板固定写入项目约定文件，不使用该参数。 | 模板默认路径 |
+| `-f, --force` | 覆盖已经存在的输出文件；`self-host` 模板中还会覆盖 `.agentkit/sandbox.yaml`。 | `false` |
 
 ```bash
 agentkit sandbox init --template code-web-server --output Dockerfile.sandbox
+
 agentkit sandbox init -t self-host
 ```
 
+`self-host` 模板生成的 `.agentkit/sandbox.yaml` 包含 `project_type: self-host`、构建配置、`Private` Tool 默认规格和 `self_host` 配置块。运行 `agentkit env create` 前，先把 `self_host.environment.environment_base_url`、`self_host.environment.environment_id` 与 `self_host.environment.environment_key` 替换为实际 Anthropic 环境参数；保留生成占位符会导致创建失败。
+
 ## sandbox config
 
-配置沙箱命令的本地默认值。配置文件位于当前项目的 `.agentkit/sandbox.yaml`，`--list` 会输出当前配置文件内容，并自动隐藏模型 API Key 和 WebSearch API Key。
+配置沙箱命令的本地默认值。配置文件位于当前项目的 `.agentkit/sandbox.yaml`，`--list` 会输出当前配置文件内容，并自动隐藏模型 API Key、WebSearch API Key 和 Claude 自托管环境密钥。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
@@ -122,23 +125,23 @@ agentkit sandbox config --list
 | `session-id` | string | 随机生成 | 默认用户会话 ID。 |
 | `ttl` | integer | `28800` | 会话 TTL，单位为秒。 |
 | `git-config` | `local` 或文件路径 | — | 注入沙箱会话的 Git 身份来源。 |
-| `self-host-project-name` | string | `default` | 自托管 Tool 与 Runtime 使用的 AgentKit 项目。 |
-| `self-host-poll-interval-seconds` | integer | `5` | 自托管 Tool 与 Runtime 就绪检查的轮询间隔。 |
-| `self-host-environment-base-url` | string | — | 自托管环境网关地址。 |
-| `self-host-environment-id` | string | — | 自托管环境 ID。 |
-| `self-host-environment-key` | string | — | 自托管环境密钥；列表输出会隐藏该值。 |
-| `self-host-sandbox-id` | string | `sandbox create` 写入 | 自托管 Runtime 绑定的沙箱 Tool ID。 |
-| `self-host-sandbox-name` | string | `sandbox create` 写入 | 自托管 Runtime 绑定的沙箱 Tool 名称。 |
-| `self-host-runtime-image-url` | string | 内置运行时镜像 | 自托管 Runtime 镜像地址。 |
-| `self-host-runtime-name` | string | `agentkit-selfhost-runtime` | 自托管 Runtime 名称前缀。 |
-| `self-host-runtime-role-name` | string | `AgentKit_Runtime_Default_ServiceRole` | 自托管 Runtime 使用的 IAM 角色。 |
-| `self-host-runtime-cpu-milli` | integer | `2000` | 自托管 Runtime CPU，单位为毫核。 |
-| `self-host-runtime-memory-mb` | integer | `4096` | 自托管 Runtime 内存，单位为 MB。 |
-| `self-host-runtime-min-instance` | integer | `1` | 自托管 Runtime 最小实例数。 |
-| `self-host-runtime-max-instance` | integer | `1` | 自托管 Runtime 最大实例数。 |
-| `self-host-runtime-max-concurrency` | integer | `10` | 自托管 Runtime 单实例最大并发数。 |
-| `self-host-runtime-timeout-seconds` | integer | `1200` | 自托管 Runtime 请求超时时间。 |
-| `self-host-runtime-api-key-name` | string | `Authorization` | 自托管 Runtime API Key 请求头名称。 |
+| `self-host-project-name` | string | `default` | Claude 自托管沙箱创建 Tool 与 Runtime 时使用的 AgentKit 项目名称。 |
+| `self-host-poll-interval-seconds` | integer | `5` | 等待 Tool 或 Runtime 状态变化时的轮询间隔，单位为秒。 |
+| `self-host-environment-base-url` | string | — | Anthropic 环境网关 Base URL；`env create` 必填，生成占位符必须替换。 |
+| `self-host-environment-id` | string | — | Anthropic 环境 ID；`env create` 必填，生成占位符必须替换。 |
+| `self-host-environment-key` | string | — | Anthropic 环境密钥；`env create` 必填，生成占位符必须替换。 |
+| `self-host-sandbox-id` | string | — | Claude 自托管沙箱 Tool ID；`sandbox create` 在自托管项目中会自动写入。 |
+| `self-host-sandbox-name` | string | — | Claude 自托管沙箱 Tool 名称；`sandbox create` 在自托管项目中会自动写入。 |
+| `self-host-runtime-image-url` | string | `enterprise-public-cn-beijing.cr.volces.com/vefaas-public/agentkit-selfhostsandbox:runtime-0.0.1` | `env create` 创建 Runtime 时使用的镜像地址。 |
+| `self-host-runtime-name` | string | `agentkit-selfhost-runtime` | Runtime 名称前缀。 |
+| `self-host-runtime-role-name` | string | `AgentKit_Runtime_Default_ServiceRole` | Runtime 使用的 IAM 角色名称。 |
+| `self-host-runtime-cpu-milli` | integer | `2000` | Runtime CPU，单位为 milli-core。 |
+| `self-host-runtime-memory-mb` | integer | `4096` | Runtime 内存，单位为 MB。 |
+| `self-host-runtime-min-instance` | integer | `1` | Runtime 最小实例数，可为 `0`。 |
+| `self-host-runtime-max-instance` | integer | `1` | Runtime 最大实例数，必须大于 `0` 且不小于最小实例数。 |
+| `self-host-runtime-max-concurrency` | integer | `10` | Runtime 单实例最大并发数。 |
+| `self-host-runtime-timeout-seconds` | integer | `1200` | 等待 Runtime 就绪的最长时间，单位为秒。 |
+| `self-host-runtime-api-key-name` | string | `Authorization` | Runtime 网关 API Key 的请求头名称。 |
 
 ## 模型环境变量
 
@@ -159,7 +162,7 @@ agentkit sandbox config --list
 
 ## sandbox create
 
-创建沙箱工具。创建完成后，CLI 会等待工具进入 `Ready` 状态，并把工具 ID 与名称写入本地沙箱配置。
+创建沙箱工具。创建完成后，CLI 会等待工具进入 `Ready` 状态，并把工具 ID 与名称写入本地沙箱配置。对于 `project_type: self-host` 的项目，创建结果会写入 `self_host.sandbox.id` 和 `self_host.sandbox.name`，供 [`env create`](/productions/agentkit-cli/preview/zh/commands/env#env-create) 创建 Runtime。
 
 <Warning>
 `sandbox create` 会在云端创建计算资源，资源存续期间可能产生费用。创建前确认工具类型、规格、网络、镜像和 TOS 挂载配置；不再使用时，通过 `sandbox delete --tool-id <id> --force` 删除工具。
@@ -220,28 +223,13 @@ agentkit sandbox create \
   --image-url cr.example.com/agentkit/custom-sandbox:latest
 ```
 
-为 `Skill` 工具启用 LLM Shield 或注入自定义环境变量时，可在创建工具时传入对应标志：
-
-```bash
-agentkit sandbox create \
-  --tool-type Skill \
-  --tool-name guarded-skill \
-  --llm-shield-app-id app-xxxxxxxx \
-  --envs FEATURE_FLAG=enabled
-```
-
-## 自托管沙箱流程
-
-自托管项目使用 `sandbox init -t self-host` 生成配置，再通过 `sandbox build`、`sandbox create` 和 [`env create`](/productions/agentkit-cli/preview/zh/commands/env) 创建完整环境。`sandbox create` 会读取 `project_type: self-host`，使用自托管工具命名规则，并把创建出的 Tool ID 写入 `self_host.sandbox.id`。
+Claude 自托管沙箱通常使用 `sandbox init -t self-host` 生成配置，再按生成的 `build` 配置构建镜像并创建 `Private` Tool：
 
 ```bash
 agentkit sandbox init -t self-host
-agentkit sandbox config --set self-host-environment-base-url=https://gateway.example.com
-agentkit sandbox config --set self-host-environment-id=env-xxxxxxxx
-agentkit sandbox config --set self-host-environment-key=${SELF_HOST_ENVIRONMENT_KEY}
+# 编辑 .agentkit/sandbox.yaml 中的 self_host.environment.*
 agentkit sandbox build
 agentkit sandbox create
-agentkit env create
 ```
 
 ## sandbox dashboard

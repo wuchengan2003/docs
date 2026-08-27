@@ -2,7 +2,7 @@
 title: "Use sandboxes"
 ---
 
-The `sandbox` command group creates and manages AgentKit sandbox tools, then uses sandbox sessions to run commands, invoke agents, transfer files, open web previews, or inject local model subscription credentials. `sandbox create` and `sandbox config` accept `All-in-one`, `Skill`, `CodeEnv`, `DevEnv`, `ArkClawEnv`, `HermesEnv`, and `Private` as public tool types.
+The `sandbox` command group creates and manages AgentKit sandbox tools, then uses sandbox sessions to run commands, invoke agents, transfer files, open web previews, or inject local model subscription credentials. It can also initialize Claude self-host sandbox projects and pass Tool information to [`env`](/productions/agentkit-cli/preview/en/commands/env) for Runtime creation. `sandbox create` and `sandbox config` accept `All-in-one`, `Skill`, `CodeEnv`, `DevEnv`, `ArkClawEnv`, `HermesEnv`, and `Private` as public tool types.
 
 <Note>
 Most sandbox commands read the AgentKit control-plane region from `.agentkit/sandbox.yaml` or `AGENTKIT_SANDBOX_REGION`; `sandbox dashboard` also accepts `--region` for the local dashboard session. For TOS mounts, set `AGENTKIT_SANDBOX_TOS_REGION`; when it is omitted, the CLI infers the TOS region from the bucket or current cloud environment.
@@ -16,8 +16,8 @@ Tool selection usually resolves explicit CLI options first, then `.agentkit/sand
 
 | Subcommand | Description |
 | --- | --- |
-| `build` | Build a custom sandbox image in cloud Code Pipeline and store `Private` tool config. |
-| `init` | Generate a sandbox Dockerfile template, or initialize a self-host sandbox project. |
+| `build` | Build a custom sandbox image in cloud Code Pipeline, then store `Private` tool config and build state. |
+| `init` | Generate a sandbox Dockerfile template or initialize Claude self-host sandbox project files. |
 | `config` | Read, write, or remove sandbox command defaults. |
 | `create` | Create a sandbox tool. |
 | `delete` | Delete a sandbox tool or a specific session. |
@@ -35,7 +35,7 @@ Tool selection usually resolves explicit CLI options first, then `.agentkit/sand
 
 ## sandbox build
 
-Build a custom sandbox image in cloud Code Pipeline. After a successful build, the CLI sets `tool-type` to `Private` and writes the generated image URL to `.agentkit/sandbox.yaml` for later `sandbox create` commands.
+Build a custom sandbox image in cloud Code Pipeline. After a successful build, the CLI sets `tool-type` to `Private` and writes the generated image URL plus build state to `.agentkit/sandbox.yaml` for later `sandbox create` commands. If `.agentkit/sandbox.yaml` contains `build` config, `sandbox build` reads the build context, Dockerfile, image name, namespace, and tag from it; command-line flags take precedence over the config file.
 
 <Warning>
 `sandbox build` uses cloud resources such as TOS, Container Registry, and Code Pipeline, which may incur charges. Confirm account permissions, the project directory, and image naming before running it.
@@ -56,26 +56,29 @@ agentkit sandbox build --project-dir . --dockerfile Dockerfile --image-name cust
 
 ## sandbox init
 
-Generate a sandbox Dockerfile template. When no template is specified, the command generates the `skill` template. The command resolves the current built-in base image for the template's tool type and writes the concrete image URL into the generated Dockerfile.
+Generate a sandbox Dockerfile template. When no template is specified, the command generates the `skill` template. Ordinary templates resolve the current built-in base image for the template's tool type and write the concrete image URL into the generated Dockerfile. The `self-host` template initializes a Claude self-host sandbox project and writes `Dockerfile`, `.gitignore`, `.dockerignore`, `README.md`, and `.agentkit/sandbox.yaml`.
 
 <Note>
-  Resolving the built-in base image requires usable AgentKit control-plane credentials and region configuration. Offline or unauthorized environments cannot generate a template with a concrete base image.
+  Except for `self-host`, resolving the built-in base image requires usable AgentKit control-plane credentials and region configuration. Offline or unauthorized environments cannot generate an ordinary template with a concrete base image.
 </Note>
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `-t, --template <name>` | Dockerfile template name: `skill`, `skills`, `aio`, `code`, `code-install-package`, `code-install-skills`, `code-web-server`, `self-host`. | `skill` |
-| `-o, --output <path>` | Output Dockerfile path. | Template default path |
-| `-f, --force` | Overwrite an existing output file. | `false` |
+| `-o, --output <path>` | Output Dockerfile path; the `self-host` template writes the fixed project files instead of using this option. | Template default path |
+| `-f, --force` | Overwrite existing output files; for the `self-host` template, also overwrite `.agentkit/sandbox.yaml`. | `false` |
 
 ```bash
 agentkit sandbox init --template code-web-server --output Dockerfile.sandbox
+
 agentkit sandbox init -t self-host
 ```
 
+The `.agentkit/sandbox.yaml` generated by the `self-host` template includes `project_type: self-host`, build config, `Private` Tool defaults, and the `self_host` config block. Before running `agentkit env create`, replace `self_host.environment.environment_base_url`, `self_host.environment.environment_id`, and `self_host.environment.environment_key` with the actual Anthropic environment settings; leaving generated placeholders in place makes creation fail.
+
 ## sandbox config
 
-Configure local defaults for sandbox commands. The config file is `.agentkit/sandbox.yaml` in the current project. `--list` prints the current config file and redacts model API keys and WebSearch API keys.
+Configure local defaults for sandbox commands. The config file is `.agentkit/sandbox.yaml` in the current project. `--list` prints the current config file and redacts model API keys, WebSearch API keys, and Claude self-host environment keys.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
@@ -122,23 +125,23 @@ Supported config keys are listed below.
 | `session-id` | string | Randomly generated | Default user session id. |
 | `ttl` | integer | `28800` | Session TTL in seconds. |
 | `git-config` | `local` or file path | — | Git identity source injected into sandbox sessions. |
-| `self-host-project-name` | string | `default` | AgentKit project used by the self-host Tool and Runtime. |
-| `self-host-poll-interval-seconds` | integer | `5` | Polling interval for self-host Tool and Runtime readiness checks. |
-| `self-host-environment-base-url` | string | — | Self-host environment gateway URL. |
-| `self-host-environment-id` | string | — | Self-host environment ID. |
-| `self-host-environment-key` | string | — | Self-host environment secret; list output redacts this value. |
-| `self-host-sandbox-id` | string | Written by `sandbox create` | Sandbox Tool ID bound to the self-host Runtime. |
-| `self-host-sandbox-name` | string | Written by `sandbox create` | Sandbox Tool name bound to the self-host Runtime. |
-| `self-host-runtime-image-url` | string | Built-in runtime image | Self-host Runtime image URL. |
-| `self-host-runtime-name` | string | `agentkit-selfhost-runtime` | Self-host Runtime name prefix. |
-| `self-host-runtime-role-name` | string | `AgentKit_Runtime_Default_ServiceRole` | IAM role used by the self-host Runtime. |
-| `self-host-runtime-cpu-milli` | integer | `2000` | Self-host Runtime CPU in milli-cores. |
-| `self-host-runtime-memory-mb` | integer | `4096` | Self-host Runtime memory in MB. |
-| `self-host-runtime-min-instance` | integer | `1` | Self-host Runtime minimum instances. |
-| `self-host-runtime-max-instance` | integer | `1` | Self-host Runtime maximum instances. |
-| `self-host-runtime-max-concurrency` | integer | `10` | Maximum concurrency per self-host Runtime instance. |
-| `self-host-runtime-timeout-seconds` | integer | `1200` | Self-host Runtime request timeout. |
-| `self-host-runtime-api-key-name` | string | `Authorization` | Self-host Runtime API key request header name. |
+| `self-host-project-name` | string | `default` | AgentKit project name used when creating the Claude self-host sandbox Tool and Runtime. |
+| `self-host-poll-interval-seconds` | integer | `5` | Poll interval in seconds while waiting for Tool or Runtime status changes. |
+| `self-host-environment-base-url` | string | — | Anthropic environment gateway base URL; required by `env create`, and generated placeholders must be replaced. |
+| `self-host-environment-id` | string | — | Anthropic environment ID; required by `env create`, and generated placeholders must be replaced. |
+| `self-host-environment-key` | string | — | Anthropic environment key; required by `env create`, and generated placeholders must be replaced. |
+| `self-host-sandbox-id` | string | — | Claude self-host sandbox Tool ID; written automatically by `sandbox create` in self-host projects. |
+| `self-host-sandbox-name` | string | — | Claude self-host sandbox Tool name; written automatically by `sandbox create` in self-host projects. |
+| `self-host-runtime-image-url` | string | `enterprise-public-cn-beijing.cr.volces.com/vefaas-public/agentkit-selfhostsandbox:runtime-0.0.1` | Image URL used by `env create` when creating the Runtime. |
+| `self-host-runtime-name` | string | `agentkit-selfhost-runtime` | Runtime name prefix. |
+| `self-host-runtime-role-name` | string | `AgentKit_Runtime_Default_ServiceRole` | IAM role name used by the Runtime. |
+| `self-host-runtime-cpu-milli` | integer | `2000` | Runtime CPU in milli-cores. |
+| `self-host-runtime-memory-mb` | integer | `4096` | Runtime memory in MB. |
+| `self-host-runtime-min-instance` | integer | `1` | Minimum Runtime instance count; may be `0`. |
+| `self-host-runtime-max-instance` | integer | `1` | Maximum Runtime instance count; must be greater than `0` and not less than the minimum instance count. |
+| `self-host-runtime-max-concurrency` | integer | `10` | Maximum concurrent requests per Runtime instance. |
+| `self-host-runtime-timeout-seconds` | integer | `1200` | Maximum seconds to wait for the Runtime to become ready. |
+| `self-host-runtime-api-key-name` | string | `Authorization` | Request header name for the Runtime gateway API key. |
 
 ## Model Environment Variables
 
@@ -159,7 +162,7 @@ Generated Codex config is written to `/home/gem/.codex/config.toml` inside the s
 
 ## sandbox create
 
-Create a sandbox tool. After creation, the CLI waits until the tool reaches `Ready`, then stores the tool id and name in local sandbox config.
+Create a sandbox tool. After creation, the CLI waits until the tool reaches `Ready`, then stores the tool id and name in local sandbox config. For projects with `project_type: self-host`, the result is written to `self_host.sandbox.id` and `self_host.sandbox.name` so [`env create`](/productions/agentkit-cli/preview/en/commands/env#env-create) can create the Runtime.
 
 <Warning>
 `sandbox create` provisions cloud compute resources that may incur charges while they exist. Confirm the tool type, resource size, network settings, image, and TOS mount configuration before creating one. Delete unused tools with `sandbox delete --tool-id <id> --force`.
@@ -220,28 +223,13 @@ agentkit sandbox create \
   --image-url cr.example.com/agentkit/custom-sandbox:latest
 ```
 
-To enable LLM Shield for a `Skill` tool or inject custom environment variables, pass the corresponding flags when creating the tool:
-
-```bash
-agentkit sandbox create \
-  --tool-type Skill \
-  --tool-name guarded-skill \
-  --llm-shield-app-id app-xxxxxxxx \
-  --envs FEATURE_FLAG=enabled
-```
-
-## Self-Host Sandbox Flow
-
-Self-host projects use `sandbox init -t self-host` to generate configuration, then `sandbox build`, `sandbox create`, and [`env create`](/productions/agentkit-cli/preview/en/commands/env) to create the full environment. `sandbox create` reads `project_type: self-host`, uses the self-host Tool naming behavior, and writes the created Tool ID to `self_host.sandbox.id`.
+Claude self-host sandboxes usually start from the `sandbox init -t self-host` project template, then build the configured image and create a `Private` Tool:
 
 ```bash
 agentkit sandbox init -t self-host
-agentkit sandbox config --set self-host-environment-base-url=https://gateway.example.com
-agentkit sandbox config --set self-host-environment-id=env-xxxxxxxx
-agentkit sandbox config --set self-host-environment-key=${SELF_HOST_ENVIRONMENT_KEY}
+# Edit self_host.environment.* in .agentkit/sandbox.yaml.
 agentkit sandbox build
 agentkit sandbox create
-agentkit env create
 ```
 
 ## sandbox dashboard

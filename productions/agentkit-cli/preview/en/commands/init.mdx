@@ -35,13 +35,16 @@ Wrap an existing Python file that defines a VeADK `Agent`. The CLI copies the so
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
 | `[project_name]` | Project name; generated from the source file when omitted. | `agentkit-<file>` |
+| `-t, --template <template>` | Select a template compatible with `--from-agent`: `basic`, `basic_stream`, or `agent_server`. When provided, it maps automatically to the corresponding wrapper type. | — |
 | `-f, --from-agent <path>` | Python file containing the `Agent` definition. | Required |
 | `--agent-var <name>` | `Agent` variable name in the file; auto-detected when omitted. | Auto-detected |
-| `--wrapper-type <type>` | Wrapper type: `basic` or `stream`. | `basic` |
+| `--wrapper-type <type>` | Wrapper type: `basic`, `stream`, or `agent_server`; when used with `--template`, it must match the selected template. | `basic` |
 | `--directory <path>` | Target directory. | `.` |
 
 ```bash
 agentkit init wrapped-agent --from-agent ./agent.py --agent-var root_agent
+
+agentkit init wrapped-server --from-agent ./agent.py --template agent_server
 ```
 
 After initialization, enter the project directory, review `agentkit.yaml`, then run:

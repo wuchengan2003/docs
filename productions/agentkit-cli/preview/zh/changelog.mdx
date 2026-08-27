@@ -6,6 +6,15 @@ title: "更新日志"
 
 当前没有未发布的公开变更。
 
+## 0.52.7 - 2026-08-25
+
+- 新增 [`env`](/productions/agentkit-cli/preview/zh/commands/env) 命令组，可为 Claude 自托管沙箱项目创建与 Tool 绑定的 Runtime，并通过本地环境状态文件查询 Tool 与 Runtime 状态。
+- [沙箱命令](/productions/agentkit-cli/preview/zh/commands/sandbox)支持 `sandbox init -t self-host` 初始化 Claude 自托管沙箱项目，补充 `self_host` 配置键，并在自托管项目中把 `sandbox create` 的 Tool ID 写入 `self_host.sandbox.id` 供 `env create` 使用。
+- [`init --from-agent`](/productions/agentkit-cli/preview/zh/commands/init) 支持 `agent_server` 包装类型，并可通过 `--template basic|basic_stream|agent_server` 选择兼容的包装模板。
+- [托管 Harness Sidecar 配置](/productions/agentkit-cli/preview/zh/agentkit-yaml#harness-sidecar)改为按解析后的组件计划决定模型代理是否启用；MCP-only 计划可只启用 MCP 网关，发布校验也只检查实际启用的网关。
+- [`release build`](/productions/agentkit-cli/preview/zh/commands/release#release-build) 在托管 Sidecar 场景下会校验显式指定的 Code Pipeline 是否兼容当前构建契约，未找到或不兼容时直接失败，避免静默切换到其他流水线。
+- [`runtime show --json`](/productions/agentkit-cli/preview/zh/commands/runtime#runtime-show) 在运行时绑定 Tool 时会返回 `toolId`，便于脚本关联 Runtime 与 Tool。
+
 ## 0.52.6 - 2026-08-20
 
 - [生命周期配置](/productions/agentkit-cli/preview/zh/agentkit-yaml#云端与混合策略)中的 `runtime_network.mode: hybrid` 会同时启用公网入口和私有网络，避免混合网络运行时在部署后只保留公网访问。

@@ -6,6 +6,15 @@ title: "Changelog"
 
 There are currently no unreleased public changes.
 
+## 0.52.7 - 2026-08-25
+
+- Added the [`env`](/productions/agentkit-cli/preview/en/commands/env) command group for creating a Runtime bound to a Tool in Claude self-host sandbox projects and checking Tool plus Runtime status from local environment state.
+- [Sandbox commands](/productions/agentkit-cli/preview/en/commands/sandbox) now support `sandbox init -t self-host` for initializing Claude self-host sandbox projects, document the `self_host` config keys, and persist the Tool ID from `sandbox create` to `self_host.sandbox.id` for `env create`.
+- [`init --from-agent`](/productions/agentkit-cli/preview/en/commands/init) supports the `agent_server` wrapper type, and `--template basic|basic_stream|agent_server` can select a compatible wrapper template.
+- [Managed Harness Sidecar configuration](/productions/agentkit-cli/preview/en/agentkit-yaml#harness-sidecar) now derives model proxy enablement from the resolved component plan. MCP-only plans can run with only the MCP gateway enabled, and release readiness checks validate only the gateways that are actually enabled.
+- [`release build`](/productions/agentkit-cli/preview/en/commands/release#release-build) now verifies that an explicitly pinned Code Pipeline is compatible with the current managed Sidecar build contract. Missing or incompatible pinned pipelines fail closed instead of silently switching to another pipeline.
+- [`runtime show --json`](/productions/agentkit-cli/preview/en/commands/runtime#runtime-show) now returns `toolId` when a Runtime is bound to a Tool, making Runtime-to-Tool association available to scripts.
+
 ## 0.52.6 - 2026-08-20
 
 - [Lifecycle configuration](/productions/agentkit-cli/preview/en/agentkit-yaml#cloud-and-hybrid-strategies) now makes `runtime_network.mode: hybrid` enable both public ingress and private networking, so hybrid-network runtimes no longer deploy with public access only.

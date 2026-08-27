@@ -335,7 +335,7 @@ infrastructure:
 
 ## Harness Sidecar
 
-`harness_sidecar` 为托管 Harness Runtime 启用 Product Component 能力。启用后，`release` 会使用平台提供的托管 Sidecar 基础镜像，在发布过程中写入 Sidecar 运行时配置，并在运行时就绪后校验 Sidecar、模型代理和所需 MCP 网关状态。启用该块时，至少需要在 `component_overrides` 中将一个可选组件设为 `true`。
+`harness_sidecar` 为托管 Harness Runtime 启用 Product Component 能力。启用后，`release` 会使用平台提供的托管 Sidecar 基础镜像，在发布过程中写入 Sidecar 运行时配置，并在运行时就绪后校验 Sidecar、已启用的模型代理和所需 MCP 网关状态。启用该块时，至少需要在 `component_overrides` 中将一个可选组件设为 `true`。
 
 <Warning>
 当前托管 Harness Sidecar 仅支持 Volcengine `cn-shanghai`、CPython 3.12、`linux/amd64`，并要求 `runtime.min_instance` 与 `runtime.max_instance` 都为 `1`。它还要求发布环境由平台提供托管 Sidecar 基础镜像配置；普通本地环境未提供该配置时，发布会失败。启用 Sidecar 时必须使用默认 `key_auth` 网关鉴权，不能与 `custom_jwt` 或前端 BFF 鉴权派生同时使用。
@@ -367,12 +367,12 @@ harness_sidecar:
 | `harness_sidecar.component_overrides` | object | `{}` | 可选组件开关。支持 `context_engine`、`compressor`、`verifier`、`long_run_control` 与 `mcp_resilience`，值必须为 boolean；启用 Sidecar 时至少需要一个 `true`。 |
 | `harness_sidecar.fail_open` | boolean | `false` | Sidecar 故障时是否放行；托管 APIG 运行时要求保持 `false`。 |
 | `harness_sidecar.transport` | `apig_runtime_port` \| `local` | `apig_runtime_port` | Sidecar 访问模型代理和 MCP 网关的传输方式。托管发布使用 `apig_runtime_port`。 |
-| `harness_sidecar.model_proxy.enabled` | boolean | `true` | 是否启用模型代理；托管 APIG 运行时要求保持 `true`。 |
-| `harness_sidecar.model_proxy.host` | string | `0.0.0.0` | 模型代理监听地址；托管 APIG 运行时必须对外可达。 |
-| `harness_sidecar.model_proxy.port` | integer | `18787` | 模型代理监听端口。 |
+| `harness_sidecar.model_proxy.enabled` | boolean | 由组件计划决定 | 是否启用模型代理；显式设置时必须与 `harness sidecar resolve` 的计划一致。 |
+| `harness_sidecar.model_proxy.host` | string | `0.0.0.0` | 模型代理监听地址；使用托管 APIG 传输且模型代理已启用时必须对外可达。 |
+| `harness_sidecar.model_proxy.port` | integer | 已启用时为 `18787`，未启用时为 `0` | 模型代理监听端口。 |
 | `harness_sidecar.model_proxy.upstream_base_url_env` | string | `MODEL_AGENT_API_BASE` | 指向上游模型 Base URL 的运行时环境变量名。 |
 | `harness_sidecar.model_proxy.upstream_api_key_env` | string | `MODEL_AGENT_API_KEY` | 指向上游模型 API Key 的运行时环境变量名。 |
-| `harness_sidecar.model_proxy.prefer_configured_upstream_api_key` | boolean | `true` | 托管 APIG 运行时要求使用配置中的上游 API Key。 |
+| `harness_sidecar.model_proxy.prefer_configured_upstream_api_key` | boolean | 模型代理启用且使用托管 APIG 传输时为 `true` | 是否优先使用配置中的上游模型 API Key；托管 APIG 传输仅在模型代理已启用时要求为 `true`。 |
 | `harness_sidecar.model_proxy.compression_provider` | string | `noop` | 模型代理压缩提供方。 |
 | `harness_sidecar.model_proxy.fail_open` | boolean | 继承 `harness_sidecar.fail_open` | 模型代理故障时是否放行。 |
 | `harness_sidecar.mcp_gateway.enabled` | boolean | 由组件计划决定 | 是否启用 MCP 网关；启用 `mcp_resilience` 或 SQL 只读保护时会启用。 |
@@ -382,6 +382,8 @@ harness_sidecar:
 | `harness_sidecar.mcp_gateway.upstream_api_key_env` | string | `MCP_API_KEY` | 指向上游 MCP API Key 的运行时环境变量名。 |
 | `harness_sidecar.mcp_gateway.prefer_configured_upstream_api_key` | boolean | 启用托管 MCP 网关时为 `true` | 托管 APIG 运行时要求使用配置中的上游 MCP API Key。 |
 | `harness_sidecar.mcp_gateway.fail_open` | boolean | 继承 `harness_sidecar.fail_open` | MCP 网关故障时是否放行；托管 APIG 运行时要求保持 `false`。 |
+
+使用 `apig_runtime_port` 传输时，解析后的计划必须至少启用模型代理或 MCP 网关之一。若只启用 `mcp_resilience` 等工具类组件，模型代理可保持关闭，发布校验只检查 Sidecar 与 MCP 网关。
 
 可用组件如下。`mcp_resilience` 会自动带上 SQL 只读保护；`sql_readonly`、`browser`、`evaluation` 与 `shadow` 不是用户可直接选择的 `component_overrides` 项。
 

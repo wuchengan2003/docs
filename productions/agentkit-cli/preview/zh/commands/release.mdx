@@ -55,7 +55,7 @@ agentkit release config --name my-agent --force
 
 托管 Sidecar 构建必须使用当前 CLI 生成的 `.agentkit/Dockerfile`。如果项目使用用户自定义的根目录 `Dockerfile`，或旧版 `.agentkit/Dockerfile` 不符合当前托管构建结构，`release build` 会在构建前失败；重新运行 `agentkit release config --force` 可生成当前模板，执行前请先保留需要手动维护的 Dockerfile 修改。
 
-云端构建需要先将构建上下文上传到 TOS。CLI 会根据压缩包大小设置上传超时，最短 120 秒，最长 10 分钟，并在连接重置、临时解析失败或超时等可重试网络错误后自动重试一次。托管 Sidecar 构建还会为 TOS bucket 读取检查启用一次瞬时错误重试，并使用启用缓存的专用 Code Pipeline；该流水线按托管基础镜像摘要隔离，避免与普通无缓存构建或其他基础镜像复用缓存。
+云端构建需要先将构建上下文上传到 TOS。CLI 会根据压缩包大小设置上传超时，最短 120 秒，最长 10 分钟，并在连接重置、临时解析失败或超时等可重试网络错误后自动重试一次。托管 Sidecar 构建还会为 TOS bucket 读取检查启用一次瞬时错误重试，并使用启用缓存的专用 Code Pipeline；该流水线按托管基础镜像摘要隔离，避免与普通无缓存构建或其他基础镜像复用缓存。如果在 `infrastructure.code_pipeline.pipeline_id` 中显式指定流水线，托管 Sidecar 构建会先校验该流水线兼容当前构建契约，未找到或不兼容时直接失败，不会回退创建其他流水线。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
@@ -69,7 +69,7 @@ agentkit release build
 
 基于最新构建产物创建或更新运行时。
 
-对于托管 Harness Sidecar 发布，`release apply` 会在运行时进入 `Ready` 后等待 `key_auth` APIG 绑定可用，再执行 Sidecar、模型代理和 MCP 网关校验。如果发布接口返回结果不明确，但运行时已经进入发布中或新版本已就绪，CLI 会继续按已观察到的运行时状态完成流程，避免重复触发发布。
+对于托管 Harness Sidecar 发布，`release apply` 会在运行时进入 `Ready` 后等待 `key_auth` APIG 绑定可用，再执行 Sidecar、已启用的模型代理和所需 MCP 网关校验。如果发布接口返回结果不明确，但运行时已经进入发布中或新版本已就绪，CLI 会继续按已观察到的运行时状态完成流程，避免重复触发发布。
 
 当已有 Sidecar 运行时处于 `Error`，但当前版本仍是唯一可服务的 `Ready` 版本，且所有更新的版本都已经失败时，CLI 会保留当前服务版本并直接更新到新版本。若存在更新的非失败版本、多个可服务实例，或无法确认安全恢复条件，命令会失败并要求先显式处理该运行时。
 

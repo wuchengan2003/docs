@@ -335,7 +335,7 @@ The `runtime` block configures compute resources and the scaling policy.
 
 ## Harness Sidecar
 
-`harness_sidecar` enables Product Component capabilities for a managed Harness Runtime. When it is enabled, `release` uses a platform-provided managed Sidecar base image, injects the Sidecar runtime configuration during release, and verifies the Sidecar, model proxy, and required MCP gateway after the runtime becomes ready. When this block is enabled, set at least one selectable component to `true` in `component_overrides`.
+`harness_sidecar` enables Product Component capabilities for a managed Harness Runtime. When it is enabled, `release` uses a platform-provided managed Sidecar base image, injects the Sidecar runtime configuration during release, and verifies the Sidecar, the enabled model proxy, and the required MCP gateway after the runtime becomes ready. When this block is enabled, set at least one selectable component to `true` in `component_overrides`.
 
 <Warning>
 Managed Harness Sidecar currently supports only Volcengine `cn-shanghai`, CPython 3.12, `linux/amd64`, and exactly one runtime instance, so both `runtime.min_instance` and `runtime.max_instance` must be `1`. It also requires the release environment to provide the platform-managed Sidecar base image configuration; release fails in ordinary local environments where that configuration is unavailable. Sidecar releases must use the default `key_auth` gateway auth and cannot be combined with `custom_jwt` or frontend BFF-derived auth.
@@ -367,12 +367,12 @@ harness_sidecar:
 | `harness_sidecar.component_overrides` | object | `{}` | Selectable component switches. Supported keys are `context_engine`, `compressor`, `verifier`, `long_run_control`, and `mcp_resilience`; values must be boolean. At least one value must be `true` when Sidecar is enabled. |
 | `harness_sidecar.fail_open` | boolean | `false` | Whether to pass traffic through when Sidecar fails. Managed APIG runtime requires this to stay `false`. |
 | `harness_sidecar.transport` | `apig_runtime_port` \| `local` | `apig_runtime_port` | How Sidecar reaches the model proxy and MCP gateway. Managed release uses `apig_runtime_port`. |
-| `harness_sidecar.model_proxy.enabled` | boolean | `true` | Whether to enable the model proxy. Managed APIG runtime requires this to stay `true`. |
-| `harness_sidecar.model_proxy.host` | string | `0.0.0.0` | Model proxy bind host. Managed APIG runtime requires an externally reachable host. |
-| `harness_sidecar.model_proxy.port` | integer | `18787` | Model proxy bind port. |
+| `harness_sidecar.model_proxy.enabled` | boolean | Derived from the component plan | Whether to enable the model proxy. When set explicitly, it must match the plan from `harness sidecar resolve`. |
+| `harness_sidecar.model_proxy.host` | string | `0.0.0.0` | Model proxy bind host. With managed APIG transport, it must be externally reachable when the model proxy is enabled. |
+| `harness_sidecar.model_proxy.port` | integer | `18787` when enabled, otherwise `0` | Model proxy bind port. |
 | `harness_sidecar.model_proxy.upstream_base_url_env` | string | `MODEL_AGENT_API_BASE` | Runtime environment variable name that points to the upstream model base URL. |
 | `harness_sidecar.model_proxy.upstream_api_key_env` | string | `MODEL_AGENT_API_KEY` | Runtime environment variable name that points to the upstream model API key. |
-| `harness_sidecar.model_proxy.prefer_configured_upstream_api_key` | boolean | `true` | Managed APIG runtime requires the configured upstream API key. |
+| `harness_sidecar.model_proxy.prefer_configured_upstream_api_key` | boolean | `true` when the model proxy is enabled with managed APIG transport | Whether to prefer the configured upstream model API key. Managed APIG transport requires this only when the model proxy is enabled. |
 | `harness_sidecar.model_proxy.compression_provider` | string | `noop` | Compression provider used by the model proxy. |
 | `harness_sidecar.model_proxy.fail_open` | boolean | Inherits `harness_sidecar.fail_open` | Whether to pass traffic through when the model proxy fails. |
 | `harness_sidecar.mcp_gateway.enabled` | boolean | Derived from the component plan | Whether to enable the MCP gateway. It is enabled when `mcp_resilience` or SQL read-only protection is active. |
@@ -382,6 +382,8 @@ harness_sidecar:
 | `harness_sidecar.mcp_gateway.upstream_api_key_env` | string | `MCP_API_KEY` | Runtime environment variable name that points to the upstream MCP API key. |
 | `harness_sidecar.mcp_gateway.prefer_configured_upstream_api_key` | boolean | `true` when managed MCP gateway is enabled | Managed APIG runtime requires the configured upstream MCP API key. |
 | `harness_sidecar.mcp_gateway.fail_open` | boolean | Inherits `harness_sidecar.fail_open` | Whether to pass traffic through when the MCP gateway fails. Managed APIG runtime requires this to stay `false`. |
+
+With `apig_runtime_port` transport, the resolved plan must enable at least one of the model proxy or MCP gateway. For tool-only components such as `mcp_resilience`, the model proxy can stay disabled, and release readiness checks only validate the Sidecar and MCP gateway.
 
 Available components are listed below. `mcp_resilience` automatically includes SQL read-only protection; `sql_readonly`, `browser`, `evaluation`, and `shadow` are not directly selectable `component_overrides`.
 
