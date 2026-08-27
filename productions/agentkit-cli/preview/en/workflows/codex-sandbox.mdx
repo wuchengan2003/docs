@@ -40,6 +40,7 @@ Creating a sandbox tool allocates cloud compute resources and may incur charges.
     ```
 
     Use `--auth-file` or `--codex-home` to select another credential source. Set the provider to `claude` to inject a local Claude subscription instead.
+    With `--provider codex`, the CLI writes the Codex OAuth config inside the sandbox session; later `codex` commands in the same session use that login config and default model.
   </Step>
 
   <Step title="Upload the project and open a terminal">

@@ -6,6 +6,13 @@ title: "更新日志"
 
 当前没有未发布的公开变更。
 
+## 0.52.5 - 2026-08-20
+
+- [`config --init`](/productions/agentkit-cli/preview/zh/commands/config#config) 现在会把同一条命令中的项目级参数写入新建的 `agentkit.yaml`，便于在非交互环境中一次性生成完整生命周期配置。
+- [沙箱命令](/productions/agentkit-cli/preview/zh/commands/sandbox#模型环境变量)统一注入 Codex、OpenCode 与 `MODEL_AGENT_*` 模型环境变量，并在已有 `CodeEnv` 会话中更新模型配置时写入会话内配置文件，减少不同编码智能体之间的配置差异。
+- [`sandbox codex-login`](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-codex-login) 会在沙箱会话内写入 Codex OAuth 配置，并使用 `gpt-5.5` 作为订阅登录的默认模型。
+- 交互式 [`config`](/productions/agentkit-cli/preview/zh/commands/config#config) 向导会根据终端宽度收敛选项表格，减少窄终端中的换行溢出。
+
 ## 0.52.4 - 2026-08-19
 
 - [`memory create`](/productions/agentkit-cli/preview/zh/commands/memory#memory-create) 在 BytePlus 上默认创建 `VIKINGDB_MEMORY` 记忆库，并在显式或通过 `--json` 传入 `MEM0` 时提前失败；Volcengine 默认仍为 `MEM0`。

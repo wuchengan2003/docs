@@ -140,6 +140,23 @@ agentkit sandbox config --list
 | `self-host-runtime-timeout-seconds` | integer | `1200` | 自托管 Runtime 请求超时时间。 |
 | `self-host-runtime-api-key-name` | string | `Authorization` | 自托管 Runtime API Key 请求头名称。 |
 
+## 模型环境变量
+
+`sandbox create` 和 `sandbox exec` 的模型参数会转换为多组环境变量，供 Codex、OpenCode 和读取 `MODEL_AGENT_*` 的运行时或工具共用。
+
+| 输入 | 注入的环境变量 |
+| --- | --- |
+| `--model-provider <provider>` 或 `model-provider` | `AGENTKIT_SANDBOX_MODEL_PROVIDER` |
+| `--model-name <name>` 或 `model-name` | `CODEX_MODEL`、`OPENCODE_MODEL`、`MODEL_AGENT_NAME` |
+| `--model-api-key <key>` 或 `model-api-key` | `CODEX_API_KEY`、`OPENCODE_API_KEY`、`MODEL_AGENT_API_KEY` |
+| `--model-base-url <url>` 或 `model-base-url` | `CODEX_BASE_URL`、`OPENCODE_BASE_URL`、`MODEL_BASE_URL`、`MODEL_AGENT_BASE_URL` |
+
+若 `--model-base-url` 指向非内置模型端点，需要同时传入 `--model-provider`。对于已有的 `CodeEnv` 会话，`sandbox exec` 中显式传入的模型名称、API Key 或 Base URL 会同步更新会话内的 `/home/gem/.env`、Codex 配置和 OpenCode 配置，后续终端可以复用同一组设置。
+
+<Note>
+生成的 Codex 配置会写入沙箱会话内的 `/home/gem/.codex/config.toml`。通用模型参数不会自动生成 `ANTHROPIC_*` 变量，也不再通过 `CODEX_CONFIG_TOML` 或 `CODEX_MODEL_CATALOG_JSON` 环境变量传递生成配置；如需自定义 Codex 配置，请在会话内编辑该配置文件，或使用 `sandbox codex-login` 重新写入订阅登录配置。
+</Note>
+
 ## sandbox create
 
 创建沙箱工具。创建完成后，CLI 会等待工具进入 `Ready` 状态，并把工具 ID 与名称写入本地沙箱配置。
@@ -446,6 +463,8 @@ agentkit sandbox web --session-id dev --no-open
 <Warning>
 `sandbox codex-login` 和 `sandbox model-login` 会把本地订阅凭据复制到远端沙箱会话。仅在受信任的沙箱和专用会话中使用，避免共享该会话；使用完成后删除会话或沙箱工具。
 </Warning>
+
+使用 `--provider codex` 时，CLI 会在沙箱会话内写入 `/home/gem/.codex/config.toml`，配置 OAuth 登录使用的 `codex_login` 模型提供方，并把默认模型 `gpt-5.5` 同步到 `CODEX_MODEL`、`OPENCODE_MODEL` 与 `MODEL_AGENT_NAME`。本地 API Key 不会随订阅凭据注入。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |

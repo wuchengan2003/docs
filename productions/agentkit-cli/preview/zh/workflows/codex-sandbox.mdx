@@ -40,6 +40,7 @@ AgentKit 沙箱提供云端开发环境，可在其中使用 Codex 等编码智�
     ```
 
     需要使用其他凭据文件时，传入 `--auth-file` 或 `--codex-home`。将 provider 改为 `claude`，可注入本地 Claude 订阅凭据。
+    使用 `--provider codex` 时，CLI 会在沙箱会话内写入 Codex OAuth 配置；后续在同一会话中执行 `codex` 会使用该登录配置与默认模型。
   </Step>
 
   <Step title="上传项目并进入终端">

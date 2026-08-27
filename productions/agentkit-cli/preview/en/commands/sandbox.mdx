@@ -140,6 +140,23 @@ Supported config keys are listed below.
 | `self-host-runtime-timeout-seconds` | integer | `1200` | Self-host Runtime request timeout. |
 | `self-host-runtime-api-key-name` | string | `Authorization` | Self-host Runtime API key request header name. |
 
+## Model Environment Variables
+
+Model options for `sandbox create` and `sandbox exec` are translated into multiple environment variable names so Codex, OpenCode, and runtimes or tools that read `MODEL_AGENT_*` can share the same settings.
+
+| Input | Injected environment variables |
+| --- | --- |
+| `--model-provider <provider>` or `model-provider` | `AGENTKIT_SANDBOX_MODEL_PROVIDER` |
+| `--model-name <name>` or `model-name` | `CODEX_MODEL`, `OPENCODE_MODEL`, `MODEL_AGENT_NAME` |
+| `--model-api-key <key>` or `model-api-key` | `CODEX_API_KEY`, `OPENCODE_API_KEY`, `MODEL_AGENT_API_KEY` |
+| `--model-base-url <url>` or `model-base-url` | `CODEX_BASE_URL`, `OPENCODE_BASE_URL`, `MODEL_BASE_URL`, `MODEL_AGENT_BASE_URL` |
+
+When `--model-base-url` points to a non-built-in model endpoint, pass `--model-provider` as well. For an existing `CodeEnv` session, model name, API key, or base URL values passed explicitly to `sandbox exec` update `/home/gem/.env`, Codex config, and OpenCode config inside the session, so later terminals reuse the same settings.
+
+<Note>
+Generated Codex config is written to `/home/gem/.codex/config.toml` inside the sandbox session. General model options no longer generate `ANTHROPIC_*` variables and no longer pass generated config through `CODEX_CONFIG_TOML` or `CODEX_MODEL_CATALOG_JSON`; to customize Codex config, edit that file inside the session or run `sandbox codex-login` again to rewrite the subscription login config.
+</Note>
+
 ## sandbox create
 
 Create a sandbox tool. After creation, the CLI waits until the tool reaches `Ready`, then stores the tool id and name in local sandbox config.
@@ -446,6 +463,8 @@ Inject local Codex or Claude subscription credentials into a sandbox session. `m
 <Warning>
 `sandbox codex-login` and `sandbox model-login` copy local subscription credentials into a remote sandbox session. Use them only with a trusted sandbox and a dedicated session, and avoid sharing that session. Delete the session or sandbox tool when finished.
 </Warning>
+
+With `--provider codex`, the CLI writes `/home/gem/.codex/config.toml` inside the sandbox session, configures the `codex_login` model provider for OAuth login, and sets the default model `gpt-5.5` through `CODEX_MODEL`, `OPENCODE_MODEL`, and `MODEL_AGENT_NAME`. Local API keys are not injected with subscription credentials.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
