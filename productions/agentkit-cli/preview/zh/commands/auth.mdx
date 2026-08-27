@@ -21,8 +21,30 @@ agentkit auth login
 agentkit auth login --identity-only <sso-address>
 ```
 
+### 登录地址与发现文档
+
+传入 `[address]` 时，CLI 会从该地址读取 `/.well-known/agentkit-cli` 登录发现文档。地址可以省略 `https://`；正式远程地址必须使用 HTTPS，只有本地测试地址可以使用 `http://localhost`、`http://127.0.0.1` 或 `http://[::1]`。地址不能包含用户名、密码、查询参数或 fragment。使用共享登录域名时，可以在域名后追加一个租户路径，例如 `https://login.example.com/team-a`；该路径必须是单段小写 slug，不能包含多级路径、路径遍历或编码后的路径分隔符。远程发现文档必须直接返回 JSON 对象，不能依赖重定向，响应体大小不能超过 64 KiB。
+
+自定义租户地址的发现文档只能使用以下字段：
+
+| 字段 | 说明 | 默认值 |
+| --- | --- | --- |
+| `issuer` | UserPool issuer，必须是官方 UserPool 的 HTTPS origin。 | 必填 |
+| `client_id` | 公开 OAuth client id。 | 必填 |
+| `role_trn` | STS role TRN；普通登录必填，身份仅登录可省略。 | — |
+| `provider_trn` | IAM OIDC provider TRN；与 `role_trn` 同时提供或同时省略。 | — |
+| `cloud_provider` | 云厂商：`volcengine` 或 `byteplus`，必须与 `issuer` 匹配。 | 必填 |
+| `region` | 云区域，必须与 `issuer` 中的区域一致。 | 必填 |
+| `transport` | 使用 STS 坐标时必须为 `sts`。 | — |
+| `scope` | OAuth scope 列表，必须包含 `openid`。 | `openid profile email offline_access` |
+
+```bash
+agentkit auth login https://login.example.com/team-a
+agentkit auth login --identity-only ./local-discovery.json
+```
+
 <Note>
-  身份仅登录不会提供控制面权限。需要解析 Runtime、管理资源或查询项目时，请另外配置 AK/SK，或使用普通 `agentkit login` 获取 STS 凭据。
+  身份仅登录不会提供控制面权限。需要解析 Runtime、管理资源或查询项目时，请另外配置 AK/SK，或使用普通 `agentkit login` 获取 STS 凭据。通过远程发现文档登录时，CLI 只会在浏览器登录和后续凭据处理成功后保存 profile。
 </Note>
 
 ## auth logout
@@ -95,6 +117,8 @@ agentkit auth profile list
 agentkit auth profile show my-profile
 ```
 
+`auth admin` 子命令需要能管理 Identity、IAM 和 TOS 资源的云端凭证。可以使用 AK/SK，也可以使用当前 CLI SSO profile 中仍然有效的 STS 凭据。为避免管理操作被项目或全局端点覆盖影响，`auth admin` 会使用内置服务端点。
+
 ## auth admin doctor
 
 以只读方式检查账号能否完成 CLI SSO 接入，包括身份资源权限与凭证托管前置条件。检查未通过时命令返回非零退出码，并输出修复建议。
@@ -165,7 +189,7 @@ agentkit auth admin provision --user-pool <user-pool-id> --account <account-id>
 | `--idp-client-id <id>` | 上游身份提供方 Client ID；非交互模式下与 `--idp-secret` 一同使用 | — |
 | `--idp-secret <secret>` | 上游身份提供方 Client Secret | — |
 | `--bucket <bucket>` | 托管登录发现文档的 TOS bucket | `agentkit-cli-<account-id>` |
-| `--domain <domain>` | 自定义 HTTPS 登录域名 | TOS bucket 的 HTTPS 地址 |
+| `--domain <domain>` | 已完成 CNAME 与 HTTPS 证书配置的自定义登录域名；只填写主机名，不包含协议、端口或路径。 | TOS bucket 的 HTTPS 地址 |
 | `--client-name <name>` | 公开 CLI 用户池客户端名称 | CLI 内置名称 |
 | `--provider-name <name>` | IAM OIDC provider 名称 | CLI 内置名称 |
 | `--role-name <name>` | STS 角色名称 | CLI 内置名称 |
@@ -181,12 +205,16 @@ agentkit auth admin sso-setup --yes \
   --bucket <discovery-bucket>
 ```
 
+<Note>
+传入 `--domain` 时，命令会在发布后通过该 HTTPS 域名读取发现文档并校验内容。请先完成 CNAME 和证书配置；未通过公开访问校验时，命令不会把自定义域名作为最终登录地址输出。
+</Note>
+
 ## auth admin publish
 
-为已有用户池创建或复用 CLI 登录资源，并把 `/.well-known/agentkit-cli` 发现文档发布到指定 TOS bucket。也可以同时传入已有 `--issuer`、`--client-id`、`--role-trn` 与 `--provider-trn` 进入仅发布模式，避免重新创建身份和 IAM 资源。
+为已有用户池创建或复用 CLI 登录资源，并把 `/.well-known/agentkit-cli` 发现文档发布到指定 TOS bucket。也可以传入已有的 OIDC 与 IAM 坐标，仅发布发现文档而不重新创建 CLI 客户端、OIDC provider 或角色。
 
 <Warning>
-该命令会修改身份和 IAM 资源，并向指定 bucket 写入公开登录配置。确认 bucket、账号和用户池均属于目标环境。
+未传入显式坐标时，该命令会修改身份和 IAM 资源，并向指定 bucket 写入公开登录配置。确认 bucket、账号、用户池和显式坐标均属于目标环境；使用 `--domain` 前还需完成 CNAME 与 HTTPS 证书配置。
 </Warning>
 
 | 标志/参数 | 说明 | 默认值 |
@@ -195,11 +223,11 @@ agentkit auth admin sso-setup --yes \
 | `--bucket <bucket>` | 托管发现文档的 TOS bucket（必填） | — |
 | `--account <account>` | 预期的账号 ID；当前凭证不属于该账号时拒绝继续 | — |
 | `--region <region>` | 云区域 | 当前云厂商的默认区域 |
-| `--domain <domain>` | 已配置 CNAME 与 HTTPS 证书的自定义登录域名。 | TOS bucket 的 HTTPS 地址 |
-| `--issuer <url>` | 已有 OIDC issuer；与 `--client-id`、`--role-trn`、`--provider-trn` 同时传入时启用仅发布模式。 | — |
-| `--client-id <id>` | 已有公开 OIDC client id；仅发布模式必填。 | — |
-| `--role-trn <trn>` | 目标账号下已有 STS role TRN；仅发布模式必填。 | — |
-| `--provider-trn <trn>` | 目标账号下已有 IAM OIDC provider TRN；仅发布模式必填。 | — |
+| `--domain <domain>` | 已完成 CNAME 与 HTTPS 证书配置的自定义登录域名；输出会包含需要指向的 TOS 域名。 | TOS bucket 的 HTTPS 地址 |
+| `--issuer <url>` | 已有 OIDC issuer；与 `--client-id`、`--role-trn`、`--provider-trn` 同时传入后进入仅发布模式。 | — |
+| `--client-id <id>` | 已有公开 OAuth client id；仅发布模式必填。 | — |
+| `--role-trn <trn>` | 已有目标账号 STS role TRN；仅发布模式必填，且必须属于当前鉴权账号。 | — |
+| `--provider-trn <trn>` | 已有目标账号 IAM OIDC provider TRN；仅发布模式必填，且必须属于当前鉴权账号。 | — |
 
 ```bash
 agentkit auth admin publish \
@@ -210,8 +238,12 @@ agentkit auth admin publish \
 agentkit auth admin publish \
   --user-pool <user-pool-id> \
   --bucket <discovery-bucket> \
-  --issuer https://issuer.example.com \
+  --domain login.example.com \
+  --issuer https://userpool-<id>.userpool.auth.id.cn-beijing.volces.com \
   --client-id <client-id> \
   --role-trn trn:iam::<account-id>:role/<role-name> \
-  --provider-trn trn:iam::<account-id>:oidc-provider/<provider-name>
+  --provider-trn trn:iam::<account-id>:oidc-provider/<provider-name> \
+  --account <account-id>
 ```
+
+仅发布模式要求 `--issuer`、`--client-id`、`--role-trn` 和 `--provider-trn` 四个参数同时提供。`--issuer` 必须是 HTTPS URL，不能包含用户名、密码、查询参数或 fragment；`--role-trn` 与 `--provider-trn` 必须属于当前鉴权账号。`--bucket` 必须是 3 到 63 个小写字母、数字或连字符组成的 TOS bucket 名称，并以字母或数字开头和结尾。

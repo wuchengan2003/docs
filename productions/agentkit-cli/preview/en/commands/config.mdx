@@ -84,5 +84,5 @@ agentkit config --global --set defaults.cloud_provider=byteplus
 ```
 
 <Note>
-Commands resolve environment variables first, then project config and user-wide config. Every product command also accepts global `--provider volcengine|byteplus` to override the cloud provider for that command.
+Commands resolve environment variables first, then project config and user-wide config. Every product command also accepts global `--provider volcengine|byteplus` to override the cloud provider for that command. Region values must be lowercase, hyphen-separated region codes such as `cn-beijing` or `ap-southeast-1`; values containing paths, query strings, uppercase letters, or non-region hostnames are rejected.
 </Note>

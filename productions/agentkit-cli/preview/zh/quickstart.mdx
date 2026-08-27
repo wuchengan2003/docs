@@ -26,8 +26,12 @@ agentkit --help
 ```
 
 <Tip>
-  二进制安装在 `~/.agentkit`，并在 `~/.local/bin` 下创建 `agentkit`、`ak` 两个软链接。安装目录还包含 `templates/`、`lifecycle-templates/`、`harness/`、`skills/`、`im-proxies/` 与 `vendor/` 等运行所需资源；手动移动或解压独立发行包时，请保留这些目录与 `ak` 在同一安装目录。若提示命令未找到，请将 `~/.local/bin` 加入 PATH。需要安装指定版本时，设置环境变量 `AGENTKIT_VERSION`（默认 `latest`）。
+  二进制安装在 `AGENTKIT_HOME`（默认 `~/.agentkit`），并在 `AGENTKIT_BIN_DIR`（默认 `~/.local/bin`）下创建 `agentkit`、`ak` 两个兼容链接。自定义这两个目录时必须使用绝对路径，且两者不能指向同一目录。安装目录还包含 `templates/`、`lifecycle-templates/`、`harness/`、`skills/`、`im-proxies/` 与 `vendor/` 等运行所需资源；手动移动或解压独立发行包时，请保留这些目录与 `ak` 在同一安装目录。需要安装指定版本时，设置环境变量 `AGENTKIT_VERSION`（默认 `latest`）。若当前终端仍提示命令不存在，请重新打开终端或按安装脚本输出加载 shell 配置。
 </Tip>
+
+<Note>
+  安装脚本会在 zsh、bash 或 fish 的启动配置中写入受管理的 `agentkit` 与 `ak` 调度入口，使独立 CLI 在 shell 重新加载后优先于 pip、pipx、venv 或 Conda 中同名的 Python 命令。若当前环境中已有同名 Python 入口，安装脚本会先保留原入口并写入可恢复的 shim，卸载脚本会在仍由安装脚本管理时恢复原入口。设置 `AGENTKIT_NO_MODIFY_PATH=1` 可跳过自动修改 shell 配置，脚本会打印需要手动加入的配置块。
+</Note>
 
 ## 鉴权
 

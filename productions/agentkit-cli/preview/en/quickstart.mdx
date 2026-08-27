@@ -26,8 +26,12 @@ agentkit --help
 ```
 
 <Tip>
-  The binary installs to `~/.agentkit`, with `agentkit` and `ak` symlinks in `~/.local/bin`. The install directory also contains required runtime assets such as `templates/`, `lifecycle-templates/`, `harness/`, `skills/`, `im-proxies/`, and `vendor/`; when manually moving or extracting a standalone release, keep these directories beside `ak` in the same install directory. If the command isn't found, add `~/.local/bin` to your PATH. To install a specific version, set the `AGENTKIT_VERSION` environment variable (defaults to `latest`).
+  The binary installs to `AGENTKIT_HOME` (`~/.agentkit` by default), with compatibility links for `agentkit` and `ak` in `AGENTKIT_BIN_DIR` (`~/.local/bin` by default). When overriding these directories, use absolute paths and keep them separate. The install directory also contains required runtime assets such as `templates/`, `lifecycle-templates/`, `harness/`, `skills/`, `im-proxies/`, and `vendor/`; when manually moving or extracting a standalone release, keep these directories beside `ak` in the same install directory. To install a specific version, set the `AGENTKIT_VERSION` environment variable (defaults to `latest`). If the current terminal still cannot find the command, reopen the terminal or source the shell configuration printed by the installer.
 </Tip>
+
+<Note>
+  The install script writes managed `agentkit` and `ak` dispatch entries into the zsh, bash, or fish startup configuration so the standalone CLI takes priority over Python commands with the same name from pip, pipx, venv, or Conda after the shell reloads. If the current environment already has a Python `agentkit` command, the installer preserves it and writes a restorable shim; the uninstall script restores that entry when it is still managed by the installer. Set `AGENTKIT_NO_MODIFY_PATH=1` to skip automatic shell configuration changes and print the block to add manually.
+</Note>
 
 ## Authentication
 

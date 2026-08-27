@@ -21,8 +21,30 @@ agentkit auth login
 agentkit auth login --identity-only <sso-address>
 ```
 
+### Login addresses and discovery documents
+
+When `[address]` is provided, the CLI reads the login discovery document from `/.well-known/agentkit-cli` under that address. You may omit `https://`; production remote addresses must use HTTPS, while only local test addresses may use `http://localhost`, `http://127.0.0.1`, or `http://[::1]`. The address must not contain a username, password, query string, or fragment. For a shared login domain, append one tenant path segment, such as `https://login.example.com/team-a`; the path must be a single lowercase slug, without nested paths, traversal, or encoded path separators. Remote discovery must return a JSON object directly, without redirects, and the response body must not exceed 64 KiB.
+
+Custom tenant addresses allow only these discovery-document fields:
+
+| Field | Description | Default |
+| --- | --- | --- |
+| `issuer` | UserPool issuer. Must be the HTTPS origin of an official UserPool. | Required |
+| `client_id` | Public OAuth client id. | Required |
+| `role_trn` | STS role TRN. Required for regular login; optional for identity-only login. | — |
+| `provider_trn` | IAM OIDC provider TRN. Provide it together with `role_trn`, or omit both. | — |
+| `cloud_provider` | Cloud provider: `volcengine` or `byteplus`; must match `issuer`. | Required |
+| `region` | Cloud region; must match the region in `issuer`. | Required |
+| `transport` | Must be `sts` when STS coordinates are present. | — |
+| `scope` | OAuth scope list. Must include `openid`. | `openid profile email offline_access` |
+
+```bash
+agentkit auth login https://login.example.com/team-a
+agentkit auth login --identity-only ./local-discovery.json
+```
+
 <Note>
-  Identity-only login does not provide control-plane permissions. To resolve Runtimes, manage resources, or query projects, configure AK/SK separately or use regular `agentkit login` to obtain STS credentials.
+  Identity-only login does not provide control-plane permissions. To resolve Runtimes, manage resources, or query projects, configure AK/SK separately or use regular `agentkit login` to obtain STS credentials. When logging in through a remote discovery document, the CLI saves the discovered profile only after browser login and subsequent credential handling succeed.
 </Note>
 
 ## auth logout
@@ -95,6 +117,8 @@ Show a profile's coordinates.
 agentkit auth profile show my-profile
 ```
 
+`auth admin` subcommands require cloud credentials that can manage Identity, IAM, and TOS resources. You can provide AK/SK credentials, or use valid STS credentials from the current CLI SSO profile. To keep privileged setup predictable, `auth admin` uses built-in service endpoints instead of project or user-wide endpoint overrides.
+
 ## auth admin doctor
 
 Run read-only checks that determine whether the account is ready for CLI SSO setup, including identity permissions and credential-hosting prerequisites. Failed checks produce a nonzero exit code and remediation guidance.
@@ -165,7 +189,7 @@ This command creates or modifies identity, IAM, and TOS resources and publishes 
 | `--idp-client-id <id>` | Upstream identity provider client ID; in non-interactive mode, use it with `--idp-secret` | — |
 | `--idp-secret <secret>` | Upstream identity provider client secret | — |
 | `--bucket <bucket>` | TOS bucket that hosts the login discovery document | `agentkit-cli-<account-id>` |
-| `--domain <domain>` | Custom HTTPS login domain | HTTPS address of the TOS bucket |
+| `--domain <domain>` | Custom login domain with CNAME and HTTPS certificate already configured. Pass only the hostname, without scheme, port, or path. | HTTPS address of the TOS bucket |
 | `--client-name <name>` | Public CLI user-pool client name | Built-in CLI name |
 | `--provider-name <name>` | IAM OIDC provider name | Built-in CLI name |
 | `--role-name <name>` | STS role name | Built-in CLI name |
@@ -181,12 +205,16 @@ agentkit auth admin sso-setup --yes \
   --bucket <discovery-bucket>
 ```
 
+<Note>
+When `--domain` is set, the command reads the discovery document back through that HTTPS domain and verifies its content after publishing. Configure the CNAME and certificate first; if public verification fails, the command does not print the custom domain as the final login address.
+</Note>
+
 ## auth admin publish
 
-Create or reuse the CLI login resources for an existing user pool and publish the `/.well-known/agentkit-cli` discovery document to a selected TOS bucket. You can also pass existing `--issuer`, `--client-id`, `--role-trn`, and `--provider-trn` together to use publish-only mode without creating identity or IAM resources.
+Create or reuse the CLI login resources for an existing user pool and publish the `/.well-known/agentkit-cli` discovery document to a selected TOS bucket. You can also pass existing OIDC and IAM coordinates to publish only the discovery document, without creating the CLI client, OIDC provider, or role again.
 
 <Warning>
-This command modifies identity and IAM resources and writes public login configuration to the selected bucket. Confirm that the bucket, account, and user pool belong to the target environment.
+Without explicit coordinates, this command modifies identity and IAM resources and writes public login configuration to the selected bucket. Confirm that the bucket, account, user pool, and explicit coordinates all belong to the target environment; configure the CNAME and HTTPS certificate before using `--domain`.
 </Warning>
 
 | Flag / Argument | Description | Default |
@@ -195,11 +223,11 @@ This command modifies identity and IAM resources and writes public login configu
 | `--bucket <bucket>` | TOS bucket that hosts the discovery document (required) | — |
 | `--account <account>` | Expected account ID; refuse to continue when the active credentials belong to another account | — |
 | `--region <region>` | Cloud region | Current provider's default region |
-| `--domain <domain>` | Custom login hostname with CNAME and HTTPS already configured. | TOS bucket HTTPS address |
-| `--issuer <url>` | Existing OIDC issuer; enables publish-only mode when passed together with `--client-id`, `--role-trn`, and `--provider-trn`. | — |
-| `--client-id <id>` | Existing public OIDC client id; required in publish-only mode. | — |
-| `--role-trn <trn>` | Existing target-account STS role TRN; required in publish-only mode. | — |
-| `--provider-trn <trn>` | Existing target-account IAM OIDC provider TRN; required in publish-only mode. | — |
+| `--domain <domain>` | Custom login domain with CNAME and HTTPS certificate already configured. The output includes the TOS domain that the CNAME should point to. | HTTPS address of the TOS bucket |
+| `--issuer <url>` | Existing OIDC issuer. Passing it together with `--client-id`, `--role-trn`, and `--provider-trn` enables publish-only mode. | — |
+| `--client-id <id>` | Existing public OAuth client id; required in publish-only mode. | — |
+| `--role-trn <trn>` | Existing target-account STS role TRN; required in publish-only mode and must belong to the authenticated account. | — |
+| `--provider-trn <trn>` | Existing target-account IAM OIDC provider TRN; required in publish-only mode and must belong to the authenticated account. | — |
 
 ```bash
 agentkit auth admin publish \
@@ -210,8 +238,12 @@ agentkit auth admin publish \
 agentkit auth admin publish \
   --user-pool <user-pool-id> \
   --bucket <discovery-bucket> \
-  --issuer https://issuer.example.com \
+  --domain login.example.com \
+  --issuer https://userpool-<id>.userpool.auth.id.cn-beijing.volces.com \
   --client-id <client-id> \
   --role-trn trn:iam::<account-id>:role/<role-name> \
-  --provider-trn trn:iam::<account-id>:oidc-provider/<provider-name>
+  --provider-trn trn:iam::<account-id>:oidc-provider/<provider-name> \
+  --account <account-id>
 ```
+
+Publish-only mode requires `--issuer`, `--client-id`, `--role-trn`, and `--provider-trn` together. `--issuer` must be an HTTPS URL without username, password, query string, or fragment; `--role-trn` and `--provider-trn` must belong to the currently authenticated account. `--bucket` must be a TOS bucket name with 3 to 63 lowercase letters, digits, or hyphens, starting and ending with a letter or digit.
