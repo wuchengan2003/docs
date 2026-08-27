@@ -73,13 +73,24 @@ runner = Runner(agent=root_agent, app_name=APP_NAME)
 
 ### 写入：`add_session_to_memory`
 
-会话结束或达到某个节点时，调用异步方法 `add_session_to_memory` 把会话持久化。`LongTermMemory` 会先过滤事件（只保留用户文本事件以提升检索质量），再交给后端写入。
+会话结束或达到某个节点时，调用异步方法 `add_session_to_memory` 把会话持久化。`LongTermMemory` 会根据自动保存策略过滤事件，默认只保留用户文本事件以提升检索质量；你也可以通过 `auto_save_memory_policy` 参数自定义过滤规则，再交给后端写入。
 
 ```python
 completed_session = await runner.session_service.get_session(
     app_name=APP_NAME, user_id=USER_ID, session_id=SESSION_ID
 )
 await ltm.add_session_to_memory(completed_session)
+```
+
+`add_session_to_memory` 接受可选的 `auto_save_memory_policy` 关键字参数，用于覆盖默认过滤策略：
+
+```python
+from veadk.memory import MemoryAutoSavePolicy
+
+await ltm.add_session_to_memory(
+    completed_session,
+    auto_save_memory_policy=MemoryAutoSavePolicy(preset="all"),
+)
 ```
 
 ### 检索：`search_memory`
@@ -115,6 +126,80 @@ agent = Agent(
 ```
 
 为避免索引被频繁初始化，VeADK 提供 `MIN_MESSAGES_THRESHOLD` 与 `MIN_TIME_THRESHOLD` 两个环境变量自定义保存周期：默认在累计 10 条 event 或间隔 60 秒时触发保存；此外，当切换 `session_id` 并发起新问答时，VeADK 会自动把上一个会话写入长期记忆。
+
+自动保存采用增量写入：每次触发保存时只持久化自上次保存以来新增的事件，而非整个会话。如果两次保存之间没有新事件，则跳过写入。
+
+### 控制保存内容：`auto_save_memory_policy`
+
+`Agent` 接受 `auto_save_memory_policy` 参数，用于控制自动保存时哪些事件会被写入长期记忆。该参数同样作为 `auto_save_memory_policy` 关键字参数传递给 `add_session_to_memory`。
+
+参数类型为 `MemoryAutoSavePolicyInput`，接受以下形式之一：
+
+- 字符串预设值：`"default"`、`"all"` 或 `"custom"`；
+- `MemoryAutoSavePolicy` 实例；
+- 与 `MemoryAutoSavePolicy` 字段同构的 `dict`；
+- `None`（等效于 `"default"`）。
+
+| 预设 | 保存内容 |
+| :--- | :--- |
+| `"default"` | 仅保存用户角色的文本事件（默认值）。`openviking` 后端因自身限制会同时包含助手角色。 |
+| `"all"` | 保存所有角色、所有事件类型的全部内容，包括思考内容和空文本。 |
+| `"custom"` | 以空策略为起点，仅按显式指定的字段过滤。 |
+
+使用预设字符串：
+
+```python
+from veadk import Agent
+from veadk.memory.long_term_memory import LongTermMemory
+
+agent = Agent(
+    name="ltm_agent",
+    auto_save_session=True,
+    auto_save_memory_policy="all",
+    long_term_memory=LongTermMemory(backend="viking", app_name="ltm_demo"),
+)
+```
+
+使用 `MemoryAutoSavePolicy` 实例进行精细控制：
+
+```python
+from veadk import Agent
+from veadk.memory import MemoryAutoSavePolicy
+from veadk.memory.long_term_memory import LongTermMemory
+
+agent = Agent(
+    name="ltm_agent",
+    auto_save_session=True,
+    auto_save_memory_policy=MemoryAutoSavePolicy(
+        preset="custom",
+        include_roles=["user", "assistant"],
+        include_event_types=["text", "function_call", "function_response"],
+        include_thought=False,
+    ),
+    long_term_memory=LongTermMemory(backend="viking", app_name="ltm_demo"),
+)
+```
+
+`MemoryAutoSavePolicy` 的完整字段：
+
+| 字段 | 类型 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `preset` | `"default" \| "all" \| "custom"` | `"default"` | 选择基础预设，未显式覆盖的字段沿用预设值。 |
+| `include_roles` | `list["user" \| "assistant" \| "system"] \| None` | 取决于预设 | 仅保存这些角色的事件。设为 `None` 表示不按角色过滤。 |
+| `exclude_roles` | `list["user" \| "assistant" \| "system"]` | `[]` | 排除这些角色的事件。 |
+| `include_authors` | `list[str] \| None` | 取决于预设 | 仅保存这些作者（`author`）的事件。设为 `None` 表示不按作者过滤。 |
+| `exclude_authors` | `list[str]` | `[]` | 排除这些作者的事件。 |
+| `include_event_types` | `list[MemoryEventType] \| None` | 取决于预设 | 仅保存这些事件类型。设为 `None` 表示不按事件类型过滤。 |
+| `exclude_event_types` | `list[MemoryEventType]` | `[]` | 排除这些事件类型。 |
+| `text_only` | `bool` | 取决于预设 | 为 `True` 且未显式指定 `include_event_types` 时，仅保留文本和思考类内容。 |
+| `include_thought` | `bool` | 取决于预设 | 是否保存思考（thought）内容。 |
+| `include_empty_text` | `bool` | 取决于预设 | 是否保存没有实际内容的空文本事件。 |
+
+`MemoryEventType` 包含以下事件类型：`text`、`thought`、`function_call`、`function_response`、`tool_call`、`tool_response`、`media`、`executable_code`、`code_execution_result`、`transcription`、`error`。
+
+<Note>
+预设字符串提供快捷配置。传入 `MemoryAutoSavePolicy` 实例或 `dict` 时，以 `preset` 指定的基础预设为起点，仅显式设置的字段会覆盖预设值，其余字段保持预设的默认行为。
+</Note>
 
 ## 跨会话示例
 

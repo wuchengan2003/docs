@@ -10,6 +10,7 @@ title: "更新日志"
 
 | 模块 | 变更细节 | 链接 |
 | --- | --- | --- |
+| 长期记忆 | `Agent` 新增 `auto_save_memory_policy` 参数（默认 `"default"`），可控制自动保存时哪些事件写入长期记忆。支持 `"default"`、`"all"`、`"custom"` 三种预设，也可通过 `MemoryAutoSavePolicy` 类按角色、作者、事件类型等维度精细过滤。`add_session_to_memory` 同步接受 `auto_save_memory_policy` 关键字参数。自动保存改为增量写入，每次只持久化自上次保存以来新增的事件。 | [长期记忆](/productions/veadk/preview/zh/components/memory) |
 | Studio 运行环境 | 新增「环境」页面，用于创建、管理和构建可复用的运行环境镜像。每个环境包含操作系统、Python 版本、命令行工具、技能和 Dockerfile，构建后生成容器镜像，可在部署智能体时作为基础镜像选择。支持 Ubuntu 22.04/24.04、Python 3.10/3.12，以及 lark-cli、pandoc、opencli、uv、ripgrep、jq、GitHub CLI、Playwright、Chromium、Git、curl、FFmpeg、ImageMagick 等命令行工具。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 创建 | 自定义创建的「环境」步骤改为从已构建成功的运行环境列表中选择基础镜像，或使用 AgentKit 默认运行环境；此前为直接选择命令行工具和编辑 Dockerfile。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
 | Studio 部署 | `veadk studio deploy` 新增 `--environment-cp-workspace` 和 `--environment-cr-repository` 标志，用于指定环境镜像构建使用的已有 CodePipeline Workspace 和 Container Registry 仓库；省略时创建或复用托管资源。 | [Studio 智能体工作台](/productions/veadk/preview/zh/components/frontend/studio) |
