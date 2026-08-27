@@ -6,6 +6,13 @@ title: "更新日志"
 
 当前没有未发布的公开变更。
 
+## 0.52.8 - 2026-08-26
+
+- 新增 [`skills secure`](/productions/agentkit-cli/preview/zh/commands/skill#skills-secure)，可从本地技能目录批量生成面向托管智能体安装的安全壳 Skill，保留 `name` 与 `description`，但不复制真实 Skill 的 Prompt、references、scripts、依赖或凭证。
+- [Claude 自托管沙箱流程](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-init)改为以 `.agentkit/sandbox.yaml` 作为配置来源：`sandbox init -t self-host` 不再生成 dotenv 模板，`sandbox create` 会创建 `Private` Tool 并写入 `self_host.sandbox.id` 与 `self_host.sandbox.name`，随后 [`env create`](/productions/agentkit-cli/preview/zh/commands/env#env-create) 只创建绑定该 Tool 的 Runtime，并可用 `--tool-id` 覆盖 Tool ID。
+- [`sandbox create --network-private`](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-create) 在缺少完整 VPC 与子网配置时会交互式选择当前区域下的 VPC 和可用子网，并把选择结果写回 `.agentkit/sandbox.yaml`。
+- [`sandbox config`](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-config) 新增 self-host 配置键并在 `--list` 输出中隐藏 `self-host-environment-key`，同时把普通沙箱默认 Tool ID 与名称保存在 `tool_info` 配置块中。
+
 ## 0.52.7 - 2026-08-25
 
 - 新增 [`env`](/productions/agentkit-cli/preview/zh/commands/env) 命令组。Claude 自托管沙箱项目完成 `sandbox build` 后，可通过 `env create` 基于构建镜像与 `.env` 创建 Private Tool 和调度 Runtime，并用 `env status` 刷新本地环境状态。

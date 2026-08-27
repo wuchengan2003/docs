@@ -1,8 +1,19 @@
 ---
-title: "Manage platform skills"
+title: "Manage platform and local skills"
 ---
 
-The `skill` command group manages skills on the AgentKit skill platform: list, show details, list versions, list skill spaces, and delete skills. The `skills` command group works with local skill packages.
+The `skill` command group manages skills on the AgentKit skill platform: list, show details, list versions, list skill spaces, and delete skills. The `skills` command group works with local AgentKit skill packages and currently provides bulk secure Skill generation.
+
+## Command overview
+
+| Command | Description |
+| --- | --- |
+| `skill list` | List platform skills. |
+| `skill show` | Show skill details. |
+| `skill versions` | List skill versions. |
+| `skill spaces` | List skill spaces. |
+| `skill delete` | Delete a platform skill. |
+| `skills secure` | Generate secure Skill wrappers from a local skills directory. |
 
 ## skill list
 
@@ -75,17 +86,19 @@ agentkit skill delete sk-xxxxxxxx --yes
 
 ## skills secure
 
-Generate secure Skill packages for managed agents from a local skills directory. By default, output is written to a sibling `<sourceSkillsDir>-secure` directory; pass `--force` to overwrite generated `SKILL.md` files that already exist.
+Generate secure Skill wrappers in bulk from a local skills directory. The source directory should contain one or more child directories, each with a `SKILL.md` whose frontmatter includes at least `name` and `description`. The command creates a same-name output directory for each skill and keeps only the invocation instructions needed by a managed agent; it does not copy the real Skill prompt, references, scripts, dependencies, or credentials.
 
 | Flag / Argument | Description | Default |
 | --- | --- | --- |
-| `<sourceSkillsDir>` | Local skills directory. Required. | None |
-| `-o, --output <dir>` | Output directory. | Sibling `<sourceSkillsDir>-secure` directory |
-| `--force` | Overwrite existing generated `SKILL.md` files. | `false` |
+| `<sourceSkillsDir>` | Local skills root directory; each skill subdirectory should contain `SKILL.md`. | Required |
+| `-o, --output <dir>` | Output directory. | Sibling `<sourceSkillsDir>-secure` |
+| `--force` | Overwrite existing generated files. | `false` |
 | `--json` | Output raw JSON. | `false` |
 
 ```bash
 agentkit skills secure ./skills
 
-agentkit skills secure ./skills --output ./skills-secure --force --json
+agentkit skills secure ./skills --output ./skills-secure --force
 ```
+
+The generated wrappers are intended for managed agents that only need to submit a task, poll progress, and show the result. The real Skill still runs inside the AgentKit Skill Sandbox.

@@ -1,8 +1,19 @@
 ---
-title: "管理平台技能"
+title: "管理平台技能与本地技能包"
 ---
 
-`skill` 命令组用于管理 AgentKit 技能平台上的技能：列出、查看详情、查看版本、查看技能空间，以及删除技能。`skills` 命令组用于处理本地技能包。
+`skill` 命令组用于管理 AgentKit 技能平台上的技能：列出、查看详情、查看版本、查看技能空间，以及删除技能。`skills` 命令组用于处理本地 AgentKit 技能包，当前提供批量生成安全壳 Skill 的能力。
+
+## 命令总览
+
+| 命令 | 说明 |
+| --- | --- |
+| `skill list` | 列出平台技能。 |
+| `skill show` | 查看技能详情。 |
+| `skill versions` | 列出技能版本。 |
+| `skill spaces` | 列出技能空间。 |
+| `skill delete` | 删除平台技能。 |
+| `skills secure` | 从本地技能目录生成安全壳 Skill。 |
 
 ## skill list
 
@@ -75,17 +86,19 @@ agentkit skill delete sk-xxxxxxxx --yes
 
 ## skills secure
 
-从本地技能目录批量生成适用于托管智能体的安全版 Skill 包。默认输出到源目录同级的 `<sourceSkillsDir>-secure` 目录；目标文件已存在时需传入 `--force` 才会覆盖。
+从本地技能目录批量生成安全壳 Skill。源目录应包含一个或多个子目录，每个子目录内有 `SKILL.md`，且 frontmatter 至少包含 `name` 与 `description`。命令会为每个技能生成同名输出目录，并只保留面向托管智能体安装的调用说明，不复制真实 Skill 的 Prompt、references、scripts、依赖或凭证。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `<sourceSkillsDir>` | 本地技能目录，必填。 | 无 |
+| `<sourceSkillsDir>` | 本地技能根目录，下面的每个技能子目录都应包含 `SKILL.md`。 | 必填 |
 | `-o, --output <dir>` | 输出目录。 | 源目录同级的 `<sourceSkillsDir>-secure` |
-| `--force` | 覆盖已存在的生成 `SKILL.md` 文件。 | `false` |
+| `--force` | 覆盖已经存在的生成文件。 | `false` |
 | `--json` | 输出原始 JSON。 | `false` |
 
 ```bash
 agentkit skills secure ./skills
 
-agentkit skills secure ./skills --output ./skills-secure --force --json
+agentkit skills secure ./skills --output ./skills-secure --force
 ```
+
+生成结果适用于只需要提交任务、轮询进度并展示结果的托管智能体。真实 Skill 的执行仍发生在 AgentKit Skill Sandbox 中。

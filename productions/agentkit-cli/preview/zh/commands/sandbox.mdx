@@ -189,7 +189,7 @@ agentkit sandbox config --list
 | `--no-network-private` | 禁用私有 VPC 访问。 | — |
 | `--network-shared-internet` | 私有网络下启用共享公网出口。 | 配置值或 `false` |
 | `--no-network-shared-internet` | 禁用共享公网出口。 | — |
-| `--network-vpc-id <id>` | 私有网络使用的 VPC ID；启用 `--network-private` 时必填。 | 配置值或 — |
+| `--network-vpc-id <id>` | 私有网络使用的 VPC ID。 | 配置值或 — |
 | `--network-subnet-ids <ids>` | 逗号分隔的子网 ID。 | 配置值或 — |
 | `--llm-shield-app-id <app-id>` | 为 `Skill` 沙箱工具启用 LLM Shield，并注入指定应用 ID。 | — |
 | `--envs <KEY=VALUE>` | 注入沙箱工具的环境变量；可重复传入。与内置变量同名时，本标志传入的值覆盖内置值。 | — |
@@ -203,6 +203,12 @@ agentkit sandbox create \
   --tool-name dev-code \
   --envs NODE_ENV=development \
   --envs FEATURE_FLAG=enabled
+```
+
+启用 `--network-private` 时，如果命令行或 `.agentkit/sandbox.yaml` 已提供完整的 `network-vpc-id` 与 `network-subnet-ids`，CLI 会直接复用该配置。若配置不完整，CLI 会查询当前区域下的 VPC 与可用子网，交互式选择后写回 `.agentkit/sandbox.yaml`，再继续创建工具。
+
+```bash
+agentkit sandbox create --tool-type CodeEnv --network-private
 ```
 
 为 `Skill` 工具启用 LLM Shield 时，必须显式传入应用 ID。该参数只支持 `Skill` 工具类型。

@@ -6,6 +6,13 @@ title: "Changelog"
 
 There are currently no unreleased public changes.
 
+## 0.52.8 - 2026-08-26
+
+- Added [`skills secure`](/productions/agentkit-cli/preview/en/commands/skill#skills-secure) for bulk generation of secure Skill wrappers from a local skills directory. The generated wrappers keep `name` and `description` but do not copy the real Skill prompt, references, scripts, dependencies, or credentials.
+- [Claude self-host sandbox setup](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-init) now uses `.agentkit/sandbox.yaml` as the configuration source: `sandbox init -t self-host` no longer generates dotenv templates, `sandbox create` creates the `Private` Tool and writes `self_host.sandbox.id` plus `self_host.sandbox.name`, then [`env create`](/productions/agentkit-cli/preview/en/commands/env#env-create) creates only the Runtime bound to that Tool and can override the Tool ID with `--tool-id`.
+- [`sandbox create --network-private`](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-create) now prompts for a VPC and available subnets in the current region when complete VPC and subnet config is missing, then writes the selected values back to `.agentkit/sandbox.yaml`.
+- [`sandbox config`](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-config) adds self-host config keys and redacts `self-host-environment-key` in `--list` output, while storing regular sandbox default Tool IDs and names in the `tool_info` config block.
+
 ## 0.52.7 - 2026-08-25
 
 - Added the [`env`](/productions/agentkit-cli/preview/en/commands/env) command group. After a Claude self-host sandbox project completes `sandbox build`, `env create` can create the Private Tool and dispatcher Runtime from the built image and `.env`, and `env status` refreshes local environment state.

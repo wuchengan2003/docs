@@ -189,7 +189,7 @@ Create a sandbox tool. After creation, the CLI waits until the tool reaches `Rea
 | `--no-network-private` | Disable private VPC access. | — |
 | `--network-shared-internet` | Enable shared internet access for private networking. | Config value or `false` |
 | `--no-network-shared-internet` | Disable shared internet access. | — |
-| `--network-vpc-id <id>` | VPC ID for private networking; required when `--network-private` is enabled. | Config value or — |
+| `--network-vpc-id <id>` | VPC ID for private networking. | Config value or — |
 | `--network-subnet-ids <ids>` | Comma-separated subnet IDs. | Config value or — |
 | `--llm-shield-app-id <app-id>` | Enable LLM Shield for a `Skill` sandbox tool and inject the given app ID. | — |
 | `--envs <KEY=VALUE>` | Environment variable to inject into the sandbox tool; repeatable. When it has the same key as a built-in variable, this value overrides the built-in value. | — |
@@ -203,6 +203,12 @@ agentkit sandbox create \
   --tool-name dev-code \
   --envs NODE_ENV=development \
   --envs FEATURE_FLAG=enabled
+```
+
+When `--network-private` is enabled, the CLI reuses `network-vpc-id` and `network-subnet-ids` from the command line or `.agentkit/sandbox.yaml` when both are complete. If the config is incomplete, the CLI queries VPCs and available subnets in the current region, prompts for a selection, writes the result back to `.agentkit/sandbox.yaml`, and then continues creating the tool.
+
+```bash
+agentkit sandbox create --tool-type CodeEnv --network-private
 ```
 
 To enable LLM Shield for a `Skill` tool, pass the app ID explicitly. This option is supported only with `Skill` tool type.
