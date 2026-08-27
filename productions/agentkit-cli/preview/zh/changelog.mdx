@@ -59,8 +59,8 @@ title: "更新日志"
 - 修复独立发行包缺少 Runtime 资源的问题，确保[构建、启动与发布](/productions/agentkit-cli/preview/zh/commands/build)所需文件随 CLI 一同安装。
 
 ## 0.51.0 - 2026-08-05
-
-- 新增 `config`、`build`、`launch`、`status` 与 `release` 命令，形成从[项目配置](/productions/agentkit-cli/preview/zh/commands/config)到[发布](/productions/agentkit-cli/preview/zh/commands/release)的分阶段生命周期。
+- [沙箱命令]TypeScript 版 Sandbox 工具命令与 Python 版完成对齐，统一命令体系、参数风格与行为语义。
+    - 新增 `config`、`build`、`launch`、`status` 与 `release` 命令，形成从[项目配置](/productions/agentkit-cli/preview/zh/commands/config)到[发布](/productions/agentkit-cli/preview/zh/commands/release)的分阶段生命周期。
 - 扩展[沙箱命令](/productions/agentkit-cli/preview/zh/commands/sandbox)的工具创建能力，增加 Dashboard 与终端管理。
 - 修复 BytePlus VikingDB [知识库操作](/productions/agentkit-cli/preview/zh/commands/knowledge)以及[迁移](/productions/agentkit-cli/preview/zh/commands/migrate)上传路径。
 
@@ -106,6 +106,8 @@ title: "更新日志"
 - [`migrate`](/productions/agentkit-cli/preview/zh/commands/migrate) 新增 `--project`，可指定远程迁移使用的项目。
 
 ## 0.50.0 - 2026-07-28
+[重点特性]
+- [沙箱命令]TypeScript 版 Sandbox 工具命令与 Python 版完成对齐，统一命令体系、参数风格与行为语义。
 
 - 新增 [Auth Admin](/productions/agentkit-cli/preview/zh/commands/auth) 凭据管理能力。
 - [Harness](/productions/agentkit-cli/preview/zh/commands/harness)支持 Skill Space 引用和请求级覆盖参数。
