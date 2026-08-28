@@ -6,13 +6,61 @@ title: "更新日志"
 
 当前没有未发布的公开变更。
 
+## 0.52.8 - 2026-08-26
+
+- 完善[自托管沙箱环境](/productions/agentkit-cli/preview/zh/commands/env)创建流程，统一自托管环境密钥、沙箱 Tool 标识与 Runtime 状态的本地存储。
+- [`sandbox config`](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-config)新增自托管沙箱与 Runtime 相关配置键，便于用同一配置文件完成 Tool 与环境创建。
+- [`skills secure`](/productions/agentkit-cli/preview/zh/commands/skill#skills-secure)新增本地技能目录批量转换能力，可生成适用于托管智能体的安全版 Skill 包。
+
+## 0.52.7 - 2026-08-25
+
+- [`sandbox init -t self-host`](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-init)新增自托管沙箱项目模板，并支持通过 [`env create`](/productions/agentkit-cli/preview/zh/commands/env#env-create)创建与沙箱 Tool 绑定的 Runtime。
+- [`sandbox create`](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-create)新增 `--envs` 和 `--llm-shield-app-id`，可在创建 Tool 时注入自定义环境变量，并为 Skill Tool 配置 LLM Shield 应用。
+
+## 0.52.6 - 2026-08-20
+
+- 修复 [Runtime 部署](/productions/agentkit-cli/preview/zh/commands/deploy)使用 hybrid 网络模式时未启用私网的问题。
+
+## 0.52.4 - 2026-08-19
+
+- 改进 [`config init`](/productions/agentkit-cli/preview/zh/commands/config) 的初始化提示与默认值处理。
+- [迁移](/productions/agentkit-cli/preview/zh/commands/migrate)支持按文件内容识别 Dify DSL，降低导出文件名不规范时的迁移失败概率。
+- [记忆库创建](/productions/agentkit-cli/preview/zh/commands/memory#memory-create)在 BytePlus 下默认使用 `VIKINGDB_MEMORY`，避免选择 BytePlus 不支持的 `MEM0`。
+
+## 0.52.3 - 2026-08-18
+
+- [`sandbox list`](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-list)新增 Tool 列表与远端会话查询模式，并支持 Tool 名称、类型和状态过滤。
+- 沙箱会话中的模型环境变量别名与默认模型写入行为更加一致，避免在 `sandbox.yaml` 中持久化不必要的模型默认值。
+
+## 0.52.2 - 2026-08-14
+
+- [评测命令](/productions/agentkit-cli/preview/zh/commands/eval/run#eval-backend)默认解析到 AgentKit 评测网关，并新增后端查看、缓存刷新和 TEA 请求调试能力。
+- [评测集](/productions/agentkit-cli/preview/zh/commands/eval/dataset)与[评估器](/productions/agentkit-cli/preview/zh/commands/eval/evaluator)支持 TEA 版本管理、模板查看、草稿更新和版本提交。
+- [`eval run`](/productions/agentkit-cli/preview/zh/commands/eval/run)支持固定评测集版本、评估器版本、目标版本、目标类型、实验描述和 TEA 字段映射。
+- 新增 [`eval target`](/productions/agentkit-cli/preview/zh/commands/eval/target)，用于列出 TEA Source Eval Target 与目标版本。
+- 新增 [`chat`](/productions/agentkit-cli/preview/zh/commands/chat)，可通过 Identity 登录态与已启用 `custom_jwt` 的 Harness 共享会话。
+
+## 0.52.1 - 2026-08-12
+
+- [Harness](/productions/agentkit-cli/preview/zh/commands/harness)新增托管 Sidecar 组件目录与解析命令，并支持 `harness invoke` 直接调用已部署 Harness。
+
+## 0.52.0 - 2026-08-11
+
+- 新增 [`model-gateway`](/productions/agentkit-cli/preview/zh/commands/model-gateway) 命令组，用于启用 Model Gateway、管理模型提供方和消费者，并生成调用示例。
+- [认证命令](/productions/agentkit-cli/preview/zh/commands/auth)支持面向租户控制面的登录地址与 `--identity-only` 登录，用于只获取用户身份登录态的场景。
+- `auth admin publish` 支持发布跨账号登录发现配置，并可通过 `--domain` 指定发布域名。
+
+## 0.51.2 - 2026-08-11
+
+- [运行时调用](/productions/agentkit-cli/preview/zh/commands/invoke)改为 `invoke run` 子命令，支持从 `agentkit.yaml`、Runtime ID 或端点地址解析调用信息。
+
 ## 0.51.1 - 2026-08-06
 
 - 修复独立发行包缺少 Runtime 资源的问题，确保[构建、启动与发布](/productions/agentkit-cli/preview/zh/commands/build)所需文件随 CLI 一同安装。
 
 ## 0.51.0 - 2026-08-05
-
-- 新增 `config`、`build`、`launch`、`status` 与 `release` 命令，形成从[项目配置](/productions/agentkit-cli/preview/zh/commands/config)到[发布](/productions/agentkit-cli/preview/zh/commands/release)的分阶段生命周期。
+- TypeScript版`config`、`build`、`launch`、`release`与`deploy`命令与 Python 版完成对齐，统一命令体系、参数风格与行为语义。
+    - 新增 `config`、`build`、`launch`、`release`与`deploy`命令，形成从[项目配置](/productions/agentkit-cli/preview/zh/commands/config)到[发布](/productions/agentkit-cli/preview/zh/commands/release)的分阶段生命周期。
 - 扩展[沙箱命令](/productions/agentkit-cli/preview/zh/commands/sandbox)的工具创建能力，增加 Dashboard 与终端管理。
 - 修复 BytePlus VikingDB [知识库操作](/productions/agentkit-cli/preview/zh/commands/knowledge)以及[迁移](/productions/agentkit-cli/preview/zh/commands/migrate)上传路径。
 
@@ -58,6 +106,7 @@ title: "更新日志"
 - [`migrate`](/productions/agentkit-cli/preview/zh/commands/migrate) 新增 `--project`，可指定远程迁移使用的项目。
 
 ## 0.50.0 - 2026-07-28
+- [沙箱命令]TypeScript 版 Sandbox 工具命令与 Python 版完成对齐，统一命令体系、参数风格与行为语义。
 
 - 新增 [Auth Admin](/productions/agentkit-cli/preview/zh/commands/auth) 凭据管理能力。
 - [Harness](/productions/agentkit-cli/preview/zh/commands/harness)支持 Skill Space 引用和请求级覆盖参数。

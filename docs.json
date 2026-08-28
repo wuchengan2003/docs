@@ -2799,16 +2799,20 @@
                           "productions/agentkit-cli/preview/zh/commands/eval/dataset",
                           "productions/agentkit-cli/preview/zh/commands/eval/evaluator",
                           "productions/agentkit-cli/preview/zh/commands/eval/run",
-                          "productions/agentkit-cli/preview/zh/commands/eval/experiment"
+                          "productions/agentkit-cli/preview/zh/commands/eval/experiment",
+                          "productions/agentkit-cli/preview/zh/commands/eval/target"
                         ]
                       },
                       "productions/agentkit-cli/preview/zh/commands/runtime",
                       "productions/agentkit-cli/preview/zh/commands/knowledge",
                       "productions/agentkit-cli/preview/zh/commands/memory",
                       "productions/agentkit-cli/preview/zh/commands/mcp",
+                      "productions/agentkit-cli/preview/zh/commands/model-gateway",
                       "productions/agentkit-cli/preview/zh/commands/sandbox",
+                      "productions/agentkit-cli/preview/zh/commands/env",
                       "productions/agentkit-cli/preview/zh/commands/skill",
                       "productions/agentkit-cli/preview/zh/commands/harness",
+                      "productions/agentkit-cli/preview/zh/commands/chat",
                       "productions/agentkit-cli/preview/zh/commands/auth",
                       "productions/agentkit-cli/preview/zh/commands/docs"
                     ]
@@ -6489,16 +6493,20 @@
                           "productions/agentkit-cli/preview/en/commands/eval/dataset",
                           "productions/agentkit-cli/preview/en/commands/eval/evaluator",
                           "productions/agentkit-cli/preview/en/commands/eval/run",
-                          "productions/agentkit-cli/preview/en/commands/eval/experiment"
+                          "productions/agentkit-cli/preview/en/commands/eval/experiment",
+                          "productions/agentkit-cli/preview/en/commands/eval/target"
                         ]
                       },
                       "productions/agentkit-cli/preview/en/commands/runtime",
                       "productions/agentkit-cli/preview/en/commands/knowledge",
                       "productions/agentkit-cli/preview/en/commands/memory",
                       "productions/agentkit-cli/preview/en/commands/mcp",
+                      "productions/agentkit-cli/preview/en/commands/model-gateway",
                       "productions/agentkit-cli/preview/en/commands/sandbox",
+                      "productions/agentkit-cli/preview/en/commands/env",
                       "productions/agentkit-cli/preview/en/commands/skill",
                       "productions/agentkit-cli/preview/en/commands/harness",
+                      "productions/agentkit-cli/preview/en/commands/chat",
                       "productions/agentkit-cli/preview/en/commands/auth",
                       "productions/agentkit-cli/preview/en/commands/docs"
                     ]

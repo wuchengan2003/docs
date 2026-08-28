@@ -6,13 +6,62 @@ title: "Changelog"
 
 There are currently no unreleased public changes.
 
+## 0.52.8 - 2026-08-26
+
+- Improved [self-host sandbox environment](/productions/agentkit-cli/preview/en/commands/env) creation by unifying local storage for self-host environment secrets, sandbox Tool identifiers, and Runtime status.
+- Added self-host sandbox and Runtime configuration keys to [`sandbox config`](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-config), so one config file can drive Tool and environment creation.
+- Added [`skills secure`](/productions/agentkit-cli/preview/en/commands/skill#skills-secure) for bulk conversion of local skill directories into secure Skill packages for managed agents.
+
+## 0.52.7 - 2026-08-25
+
+- Added the [`sandbox init -t self-host`](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-init) project template and [`env create`](/productions/agentkit-cli/preview/en/commands/env#env-create) flow for creating a Runtime bound to a sandbox Tool.
+- Added `--envs` and `--llm-shield-app-id` to [`sandbox create`](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-create), allowing custom environment variables and LLM Shield app configuration for Skill Tools.
+
+## 0.52.6 - 2026-08-20
+
+- Fixed [Runtime deployment](/productions/agentkit-cli/preview/en/commands/deploy) so hybrid network mode enables private networking.
+
+## 0.52.4 - 2026-08-19
+
+- Improved [`config init`](/productions/agentkit-cli/preview/en/commands/config) prompts and default handling.
+- [Migration](/productions/agentkit-cli/preview/en/commands/migrate) can detect Dify DSL files by content, reducing failures when export file names do not follow the expected pattern.
+- [Memory creation](/productions/agentkit-cli/preview/en/commands/memory#memory-create) now defaults to `VIKINGDB_MEMORY` on BytePlus to avoid selecting unsupported `MEM0` memory.
+
+## 0.52.3 - 2026-08-18
+
+- [`sandbox list`](/productions/agentkit-cli/preview/en/commands/sandbox#sandbox-list) added Tool listing and remote session listing modes, with filters for Tool name, type, and status.
+- Sandbox model environment aliases and default-model persistence are now consistent, avoiding unnecessary default model values in `sandbox.yaml`.
+
+## 0.52.2 - 2026-08-14
+
+- [Evaluation commands](/productions/agentkit-cli/preview/en/commands/eval/run#eval-backend) now resolve to the AgentKit evaluation gateway by default and include backend inspection, cache refresh, and TEA request debugging.
+- [Datasets](/productions/agentkit-cli/preview/en/commands/eval/dataset) and [evaluators](/productions/agentkit-cli/preview/en/commands/eval/evaluator) now support TEA version management, template inspection, draft updates, and version submission.
+- [`eval run`](/productions/agentkit-cli/preview/en/commands/eval/run) supports pinned dataset versions, evaluator versions, target versions, target type, experiment descriptions, and TEA field mappings.
+- Added [`eval target`](/productions/agentkit-cli/preview/en/commands/eval/target) for listing TEA Source Eval Targets and target versions.
+- Added [`chat`](/productions/agentkit-cli/preview/en/commands/chat) for shared Harness sessions through Identity login state and `custom_jwt`.
+
+## 0.52.1 - 2026-08-12
+
+- [Harness](/productions/agentkit-cli/preview/en/commands/harness) added managed Sidecar catalog and resolution commands, plus `harness invoke` for directly invoking deployed Harnesses.
+
+## 0.52.0 - 2026-08-11
+
+- Added the [`model-gateway`](/productions/agentkit-cli/preview/en/commands/model-gateway) command group to activate Model Gateway, manage model providers and consumers, and generate invocation examples.
+- [Auth commands](/productions/agentkit-cli/preview/en/commands/auth) now support tenant control-plane login addresses and `--identity-only` login for identity-only user sessions.
+- `auth admin publish` can publish cross-account login discovery configuration and accepts `--domain` to select the publication domain.
+
+## 0.51.2 - 2026-08-11
+
+- [Runtime invocation](/productions/agentkit-cli/preview/en/commands/invoke) now uses the `invoke run` subcommand and can resolve call settings from `agentkit.yaml`, a Runtime ID, or an endpoint URL.
+
 ## 0.51.1 - 2026-08-06
 
 - Fixed missing Runtime assets in standalone distributions so files required by the [build, launch, and release workflow](/productions/agentkit-cli/preview/en/commands/build) are installed with the CLI.
 
 ## 0.51.0 - 2026-08-05
 
-- Added `config`, `build`, `launch`, `status`, and `release` for a staged lifecycle from [project configuration](/productions/agentkit-cli/preview/en/commands/config) through [release](/productions/agentkit-cli/preview/en/commands/release).
+- The TypeScript `config`, `build`, `launch`, `release`, and `deploy` commands are now aligned with the Python version, unifying the command structure, parameter style, and behavior semantics.
+    - Added `config`, `build`, `launch`, `release`, and `deploy` for a staged lifecycle from [project configuration](/productions/agentkit-cli/preview/en/commands/config) through [release](/productions/agentkit-cli/preview/en/commands/release).
 - Expanded [sandbox commands](/productions/agentkit-cli/preview/en/commands/sandbox) with additional tool creation, Dashboard, and terminal management.
 - Fixed BytePlus VikingDB [knowledge operations](/productions/agentkit-cli/preview/en/commands/knowledge) and the [migration](/productions/agentkit-cli/preview/en/commands/migrate) upload path.
 
@@ -58,6 +107,7 @@ There are currently no unreleased public changes.
 - Added [`migrate --project`](/productions/agentkit-cli/preview/en/commands/migrate) for selecting the project used by remote migration.
 
 ## 0.50.0 - 2026-07-28
+- [Sandbox commands] The TypeScript Sandbox tool commands are now aligned with the Python version, unifying the command structure, parameter style, and behavior semantics.
 
 - Added [Auth Admin](/productions/agentkit-cli/preview/en/commands/auth) credential management.
 - Added Skill Space references and request-level overrides to [Harness](/productions/agentkit-cli/preview/en/commands/harness).

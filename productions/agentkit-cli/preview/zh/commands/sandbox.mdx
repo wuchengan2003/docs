@@ -15,12 +15,12 @@ title: "使用沙箱"
 | 子命令 | 说明 |
 | --- | --- |
 | `build` | 在云端 Code Pipeline 中构建自定义沙箱镜像，并写入 `Private` 工具配置。 |
-| `init` | 生成沙箱 Dockerfile 模板。 |
+| `init` | 生成沙箱 Dockerfile 模板，或初始化自托管沙箱项目。 |
 | `config` | 读取、写入或删除沙箱命令默认值。 |
 | `create` | 创建沙箱工具。 |
 | `delete` | 删除沙箱工具或指定会话。 |
 | `dashboard` (`ui`) | 启动本地沙箱 Web 控制台。 |
-| `list` | 列出本地缓存的沙箱会话。 |
+| `list` | 列出本地或云端沙箱会话，也可列出沙箱 Tool。 |
 | `mount` | 使用 TosBrowser 打开已挂载 TOS 的沙箱会话目录。 |
 | `exec` | 连接沙箱终端并执行命令。 |
 | `invoke` | 通过 A2A 调用 `SkillEnv` 沙箱中的智能体。 |
@@ -36,7 +36,7 @@ title: "使用沙箱"
 在云端 Code Pipeline 中构建自定义沙箱镜像。构建完成后，CLI 会把 `tool-type` 设置为 `Private`，并把生成的镜像地址写入 `.agentkit/sandbox.yaml`，便于后续 `sandbox create` 使用。
 
 <Warning>
-`sandbox build` 会使用 TOS、Container Registry 和 Code Pipeline 等云资源，可能产生费用。执行前确认账号权限、项目目录和镜像命名；构建失败时，CLI 可能在项目的 `.agentkit/sandbox/build/` 目录写入构建日志。
+`sandbox build` 会使用 TOS、Container Registry 和 Code Pipeline 等云资源，可能产生费用。执行前确认账号权限、项目目录和镜像命名。
 </Warning>
 
 | 标志/参数 | 说明 | 默认值 |
@@ -54,16 +54,17 @@ agentkit sandbox build --project-dir . --dockerfile Dockerfile --image-name cust
 
 ## sandbox init
 
-生成沙箱 Dockerfile 模板。未指定模板时，默认生成 `skill` 模板。
+生成沙箱 Dockerfile 模板。未指定模板时，默认生成 `skill` 模板；传入 `self-host` 时会同时生成 `Dockerfile`、`.agentkit/sandbox.yaml`、`.gitignore`、`.dockerignore` 和 `README.md`，用于自托管沙箱环境。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
-| `-t, --template <name>` | Dockerfile 模板名称：`skill`、`skills`、`aio`、`code`、`code-install-package`、`code-install-skills`、`code-web-server`。 | `skill` |
+| `-t, --template <name>` | Dockerfile 模板名称：`skill`、`skills`、`aio`、`code`、`code-install-package`、`code-install-skills`、`code-web-server`、`self-host`。 | `skill` |
 | `-o, --output <path>` | 输出 Dockerfile 路径。 | 模板默认路径 |
 | `-f, --force` | 覆盖已经存在的输出文件。 | `false` |
 
 ```bash
 agentkit sandbox init --template code-web-server --output Dockerfile.sandbox
+agentkit sandbox init -t self-host
 ```
 
 ## sandbox config
@@ -113,6 +114,23 @@ agentkit sandbox config --list
 | `session-id` | string | 随机生成 | 默认用户会话 ID。 |
 | `ttl` | integer | `28800` | 会话 TTL，单位为秒。 |
 | `git-config` | `local` 或文件路径 | — | 注入沙箱会话的 Git 身份来源。 |
+| `self-host-project-name` | string | `default` | 自托管 Tool 与 Runtime 使用的 AgentKit 项目。 |
+| `self-host-poll-interval-seconds` | integer | `5` | 自托管 Tool 与 Runtime 就绪检查的轮询间隔。 |
+| `self-host-environment-base-url` | string | — | 自托管环境网关地址。 |
+| `self-host-environment-id` | string | — | 自托管环境 ID。 |
+| `self-host-environment-key` | string | — | 自托管环境密钥；列表输出会隐藏该值。 |
+| `self-host-sandbox-id` | string | `sandbox create` 写入 | 自托管 Runtime 绑定的沙箱 Tool ID。 |
+| `self-host-sandbox-name` | string | `sandbox create` 写入 | 自托管 Runtime 绑定的沙箱 Tool 名称。 |
+| `self-host-runtime-image-url` | string | 内置运行时镜像 | 自托管 Runtime 镜像地址。 |
+| `self-host-runtime-name` | string | `agentkit-selfhost-runtime` | 自托管 Runtime 名称前缀。 |
+| `self-host-runtime-role-name` | string | `AgentKit_Runtime_Default_ServiceRole` | 自托管 Runtime 使用的 IAM 角色。 |
+| `self-host-runtime-cpu-milli` | integer | `2000` | 自托管 Runtime CPU，单位为毫核。 |
+| `self-host-runtime-memory-mb` | integer | `4096` | 自托管 Runtime 内存，单位为 MB。 |
+| `self-host-runtime-min-instance` | integer | `1` | 自托管 Runtime 最小实例数。 |
+| `self-host-runtime-max-instance` | integer | `1` | 自托管 Runtime 最大实例数。 |
+| `self-host-runtime-max-concurrency` | integer | `10` | 自托管 Runtime 单实例最大并发数。 |
+| `self-host-runtime-timeout-seconds` | integer | `1200` | 自托管 Runtime 请求超时时间。 |
+| `self-host-runtime-api-key-name` | string | `Authorization` | 自托管 Runtime API Key 请求头名称。 |
 
 ## sandbox create
 
@@ -145,6 +163,8 @@ agentkit sandbox config --list
 | `--no-network-shared-internet` | 禁用共享公网出口。 | — |
 | `--network-vpc-id <id>` | 私有网络使用的 VPC ID；启用 `--network-private` 时必填。 | 配置值或 — |
 | `--network-subnet-ids <ids>` | 逗号分隔的子网 ID。 | 配置值或 — |
+| `--llm-shield-app-id <app-id>` | 为 `Skill` 工具启用 LLM Shield，并注入指定 App ID。 | — |
+| `--envs <KEY=VALUE>` | 注入到沙箱工具的环境变量；可重复。重复键会报错。 | — |
 | `--json` | 输出 JSON。 | `false` |
 
 ```bash
@@ -158,6 +178,30 @@ agentkit sandbox create \
   --tool-type Private \
   --tool-name private-dev \
   --image-url cr.example.com/agentkit/custom-sandbox:latest
+```
+
+为 `Skill` 工具启用 LLM Shield 或注入自定义环境变量时，可在创建工具时传入对应标志：
+
+```bash
+agentkit sandbox create \
+  --tool-type Skill \
+  --tool-name guarded-skill \
+  --llm-shield-app-id app-xxxxxxxx \
+  --envs FEATURE_FLAG=enabled
+```
+
+## 自托管沙箱流程
+
+自托管项目使用 `sandbox init -t self-host` 生成配置，再通过 `sandbox build`、`sandbox create` 和 [`env create`](/productions/agentkit-cli/preview/zh/commands/env) 创建完整环境。`sandbox create` 会读取 `project_type: self-host`，使用自托管工具命名规则，并把创建出的 Tool ID 写入 `self_host.sandbox.id`。
+
+```bash
+agentkit sandbox init -t self-host
+agentkit sandbox config --set self-host-environment-base-url=https://gateway.example.com
+agentkit sandbox config --set self-host-environment-id=env-xxxxxxxx
+agentkit sandbox config --set self-host-environment-key=${SELF_HOST_ENVIRONMENT_KEY}
+agentkit sandbox build
+agentkit sandbox create
+agentkit env create
 ```
 
 ## sandbox dashboard
@@ -201,17 +245,28 @@ agentkit sandbox delete --tool-name private-dev --force
 
 ## sandbox list
 
-列出本地缓存的沙箱会话，或查看某个本地缓存会话。该命令读取本地会话缓存并输出 JSON，不会列出云端所有沙箱工具。
+列出沙箱会话或沙箱 Tool，并输出 JSON。默认读取本地缓存；传入 `--remote` 时从云端查询，列出远端会话时必须提供 `--tool-id`。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |
 | `-s, --session-id <id>, --sid <id>` | 要查找的用户会话 ID。 | — |
-| `--tool-id <id>` | 按沙箱工具 ID 过滤本地缓存。 | — |
+| `--tool-id <id>` | 按沙箱 Tool ID 过滤；远端会话列表必填。 | — |
+| `--sessions` | 列出沙箱会话。 | 默认模式 |
+| `--tools` | 列出沙箱 Tool。 | `false` |
+| `--tool-name <name>` | `--tools` 模式下按 Tool 名称过滤。 | — |
+| `--tool-type <type>` | `--tools` 模式下按 Tool 类型过滤。 | — |
+| `--status <status>` | `--tools` 模式下按状态过滤。 | — |
+| `--local` | 仅查询本地缓存。 | 默认 |
+| `--remote` | 仅查询云端数据。 | `false` |
 
 ```bash
 agentkit sandbox list
 
 agentkit sandbox list --tool-id tool-123 --session-id dev
+
+agentkit sandbox list --tools --remote --tool-name private-dev
+
+agentkit sandbox list --sessions --remote --tool-id tool-123
 ```
 
 ## sandbox mount
@@ -337,7 +392,7 @@ agentkit sandbox shell --session-id dev --command "python --version"
 
 ## sandbox web
 
-打开沙箱 Web 预览，并输出包含 URL、工具 ID、会话 ID 与会话是否新建的 JSON。
+打开沙箱 Web 预览，并输出包含 URL、工具 ID、会话 ID 与会话是否新建的 JSON。默认会先在沙箱浏览器中打开 `/home/gem/` 文件路径，再打开本机 noVNC 页面。
 
 | 标志/参数 | 说明 | 默认值 |
 | --- | --- | --- |

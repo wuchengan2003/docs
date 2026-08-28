@@ -1,0 +1,201 @@
+---
+title: "Manage Model Gateway"
+---
+
+The `model-gateway` command group activates AgentKit Model Gateway, connects model providers, creates consumer credentials, and prints invocation examples. You can also use the `mgw` alias.
+
+<Warning>
+Model Gateway commands create or modify cloud gateway, model-provider, and consumer resources. Before creating, updating, or deleting resources, confirm the region, API Gateway choice, model access URL, and API key permissions.
+</Warning>
+
+## model-gateway activate
+
+Activate Model Gateway. If a gateway already exists in the current region, the command returns the existing gateway; otherwise it creates one and waits for it to become available.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `--apig-gateway-id <id>` | Use a dedicated API Gateway instance; omit it for shared mode. | Shared mode |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+| `--json` | Output raw JSON. | `false` |
+
+```bash
+agentkit model-gateway activate --region cn-beijing
+agentkit mgw activate --apig-gateway-id apig-xxxxxxxx --json
+```
+
+## model-gateway provider create
+
+Create a model provider. A provider stores the upstream model API base URL, protocol, API keys, and model names. You can also write this command as `model-gateway provider add`.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<name>` | Model provider name. | Required |
+| `--base-url <url>` | Upstream model API base URL. | Required |
+| `--api-key <key>` | Upstream model API key; repeatable. | Required |
+| `--model <name>` | Upstream model name; repeatable. | Required |
+| `--protocol <protocol>` | Upstream protocol: `openai` or `anthropic`. | `openai` |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+
+```bash
+agentkit model-gateway provider create ark \
+  --base-url https://ark.cn-beijing.volces.com/api/v3 \
+  --api-key ${ARK_API_KEY} \
+  --model doubao-seed-2-1-pro
+```
+
+## model-gateway provider list
+
+List model providers.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+| `--json` | Output raw JSON. | `false` |
+
+```bash
+agentkit model-gateway provider list
+```
+
+## model-gateway provider show
+
+Show model provider details.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<name>` | Model provider name. | Required |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+| `--json` | Output raw JSON. | `false` |
+
+```bash
+agentkit model-gateway provider show ark
+```
+
+## model-gateway provider update
+
+Update a model provider. Pass at least one of `--base-url`, `--api-key`, `--model`, or `--protocol`; `--api-key` and `--model` replace their corresponding lists.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<name>` | Model provider name. | Required |
+| `--base-url <url>` | New upstream model API base URL. | — |
+| `--api-key <key>` | Replace upstream model API keys; repeatable. | — |
+| `--model <name>` | Replace upstream model names; repeatable. | — |
+| `--protocol <protocol>` | New upstream protocol: `openai` or `anthropic`. | — |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+
+```bash
+agentkit model-gateway provider update ark --model doubao-seed-2-1-pro --model doubao-seed-2-1-lite
+```
+
+## model-gateway provider delete
+
+Delete a model provider.
+
+<Warning>
+Deleting a provider affects consumers authorized to access that provider or its models. The CLI asks for confirmation unless you pass `--yes`.
+</Warning>
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<name>` | Model provider name. | Required |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+| `-y, --yes` | Skip the confirmation prompt. | `false` |
+
+```bash
+agentkit model-gateway provider delete ark --yes
+```
+
+## model-gateway consumer create
+
+Create a consumer. A consumer holds an API key for Model Gateway and can be constrained by model authorization and token-rate limits. You can also write this command as `model-gateway consumer add`.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<name>` | Consumer name. | Required |
+| `--allow-model <provider[/model]>` | Authorized provider or provider model; repeatable. Passing only the provider name allows all models from that provider. | No authorization rule |
+| `--tpm <tokens>` | Tokens-per-minute limit. | — |
+| `--tpd <tokens>` | Tokens-per-day limit. | — |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+
+```bash
+agentkit model-gateway consumer create app \
+  --allow-model ark/doubao-seed-2-1-pro \
+  --tpm 60000 \
+  --tpd 1000000
+```
+
+## model-gateway consumer list
+
+List consumers.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+| `--json` | Output raw JSON. | `false` |
+
+```bash
+agentkit model-gateway consumer list
+```
+
+## model-gateway consumer show
+
+Show consumer details.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<name>` | Consumer name. | Required |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+| `--json` | Output raw JSON. | `false` |
+
+```bash
+agentkit model-gateway consumer show app --json
+```
+
+## model-gateway consumer update
+
+Update consumer authorization or rate limits. Pass at least one of `--allow-model`, `--tpm`, or `--tpd`; `--allow-model` replaces the authorization scope.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<name>` | Consumer name. | Required |
+| `--allow-model <provider[/model]>` | Replace the authorized providers or models; repeatable. | — |
+| `--tpm <tokens>` | Replace the tokens-per-minute limit. | — |
+| `--tpd <tokens>` | Replace the tokens-per-day limit. | — |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+
+```bash
+agentkit model-gateway consumer update app --allow-model ark --tpm 120000
+```
+
+## model-gateway consumer delete
+
+Delete a consumer.
+
+<Warning>
+Deleting a consumer invalidates its API key. The CLI asks for confirmation unless you pass `--yes`.
+</Warning>
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `<name>` | Consumer name. | Required |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+| `-y, --yes` | Skip the confirmation prompt. | `false` |
+
+```bash
+agentkit model-gateway consumer delete app --yes
+```
+
+## model-gateway show-example
+
+Print an invocation example for a model provider and consumer. The command picks the first model accessible to the consumer and renders the snippet for the selected protocol.
+
+| Flag / Argument | Description | Default |
+| --- | --- | --- |
+| `--model-provider <name>` | Model provider name. | Required |
+| `--consumer <name>` | Consumer name. | Required |
+| `--example <type>` | Example type: `curl`, `openai`, `anthropic`, or `agentkit`. | `curl` |
+| `-r, --region <region>` | Cloud region. | Auto-detect |
+
+```bash
+agentkit model-gateway show-example --model-provider ark --consumer app --example agentkit
+```

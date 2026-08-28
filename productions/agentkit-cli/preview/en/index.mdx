@@ -30,7 +30,9 @@ sandboxes, skills, and evaluation it relies on — all from your terminal.
 | `runtime` | deployed runtimes (list, show, logs, versions, release, update, delete) |
 | `knowledge` (`kb`) | knowledge bases |
 | `memory` (`mem`) | memory collections |
+| `model-gateway` (`mgw`) | Model Gateway, model providers, and consumers |
 | `harness` | Harness defined by a `harness.yaml` |
+| `chat` | call a tenant-published shared OAuth Harness |
 | `invoke` | call a deployed runtime |
 | `auth` | SSO login, identity, login profiles, and organization SSO setup |
 | `onboard` | install bundled skills into local coding agents |
@@ -38,6 +40,7 @@ sandboxes, skills, and evaluation it relies on — all from your terminal.
 | `migrate` | migrate an existing agent application to AgentKit |
 | `mcp service` | create, inspect, and delete MCP services |
 | `sandbox` | run commands and manage sessions in a sandbox |
+| `env` (`environment`) | create and inspect self-host sandbox runtime environments |
 | `skill` | skills on the AgentKit skill platform |
 | `destroy` | delete a deployed runtime |
 | `upgrade` | check for and install AgentKit CLI updates |
@@ -50,7 +53,7 @@ sandboxes, skills, and evaluation it relies on — all from your terminal.
 - `login`, `logout`, and `whoami` are available as top-level commands and as
   `auth login`, `auth logout`, and `auth whoami`.
 - `knowledge` has aliases `kb` and `knowledgebase`, `memory` has alias `mem`,
-  and the `eval` prefix is optional (`agentkit dataset …` is equivalent to
+  `model-gateway` has alias `mgw`, `env` has alias `environment`, `skills secure` converts local skill packages, and the `eval` prefix is optional (`agentkit dataset …` is equivalent to
   `agentkit eval dataset …`).
 - Most read commands accept `--json`; the region is auto-detected unless you
   pass `-r, --region`.
