@@ -5,7 +5,7 @@ title: "使用 Harness"
 harness 路径适合无需自定义代码的场景：智能体的模型、工具、知识库、记忆与提示词全部写在一个 `harness.yaml` 里，由 CLI 直接构建并部署为运行时。整个闭环只围绕一个文件展开——初始化、配置、部署、调用，再回到配置持续迭代。
 
 <Note>
-  开始前请先配置 AK/SK，或通过 [SSO 登录](/productions/agentkit-cli/preview/zh/commands/auth)获取短期 STS 凭证。`harness deploy` 与 `invoke` 会按统一的凭证优先级读取有效凭证。配置方法见[快速开始](/productions/agentkit-cli/preview/zh/quickstart)的「鉴权」一节。
+  开始前请先配置 AK/SK，或通过 [SSO 登录](/productions/agentkit-cli/archives/0.51.1/zh/commands/auth)获取短期 STS 凭证。`harness deploy` 与 `invoke` 会按统一的凭证优先级读取有效凭证。配置方法见[快速开始](/productions/agentkit-cli/archives/0.51.1/zh/quickstart)的「鉴权」一节。
 </Note>
 
 <Warning>
@@ -33,7 +33,7 @@ harness 路径适合无需自定义代码的场景：智能体的模型、工具
     ```
 
     <Tip>
-      配置知识库、记忆等组件时，先设置其 `--<组件>-type`，再补充连接参数；传入空字符串 `""` 可禁用某个组件。不带任何标志运行 `agentkit harness set` 会列出当前字段。完整字段见[Harness](/productions/agentkit-cli/preview/zh/commands/harness)。
+      配置知识库、记忆等组件时，先设置其 `--<组件>-type`，再补充连接参数；传入空字符串 `""` 可禁用某个组件。不带任何标志运行 `agentkit harness set` 会列出当前字段。完整字段见[Harness](/productions/agentkit-cli/archives/0.51.1/zh/commands/harness)。
     </Tip>
   </Step>
   <Step title="构建并部署">
@@ -71,4 +71,4 @@ harness 路径适合无需自定义代码的场景：智能体的模型、工具
 agentkit runtime delete my-harness -y
 ```
 
-需要自定义逻辑、工具或多智能体编排时，改用[高代码智能体](/productions/agentkit-cli/preview/zh/workflows/high-code)。
+需要自定义逻辑、工具或多智能体编排时，改用[高代码智能体](/productions/agentkit-cli/archives/0.51.1/zh/workflows/high-code)。

@@ -2,7 +2,7 @@
 title: "使用 Codex 沙箱开发应用"
 ---
 
-AgentKit 沙箱提供云端开发环境，可在其中使用 Codex 等编码智能体开发应用。工具定义计算规格与网络等环境属性；会话保存一次开发过程的文件和运行状态。完整参数见[使用沙箱](/productions/agentkit-cli/preview/zh/commands/sandbox)。
+AgentKit 沙箱提供云端开发环境，可在其中使用 Codex 等编码智能体开发应用。工具定义计算规格与网络等环境属性；会话保存一次开发过程的文件和运行状态。完整参数见[使用沙箱](/productions/agentkit-cli/archives/0.51.1/zh/commands/sandbox)。
 
 <Note>
 开始前请配置 AK/SK，或通过 `agentkit login` 获取有效的短期 STS 凭证。若要把本地 Codex 订阅凭据注入沙箱，还需先在本机完成 `codex login`。
@@ -103,7 +103,7 @@ agentkit sandbox shell \
   --command "cd /home/gem/my-app && npm test"
 ```
 
-需要编排多条 `sandbox exec` 任务时，将条目写入 `agentkit-sandbox-run.yaml`，再运行 `agentkit sandbox run --config agentkit-sandbox-run.yaml`。配置格式见[沙箱命令参考](/productions/agentkit-cli/preview/zh/commands/sandbox#sandbox-run)。
+需要编排多条 `sandbox exec` 任务时，将条目写入 `agentkit-sandbox-run.yaml`，再运行 `agentkit sandbox run --config agentkit-sandbox-run.yaml`。配置格式见[沙箱命令参考](/productions/agentkit-cli/archives/0.51.1/zh/commands/sandbox#sandbox-run)。
 
 ## 实践建议
 

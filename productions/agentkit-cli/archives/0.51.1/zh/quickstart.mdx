@@ -26,7 +26,7 @@ agentkit --help
 ```
 
 <Tip>
-  二进制安装在 `~/.agentkit`，并在 `~/.local/bin` 下创建 `agentkit`、`ak` 两个软链接。安装目录还包含 `templates/`、`lifecycle-templates/`、`harness/`、`skills/`、`im-proxies/` 与 `vendor/` 等运行所需资源；手动移动或解压独立发行包时，请保留这些目录与 `ak` 在同一安装目录。若提示命令未找到，请将 `~/.local/bin` 加入 PATH。需要安装指定版本时，设置环境变量 `AGENTKIT_VERSION`（默认 `latest`）。
+  二进制安装在 `~/.agentkit`，并在 `~/.local/bin` 下创建 `agentkit`、`ak` 两个软链接。若提示命令未找到，请将 `~/.local/bin` 加入 PATH。需要安装指定版本时，设置环境变量 `AGENTKIT_VERSION`（默认 `latest`）。
 </Tip>
 
 ## 鉴权
@@ -87,4 +87,4 @@ CLI 会对每一次云端 OpenAPI 请求签名。按使用的云厂商或登录�
   </Step>
 </Steps>
 
-完整命令见 [命令参考](/productions/agentkit-cli/preview/zh/commands)，或运行 `agentkit tree` 打印命令树。需要切换云厂商或区域时，运行 `agentkit config --cloud_provider byteplus --region ap-southeast-1` 更新项目配置。
+完整命令见 [命令参考](/productions/agentkit-cli/archives/0.51.1/zh/commands)，或运行 `agentkit tree` 打印命令树。需要切换云厂商或区域时，运行 `agentkit config --cloud_provider byteplus --region ap-southeast-1` 更新项目配置。
