@@ -34,6 +34,7 @@ The following table lists Preview changes not yet associated with a released tag
 | Studio intelligent development | Any two saved versions of the same project can be compared in the project version library, showing file-level differences in a side-by-side diff view. Version comparison does not produce additional stored artifacts. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
 | Studio runtime environments | Environment image builds are accelerated: all system packages are now installed in a single `apt-get` transaction using the provider-local APT mirror (Volcengine uses `mirrors.volces.com`, others use `mirror.sg.gs`), reducing redundant network requests. Playwright and Chromium system dependencies are pre-installed alongside other system packages, no longer installed separately via `playwright install --with-deps`. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
 | Studio build logs | The build log panel now supports Bash syntax highlighting and auto-scrolls to the bottom by default; scrolling up pauses auto-follow, and scrolling back to the bottom resumes it. The log refresh interval is reduced from 5 seconds to 3 seconds. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Studio project generation | The default `veadk-python` version in generated agent projects' `requirements.txt` is updated from `1.1.5` to `1.1.6`. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
 
 ## 1.1.6
 
