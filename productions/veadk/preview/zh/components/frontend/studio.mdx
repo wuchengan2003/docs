@@ -640,7 +640,7 @@ Studio 调用 `doubao-seed-2-0-lite-260428` 模型，根据需求生成一份经
 
 使用该能力前，应满足以下条件：
 
-- Studio 已配置可访问 AgentKit 的火山引擎凭证；部署到 VeFaaS 时，所绑定的 IAM Role 需要具备相应权限。
+- Studio 已配置可访问 AgentKit 的云服务商凭证（火山引擎或 BytePlus）；部署到 VeFaaS 时，所绑定的 IAM Role 需要具备相应权限。
 - 目标地域的 `default` 项目中至少存在一个当前账号可见的 AgentKit 智能体中心，且中心内已有可调用的远程智能体。
 - 启用 Studio 角色权限时，当前用户具有 `developer` 或 `admin` 角色。
 
@@ -652,7 +652,7 @@ Studio 调用 `doubao-seed-2-0-lite-260428` 模型，根据需求生成一份经
     在左侧智能体结构中为根智能体或其他本地智能体添加子智能体，然后将类型设为「远程智能体」。根节点上的远程智能体类型不可选择。
   </Step>
   <Step title="选择智能体中心">
-    默认加载北京地域 `default` 项目下当前账号可见的智能体中心。使用其他地域时，先在「更多选项」中修改地域，再从下拉框选择中心；需要重新获取列表时使用刷新按钮。
+    默认加载火山引擎北京地域（BytePlus 为 `ap-southeast-1`）`default` 项目下当前账号可见的智能体中心。使用其他地域时，先在「更多选项」中修改地域，再从下拉框选择中心；需要重新获取列表时使用刷新按钮。
   </Step>
   <Step title="配置发现范围">
     按需设置召回数量和 OpenAPI 地址。远程智能体的名称、描述和能力来自中心返回的 Agent Card，无需单独填写名称或 A2A 地址。
@@ -668,16 +668,16 @@ Studio 调用 `doubao-seed-2-0-lite-260428` 模型，根据需求生成一份经
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | AgentKit 智能体中心 | `REGISTRY_SPACE_ID` | `str` | 是 | — | 用于发现远程智能体的中心；在 Studio 中通过下拉框选择。 |
 | 召回智能体数量 | `REGISTRY_TOP_K` | `int` | 否 | `3` | 每轮任务最多召回的匹配智能体数量；有效范围为 1–20。 |
-| AgentKit 智能体中心地域 | `REGISTRY_REGION` | `str` | 否 | `cn-beijing` | 智能体中心所在地域；修改后会按新地域重新加载下拉列表。 |
-| AgentKit 智能体中心 OpenAPI 地址 | `REGISTRY_ENDPOINT` | `URL` | 否 | `https://open.volcengineapi.com/` | 生成项目调用智能体中心时使用的 OpenAPI 地址；仅在需要使用其他公开入口时修改。 |
+| AgentKit 智能体中心地域 | `REGISTRY_REGION` | `str` | 否 | 火山引擎：`cn-beijing`；BytePlus：`ap-southeast-1` | 智能体中心所在地域；修改后会按新地域重新加载下拉列表。默认值随所选云服务商变化。 |
+| AgentKit 智能体中心 OpenAPI 地址 | `REGISTRY_ENDPOINT` | `URL` | 否 | 火山引擎：`https://open.volcengineapi.com/`；BytePlus：`https://agentkit.ap-southeast-1.byteplusapi.com/` | 生成项目调用智能体中心时使用的 OpenAPI 地址；仅在需要使用其他公开入口时修改。默认值随所选云服务商变化。 |
 
-例如，创建名为 `support_router` 的 LLM 根智能体，为其添加一个远程智能体子节点，选择「售后服务」智能体中心，并保留召回数量 `3` 与北京地域。测试时输入「查询订单配送异常并给出处理建议」；如果中心中存在匹配能力，根智能体会调用相应的远程智能体完成任务。
+例如，创建名为 `support_router` 的 LLM 根智能体，为其添加一个远程智能体子节点，选择「售后服务」智能体中心，并保留召回数量 `3` 与火山引擎北京地域。测试时输入「查询订单配送异常并给出处理建议」；如果中心中存在匹配能力，根智能体会调用相应的远程智能体完成任务。
 
 ### 排查远程智能体问题
 
 | 现象 | 检查方法 |
 | :--- | :--- |
-| 提示未配置火山引擎凭证 | 本地启动时检查 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY`；VeFaaS 部署检查绑定的 IAM Role。凭证只在服务端使用，不会下发到浏览器。 |
+| 提示未配置云服务商凭证 | 本地启动时检查对应云服务商的凭证（火山引擎为 `VOLCENGINE_ACCESS_KEY` 与 `VOLCENGINE_SECRET_KEY`，BytePlus 为 `BYTEPLUS_ACCESS_KEY` 与 `BYTEPLUS_SECRET_KEY`）；VeFaaS 部署检查绑定的 IAM Role。凭证只在服务端使用，不会下发到浏览器。 |
 | 下拉框为空 | 确认所选地域的 `default` 项目中已创建智能体中心，并确认当前凭证有权查看该中心。 |
 | 智能体中心列表加载失败 | 检查 Studio 登录状态、AgentKit OpenAPI 网络连通性和凭证权限，然后使用刷新按钮重试。 |
 | 无法生成或测试项目 | 确认远程智能体位于根智能体之下，并且已经选择智能体中心。 |
