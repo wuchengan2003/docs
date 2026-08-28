@@ -37,6 +37,7 @@ The following table lists Preview changes not yet associated with a released tag
 | Studio build logs | The build log panel now supports Bash syntax highlighting and auto-scrolls to the bottom by default; scrolling up pauses auto-follow, and scrolling back to the bottom resumes it. The log refresh interval is reduced from 5 seconds to 3 seconds. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
 | Studio project generation | The default `veadk-python` version in generated agent projects' `requirements.txt` is updated from `1.1.5` to `1.1.6`. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
 | Studio deployment | The `--studio-update-bucket` default for `veadk studio deploy` is now determined by the cloud provider: `veadk-studio` for Volcengine and `veadk-studio-byteplus` for BytePlus; previously it was always `veadk-studio`. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
+| Studio remote agents | Remote agents (A2A sub-agents) now support the BytePlus cloud provider: when BytePlus is selected, the agent center default region changes to `ap-southeast-1`, the default OpenAPI endpoint changes to `https://agentkit.ap-southeast-1.byteplusapi.com/`, and credentials are resolved from `BYTEPLUS_ACCESS_KEY`, `BYTEPLUS_SECRET_KEY`, and the optional `BYTEPLUS_SESSION_TOKEN`; Volcengine mode is unaffected. | [Studio agent workbench](/productions/veadk/preview/en/components/frontend/studio) |
 
 ## 1.1.6
 
