@@ -2106,7 +2106,7 @@ veadk studio deploy \
 
 ### 应用内更新
 
-Studio 固定从维护在北京地域的 `veadk-studio` TOS 发布源读取新版本，客户部署地域无需额外配置；部署完成后管理员可在导航栏中把前端与 Python 后端一起升级。使用 `--studio-update-bucket` 与 `--studio-update-prefix`（或对应的 `VEADK_STUDIO_UPDATE_BUCKET`、`VEADK_STUDIO_UPDATE_PREFIX` 环境变量）可覆盖默认发布源，发布源地域始终为 `cn-beijing`。发布包不绑定云服务商，火山引擎与 BytePlus 部署共用同一发布源；更新时根据部署环境中的 `CLOUD_PROVIDER`（或 `AGENTKIT_CLOUD_PROVIDER`）自动选择对应的云服务商入口，BytePlus 部署在更新过程中同步写入 `BYTEPLUS_REGION`。
+Studio 从维护在北京地域的 TOS 发布源读取新版本，客户部署地域无需额外配置；部署完成后管理员可在导航栏中把前端与 Python 后端一起升级。默认发布源存储桶因云服务商而异：火山引擎部署使用 `veadk-studio`，BytePlus 部署使用 `veadk-studio-byteplus`。使用 `--studio-update-bucket` 与 `--studio-update-prefix`（或对应的 `VEADK_STUDIO_UPDATE_BUCKET`、`VEADK_STUDIO_UPDATE_PREFIX` 环境变量）可覆盖默认发布源，发布源地域始终为 `cn-beijing`。更新时根据部署环境中的 `CLOUD_PROVIDER`（或 `AGENTKIT_CLOUD_PROVIDER`）自动选择对应的云服务商入口，BytePlus 部署在更新过程中同步写入 `BYTEPLUS_REGION`。
 
 Studio 每三分钟检查一次更新，列出可用版本及其变更说明。管理员确认升级后，Studio 会校验完整发布包，同时替换 Python 后端与前端资源并重新发布原 Application；Application 与 Function ID、访问 URL、SSO 客户端和服务端 Secret 保持不变。
 
@@ -2170,7 +2170,7 @@ veadk studio deploy \
 | `--precheck-only` | `bool` 标志 | `false` | 仅执行只读 IAM 权限预检，不创建任何云资源。 |
 | `--sandbox-chat-codex-tool-id` | `str \| None` | 自动创建 | 内置智能体使用的 AgentKit CodeEnv Tool ID；也可通过 `SANDBOX_CHAT_CODEX` 设置。 |
 | `--sandbox-dev-tool-id` | `str \| None` | 自动创建 | 开发沙箱使用的 AgentKit DevEnv Tool ID；也可通过 `SANDBOX_DEV` 设置。 |
-| `--studio-update-bucket` | `str` | `veadk-studio` | 存放 Studio 不可变发布包的 TOS Bucket；部署时写入函数环境变量 `VEADK_STUDIO_UPDATE_BUCKET`。也可通过 `VEADK_STUDIO_UPDATE_BUCKET` 设置。 |
+| `--studio-update-bucket` | `str \| None` | `veadk-studio`（火山引擎）/ `veadk-studio-byteplus`（BytePlus） | 存放 Studio 不可变发布包的 TOS Bucket；部署时写入函数环境变量 `VEADK_STUDIO_UPDATE_BUCKET`。也可通过 `VEADK_STUDIO_UPDATE_BUCKET` 设置。 |
 | `--studio-update-prefix` | `str` | `veadk/studio/main` | Studio 主发布渠道的 TOS 对象前缀。也可通过 `VEADK_STUDIO_UPDATE_PREFIX` 设置。 |
 
 ## Studio BFF 动态工具
