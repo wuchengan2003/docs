@@ -4,13 +4,13 @@ title: "更新日志"
 
 ## 0.51.2 - 2026-08-11
 
-- [新增命令] 新增 [Model Gateway 命令](/productions/agentkit-cli/archives/0.51.2/zh/commands/model-gateway)，支持启用网关、管理模型提供方和调用方，并基于已授权模型生成 `curl`、OpenAI、Anthropic 或 AgentKit 调用示例。
+- [Model Gateway 命令] [Model Gateway](/productions/agentkit-cli/archives/0.51.2/zh/commands/model-gateway) 支持启用网关、管理模型提供方和调用方，并基于已授权模型生成 `curl`、OpenAI、Anthropic 或 AgentKit 调用示例。
 - [invoke 命令] [`invoke run`](/productions/agentkit-cli/archives/0.51.2/zh/commands/invoke) 对齐 Python SDK 调用约定，支持从 `agentkit.yaml`、Runtime ID 或端点解析调用目标，传入 JSON payload 与 headers，并按 `/invoke`、ADK `/run_sse` 或 A2A 自动选择调用方式；需要时可输出原始流式事件或显示 reasoning 内容。
-- [新增命令] 新增 [`harness invoke`](/productions/agentkit-cli/archives/0.51.2/zh/commands/harness#harness-invoke) 命令，可直接调用已部署 Harness，按请求覆盖模型、系统提示词、工具、技能、运行时后端、A2A registry 和最大 LLM 调用次数，并可选择 `invoke` 或 `run_sse` 传输。
-- [Auth 命令] 新增 [身份仅登录模式](/productions/agentkit-cli/archives/0.51.2/zh/commands/auth)，`login --identity-only` 与 `auth profile set --identity-only` 可只保存 OIDC 会话；在匹配的 `custom_jwt` Harness 调用中，CLI 可使用该会话转发用户身份，而不创建管理凭据。
+- [harness 命令] [`harness invoke`](/productions/agentkit-cli/archives/0.51.2/zh/commands/harness#harness-invoke) 可直接调用已部署 Harness，按请求覆盖模型、系统提示词、工具、技能、运行时后端、A2A registry 和最大 LLM 调用次数，并可选择 `invoke` 或 `run_sse` 传输。
+- [Auth 命令] [身份仅登录模式](/productions/agentkit-cli/archives/0.51.2/zh/commands/auth) 可通过 `login --identity-only` 与 `auth profile set --identity-only` 只保存 OIDC 会话；在匹配的 `custom_jwt` Harness 调用中，CLI 可使用该会话转发用户身份，而不创建管理凭据。
 - [Auth 命令] [Auth Admin](/productions/agentkit-cli/archives/0.51.2/zh/commands/auth) 生成的 SSO 权限策略补充沙箱会话列表、会话快照恢复和工具类型查询权限，使沙箱相关 SSO 工作流具备所需权限。
-- [沙箱命令] 增强 [创建、初始化和预览流程](/productions/agentkit-cli/archives/0.51.2/zh/commands/sandbox)：`sandbox create --envs` 可重复注入环境变量，`sandbox init` 生成 Dockerfile 时写入当前内置基础镜像，`sandbox web` 打开预览时会定位到沙箱主目录；首次初始化 `.agentkit/sandbox.yaml` 时不再持久化推断的模型默认值，并将 Model Square 默认模型更新为 `deepseek-v4-flash-ga-260731`。
-- [migrate 命令] [Dify 迁移](/productions/agentkit-cli/archives/0.51.2/zh/commands/migrate#dify-迁移范围) 增强 Dify Workflow 与 Chatflow 上下文解析，迁移前会提取节点、边、变量、Features 和依赖信息，并对敏感字段脱敏。
+- [沙箱命令] [创建、初始化和预览流程](/productions/agentkit-cli/archives/0.51.2/zh/commands/sandbox) 行为更明确：`sandbox create --envs` 可重复注入环境变量，`sandbox init` 生成 Dockerfile 时写入当前内置基础镜像，`sandbox web` 打开预览时会定位到沙箱主目录；首次初始化 `.agentkit/sandbox.yaml` 时不再持久化推断的模型默认值，并将 Model Square 默认模型更新为 `deepseek-v4-flash-ga-260731`。
+- [migrate 命令] [Dify 迁移](/productions/agentkit-cli/archives/0.51.2/zh/commands/migrate#dify-迁移范围) 会在迁移前提取 Workflow 与 Chatflow 的节点、边、变量、Features 和依赖信息，并对敏感字段脱敏。
 
 ## 0.51.1 - 2026-08-06
 

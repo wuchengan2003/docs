@@ -2,27 +2,23 @@
 title: "Changelog"
 ---
 
-## Unreleased
-
-There are currently no unreleased public changes.
-
 ## 0.52.0 - 2026-08-11
 
 - [Auth commands] The CLI can now read [`/.well-known/agentkit-cli` discovery documents](/productions/agentkit-cli/archives/0.52.0/en/commands/auth) from custom login addresses that include a single tenant path segment, with stricter validation for remote addresses, discovery fields, regions, cloud providers, and STS coordinates. When logging in through a remote discovery document, the CLI saves the profile only after login succeeds.
 - [Auth commands] [`auth admin publish`](/productions/agentkit-cli/archives/0.52.0/en/commands/auth#auth-admin-publish) now accepts existing `--issuer`, `--client-id`, `--role-trn`, and `--provider-trn` values, so cross-account identity setups can publish only the discovery document; it also supports `--domain` for returning a custom login domain whose CNAME and HTTPS certificate are already configured.
 - [Auth commands] [Auth Admin](/productions/agentkit-cli/archives/0.52.0/en/commands/auth) can use valid STS credentials from the current CLI SSO profile for management operations, and uses built-in service endpoints for those operations so project or user-wide endpoint overrides do not affect privileged setup.
 - [Installation] The [install flow](/productions/agentkit-cli/archives/0.52.0/en/quickstart#install) keeps the standalone CLI ahead of same-named commands installed through pip, pipx, venv, or Conda in zsh, bash, or fish, and uninstall restores original commands and shell configuration entries that are still managed by the installer.
-- [Configuration] [Config commands](/productions/agentkit-cli/archives/0.52.0/en/commands/config) now validate region values, accepting only lowercase, hyphen-separated region codes so invalid regions cannot enter service endpoints or request signing.
+- [Configuration] [Config commands](/productions/agentkit-cli/archives/0.52.0/en/commands/config) validate region values, accepting only lowercase, hyphen-separated region codes so invalid regions cannot enter service endpoints or request signing.
 
 ## 0.51.2 - 2026-08-11
 
-- [New command] Added the [Model Gateway commands](/productions/agentkit-cli/archives/0.52.0/en/commands/model-gateway) for activating a gateway, managing model providers and consumers, and generating `curl`, OpenAI, Anthropic, or AgentKit calling examples from authorized models.
+- [Model Gateway commands] [Model Gateway](/productions/agentkit-cli/archives/0.52.0/en/commands/model-gateway) supports gateway activation, model provider and consumer management, and generation of `curl`, OpenAI, Anthropic, or AgentKit calling examples from authorized models.
 - [invoke commands] [`invoke run`](/productions/agentkit-cli/archives/0.52.0/en/commands/invoke) now follows the Python SDK invocation contract, resolving targets from `agentkit.yaml`, Runtime IDs, or endpoints, accepting JSON payloads and headers, and selecting `/invoke`, ADK `/run_sse`, or A2A automatically; it can also print raw streaming events or show reasoning content when needed.
-- [New command] Added the [`harness invoke`](/productions/agentkit-cli/archives/0.52.0/en/commands/harness#harness-invoke) command for directly invoking a deployed Harness with per-request overrides for the model, system prompt, tools, skills, runtime backend, A2A registry, and maximum LLM calls, with either `invoke` or `run_sse` transport.
-- [Auth commands] Added [identity-only mode](/productions/agentkit-cli/archives/0.52.0/en/commands/auth): `login --identity-only` and `auth profile set --identity-only` can store only the OIDC session. For matching `custom_jwt` Harness invocations, the CLI can forward that user identity without creating management credentials.
+- [harness commands] [`harness invoke`](/productions/agentkit-cli/archives/0.52.0/en/commands/harness#harness-invoke) directly invokes a deployed Harness with per-request overrides for the model, system prompt, tools, skills, runtime backend, A2A registry, and maximum LLM calls, with either `invoke` or `run_sse` transport.
+- [Auth commands] [Identity-only mode](/productions/agentkit-cli/archives/0.52.0/en/commands/auth) lets `login --identity-only` and `auth profile set --identity-only` store only the OIDC session. For matching `custom_jwt` Harness invocations, the CLI can forward that user identity without creating management credentials.
 - [Auth commands] [Auth Admin](/productions/agentkit-cli/archives/0.52.0/en/commands/auth) generated SSO policies now include permissions for listing sandbox sessions, restoring session snapshots, and querying tool types, so sandbox-related SSO workflows have the required access.
-- [Sandbox commands] Improved [creation, initialization, and preview flows](/productions/agentkit-cli/archives/0.52.0/en/commands/sandbox): `sandbox create --envs` can inject repeatable environment variables, `sandbox init` writes the current built-in base image into generated Dockerfiles, and `sandbox web` opens the sandbox home directory in the remote browser. Initial `.agentkit/sandbox.yaml` files no longer persist inferred model defaults, and the Model Square default model is now `deepseek-v4-flash-ga-260731`.
-- [migrate commands] [Dify migration](/productions/agentkit-cli/archives/0.52.0/en/commands/migrate#dify-migration-scope) now enrich Dify Workflow and Chatflow context before migration by extracting nodes, edges, variables, features, and dependencies while redacting sensitive fields.
+- [Sandbox commands] [Creation, initialization, and preview flows](/productions/agentkit-cli/archives/0.52.0/en/commands/sandbox) are now more predictable: `sandbox create --envs` can inject repeatable environment variables, `sandbox init` writes the current built-in base image into generated Dockerfiles, and `sandbox web` opens the sandbox home directory in the remote browser. Initial `.agentkit/sandbox.yaml` files no longer persist inferred model defaults, and the Model Square default model is now `deepseek-v4-flash-ga-260731`.
+- [migrate commands] [Dify migration](/productions/agentkit-cli/archives/0.52.0/en/commands/migrate#dify-migration-scope) extracts Workflow and Chatflow nodes, edges, variables, features, and dependencies before migration while redacting sensitive fields.
 
 ## 0.51.1 - 2026-08-06
 
