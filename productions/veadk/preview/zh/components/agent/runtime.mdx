@@ -151,6 +151,46 @@ VeADK 不在 Python 安装包中内置 PiAgent 二进制文件。运行时按以
   自动安装需要运行环境能够访问 PiAgent Release。离线或受限网络环境应预先安装二进制文件，并通过 `PIAGENT_BINARY` 指定路径。
 </Note>
 
+## 输出持久化
+
+`Agent` 继承自 Google ADK 的 `LlmAgent`，支持通过 `output_key` 参数将智能体的最终文本回复写入会话状态（session state）。同一会话中后续执行的其他智能体可以读取该状态，从而在多智能体工作流中传递结果。
+
+<Note>
+  `output_key` 在所有运行时中均生效，包括默认的 ADK 运行时以及 `codex`、`piagent` 等外部运行时。使用外部运行时时，最终回复同样会写入会话状态。
+</Note>
+
+以下示例使用 `SequentialAgent` 串联两个智能体：规划智能体的输出通过 `output_key="plan"` 写入会话状态，写作智能体在同一会话中读取该状态：
+
+```python title="pipeline.py"
+from veadk import Agent
+from veadk.agents.sequential_agent import SequentialAgent
+
+planner = Agent(
+    name="planner",
+    runtime="codex",
+    model_name="doubao-seed-2-1-pro-260628",
+    model_api_key="ARK_API_KEY",
+    instruction="根据用户需求生成一份写作大纲。",
+    output_key="plan",
+)
+
+writer = Agent(
+    name="writer",
+    runtime="piagent",
+    model_name="doubao-seed-2-1-pro-260628",
+    model_api_key="ARK_API_KEY",
+    instruction="根据会话状态中的大纲撰写正文。",
+    output_key="draft",
+)
+
+pipeline = SequentialAgent(
+    name="pipeline",
+    sub_agents=[planner, writer],
+)
+```
+
+运行后，会话状态中的 `plan` 和 `draft` 分别保存规划智能体与写作智能体的最终回复。
+
 ## 请求处理
 
 在不侵入业务逻辑的前提下，可为每次执行插入统一的横切处理。将处理器传入 `run_processor` 即可，例如接入身份认证做登录态校验：

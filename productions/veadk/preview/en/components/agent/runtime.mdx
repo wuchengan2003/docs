@@ -166,6 +166,54 @@ the following locations in order:
   Automatic installation requires access to the PiAgent release host. In offline or restricted networks, install the binary in advance and set `PIAGENT_BINARY`.
 </Note>
 
+## Output persistence
+
+`Agent` inherits from Google ADK's `LlmAgent` and supports persisting the
+agent's final text response to session state through the `output_key` parameter.
+Other agents that run later in the same session can read that state, making it
+useful for passing results between agents in a multi-agent workflow.
+
+<Note>
+  `output_key` works across all runtimes, including the default ADK runtime
+  and external runtimes such as `codex` and `piagent`. With an external runtime,
+  the final response is still written to session state.
+</Note>
+
+The following example uses `SequentialAgent` to chain two agents: the planner's
+output is written to session state via `output_key="plan"`, and the writer reads
+that state in the same session:
+
+```python title="pipeline.py"
+from veadk import Agent
+from veadk.agents.sequential_agent import SequentialAgent
+
+planner = Agent(
+    name="planner",
+    runtime="codex",
+    model_name="doubao-seed-2-1-pro-260628",
+    model_api_key="ARK_API_KEY",
+    instruction="Generate a writing outline based on the user's request.",
+    output_key="plan",
+)
+
+writer = Agent(
+    name="writer",
+    runtime="piagent",
+    model_name="doubao-seed-2-1-pro-260628",
+    model_api_key="ARK_API_KEY",
+    instruction="Write the article based on the outline in session state.",
+    output_key="draft",
+)
+
+pipeline = SequentialAgent(
+    name="pipeline",
+    sub_agents=[planner, writer],
+)
+```
+
+After running, the session state keys `plan` and `draft` hold the final
+responses from the planner and the writer respectively.
+
 ## Request processing
 
 Without touching business logic, you can inject shared cross-cutting processing
